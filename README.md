@@ -101,8 +101,6 @@ project-root/
 - `index.html`
   - Current application
   - Contains the HTML, CSS, and JavaScript in one file
-- `index - Original Copy.html`
-  - Earlier preserved version of the app
 - `README.md`
   - Project documentation
 
