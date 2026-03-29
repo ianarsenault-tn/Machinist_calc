@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Marco's Calculator</title>
+  <title>Marcos's Calculator</title>
   <style>
     :root{
       color-scheme: light dark;
@@ -523,7 +523,7 @@
   <header class="site-header" id="siteHeader">
     <div class="header-wrap">
       <div class="brand-lockup">
-        <h1>Marco's Calculator</h1>
+        <h1>Marcos's Calculator</h1>
         <p>Shop math for threads, bolt circles, and setup work.</p>
       </div>
       <div class="toolbar">
@@ -1132,7 +1132,7 @@
             "Use a standard drill near the computed size for a practical shop selection.",
             "The basic pitch diameter shown here does not include class-of-fit tolerances."
           ]) + renderCodeCard("Formula snapshot", [`Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`, `Tap drill = ${fmt(drill, 6)} in`, `E_basic = ${fmt(basicPitchDiameter, 6)} in`].join("\n")),
-          copyText: [`Marco's Calculator - Thread Spec`, `Spec: ${label}`, `System: Unified`, `Tap drill: ${fmt(drill, 6)} in`, `Pitch: ${fmt(pitch, 6)} in`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`].join("\n")
+          copyText: [`Marcos's Calculator - Thread Spec`, `Spec: ${label}`, `System: Unified`, `Tap drill: ${fmt(drill, 6)} in`, `Pitch: ${fmt(pitch, 6)} in`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`].join("\n")
         });
       } else {
         const major = num(document.getElementById("mMajorMm").value);
@@ -1154,7 +1154,7 @@
             "This is a practical tap-drill estimate, not a tolerance-class lookup.",
             "Use the over-wires tool when you need a target M or E value for inspection."
           ]) + renderCodeCard("Formula snapshot", [`Tap drill = ${fmt(drill, 3)} mm`, `E_basic = ${fmt(basicPitchDiameter, 3)} mm`].join("\n")),
-          copyText: [`Marco's Calculator - Thread Spec`, `Spec: ${label}`, `System: ISO Metric`, `Tap drill: ${fmt(drill, 3)} mm`, `Pitch: ${fmt(pitch, 3)} mm`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`].join("\n")
+          copyText: [`Marcos's Calculator - Thread Spec`, `Spec: ${label}`, `System: ISO Metric`, `Tap drill: ${fmt(drill, 3)} mm`, `Pitch: ${fmt(pitch, 3)} mm`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`].join("\n")
         });
       }
     });
@@ -1260,7 +1260,7 @@
           "The suggested value is snapped to the nearest size in the selected wire set.",
           "Enter E or M next, then press Calculate to finish the over-wires math."
         ]),
-        copyText: [`Marco's Calculator - Wire Suggestion`, `Pitch: ${fmt(pitch, 6)} ${unitLabel(mowUnits.value)}`, `Theoretical best wire: ${fmt(theoretical, 6)} ${unitLabel(mowUnits.value)}`, `Snapped wire: ${fmt(snapped, 6)} ${unitLabel(mowUnits.value)}`].join("\n")
+        copyText: [`Marcos's Calculator - Wire Suggestion`, `Pitch: ${fmt(pitch, 6)} ${unitLabel(mowUnits.value)}`, `Theoretical best wire: ${fmt(theoretical, 6)} ${unitLabel(mowUnits.value)}`, `Snapped wire: ${fmt(snapped, 6)} ${unitLabel(mowUnits.value)}`].join("\n")
       });
     });
 
@@ -1291,7 +1291,7 @@
             "Replace E with your actual chart or gage target before recalculating when needed.",
             "The best-wire value is shown for comparison even if you use a different actual wire size."
           ]) + renderCodeCard("Formula snapshot", [`M = E + 3W - (sqrt(3)/2)P`, `M = ${fmt(measurement, 6)} ${units}`].join("\n")),
-          copyText: [`Marco's Calculator - Measurement Over Wires`, `Mode: Solve M from E`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`, `Measurement over wires M: ${fmt(measurement, 6)} ${units}`].join("\n")
+          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Mode: Solve M from E`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`, `Measurement over wires M: ${fmt(measurement, 6)} ${units}`].join("\n")
         });
       } else {
         const measurement = num(mowM.value);
@@ -1311,7 +1311,7 @@
             "If your wire differs from the best-wire recommendation, the result still uses the actual W you entered.",
             "Keep the units consistent all the way through the calculation."
           ]) + renderCodeCard("Formula snapshot", [`E = M - 3W + (sqrt(3)/2)P`, `E = ${fmt(pitchDiameter, 6)} ${units}`].join("\n")),
-          copyText: [`Marco's Calculator - Measurement Over Wires`, `Mode: Solve E from M`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Measurement M: ${fmt(measurement, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`].join("\n")
+          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Mode: Solve E from M`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Measurement M: ${fmt(measurement, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`].join("\n")
         });
       }
     });
@@ -1376,7 +1376,7 @@
           "Angles are measured from the +X axis; use 90 degrees to start on +Y.",
           "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet."
         ]) + renderCodeCard("Coordinate list", lines.join("\n")),
-        copyText: [`Marco's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, "", ...lines].join("\n")
+        copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, "", ...lines].join("\n")
       });
     });
     document.getElementById("btnBcClear").addEventListener("click", () => {
@@ -1438,7 +1438,7 @@
             "Slope is listed as rise divided by run.",
             "Use this mode when you already know the two offset legs."
           ],
-          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "hypAngle"){
         const hyp = num(rtHyp.value);
@@ -1460,7 +1460,7 @@
             "Angles must stay between 0 and 90 degrees for this right-triangle solver.",
             "The selected unit is carried through the answer cards and copied output."
           ],
-          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "runAngle"){
         const run = num(rtRun.value);
@@ -1482,7 +1482,7 @@
             "This is useful when the horizontal travel is fixed and you need the vertical offset.",
             "Press Enter after editing any field to solve immediately."
           ],
-          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else {
         const rise = num(rtRise.value);
@@ -1504,7 +1504,7 @@
             "Use this mode when the vertical offset is fixed and you need the horizontal reach.",
             "The selected unit is preserved in both the visible answer and the copied summary."
           ],
-          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       }
       setResult("triangle", { primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
