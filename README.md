@@ -93,7 +93,6 @@ This project is intentionally simple.
 ```text
 project-root/
 ├── index.html
-├── index - Original Copy.html
 └── README.md
 ```
 
