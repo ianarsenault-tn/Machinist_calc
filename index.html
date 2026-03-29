@@ -2,1137 +2,1567 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
-  <title>Machinist Calculators (Single-File)</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Marco's Calculator</title>
   <style>
-    /* =========================================================
-       THEME TOKENS (Light/Dark)
-       - Default follows OS preference.
-       - Can be overridden via [data-theme="light|dark"]
-       ========================================================= */
     :root{
-      /* Let the browser style built-in controls appropriately */
       color-scheme: light dark;
-
-      /* Typography scales with screen size */
-      --fs-0: clamp(12px, 1.2vw, 13px);
-      --fs-1: clamp(13px, 1.4vw, 14px);
-      --fs-2: clamp(14px, 1.6vw, 16px);
-      --fs-3: clamp(16px, 2.2vw, 20px);
-      --fs-4: clamp(18px, 2.6vw, 24px);
-
-      --radius: 14px;
-      --radius-sm: 10px;
-
-      --shadow: 0 2px 10px rgba(0,0,0,.06);
-
-      /* Spacing */
-      --pad-1: 10px;
-      --pad-2: 14px;
-      --pad-3: 18px;
-
-      /* Motion */
-      --focus-ring: 0 0 0 3px rgba(59,130,246,.18);
-
-      /* Light defaults */
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --panel-2: #f3f4f6;
-      --text: #0b1220;
-      --muted: #556070;
-      --border: #e5e7ef;
-      --border-2: #d8dbe6;
-      --brand: #111827;
-      --brand-2: #0f172a;
-
-      --btn: #f3f4f6;
-      --btn-text: #111827;
-      --btn-border: #d7dbe6;
-
-      --btn-primary: #111827;
-      --btn-primary-text: #ffffff;
-
-      --warn: #b91c1c;
-
-      --mono-bg: #0b1020;
-      --mono-text: #e5e7eb;
+      --font-body: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+      --font-heading: "Rockwell", "Aptos Display", "Segoe UI", serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --fs-0: clamp(0.76rem, 0.72rem + 0.2vw, 0.84rem);
+      --fs-1: clamp(0.88rem, 0.84rem + 0.3vw, 0.96rem);
+      --fs-2: clamp(1rem, 0.95rem + 0.45vw, 1.08rem);
+      --fs-3: clamp(1.15rem, 1.03rem + 0.8vw, 1.45rem);
+      --fs-4: clamp(1.8rem, 1.45rem + 1.4vw, 2.5rem);
+      --radius: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --bg: #eef3f7;
+      --bg-accent: #d9e4ec;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-strong: #ffffff;
+      --panel-muted: #f3f7fb;
+      --text: #0f1720;
+      --muted: #485769;
+      --border: rgba(15, 23, 32, 0.12);
+      --border-strong: rgba(15, 23, 32, 0.22);
+      --brand: #183446;
+      --brand-2: #0c1923;
+      --accent: #b95d1f;
+      --accent-soft: rgba(185, 93, 31, 0.14);
+      --accent-strong: #8f430e;
+      --warning: #b42318;
+      --shadow: 0 22px 55px rgba(17, 24, 39, 0.12);
+      --focus-ring: 0 0 0 3px rgba(185, 93, 31, 0.25);
+      --header-text-muted: rgba(255, 255, 255, 0.86);
+      --nav-surface: rgba(247, 250, 252, 0.9);
+      --grid-line: rgba(24, 52, 70, 0.06);
+      --body-glow: rgba(185, 93, 31, 0.14);
+      --header-height: 0px;
+      --nav-height: 0px;
     }
 
-    /* Dark defaults when OS is dark */
     @media (prefers-color-scheme: dark){
       :root{
-        --bg: #0b0f19;
-        --panel: #0f1525;
-        --panel-2: #111a2d;
-        --text: #e7eaf1;
-        --muted: #a5b0c2;
-        --border: #1f2a44;
-        --border-2: #2a3655;
-        --brand: #0b1020;
-        --brand-2: #0b1020;
-
-        --btn: #111a2d;
-        --btn-text: #e7eaf1;
-        --btn-border: #2a3655;
-
-        --btn-primary: #e7eaf1;
-        --btn-primary-text: #0b1020;
-
-        --warn: #ff6b6b;
-
-        --mono-bg: #070a12;
-        --mono-text: #e7eaf1;
-
-        --shadow: 0 2px 14px rgba(0,0,0,.35);
+        --bg: #08121a;
+        --bg-accent: #122433;
+        --panel: rgba(15, 24, 34, 0.94);
+        --panel-strong: #13202c;
+        --panel-muted: #0c1822;
+        --text: #eef4fb;
+        --muted: #b8c7d8;
+        --border: rgba(255, 255, 255, 0.1);
+        --border-strong: rgba(255, 255, 255, 0.18);
+        --brand: #0a1520;
+        --brand-2: #040a10;
+        --accent: #ff9f57;
+        --accent-soft: rgba(255, 159, 87, 0.18);
+        --accent-strong: #ffd2af;
+        --warning: #ff8b7c;
+        --shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+        --focus-ring: 0 0 0 3px rgba(255, 159, 87, 0.24);
+        --header-text-muted: rgba(233, 241, 248, 0.84);
+        --nav-surface: rgba(9, 17, 25, 0.9);
+        --grid-line: rgba(255, 255, 255, 0.05);
+        --body-glow: rgba(255, 159, 87, 0.12);
       }
     }
 
-    /* Manual override */
     [data-theme="light"]{
       color-scheme: light;
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --panel-2: #f3f4f6;
-      --text: #0b1220;
-      --muted: #556070;
-      --border: #e5e7ef;
-      --border-2: #d8dbe6;
-      --brand: #111827;
-      --brand-2: #0f172a;
-      --btn: #f3f4f6;
-      --btn-text: #111827;
-      --btn-border: #d7dbe6;
-      --btn-primary: #111827;
-      --btn-primary-text: #ffffff;
-      --warn: #b91c1c;
-      --mono-bg: #0b1020;
-      --mono-text: #e5e7eb;
-      --shadow: 0 2px 10px rgba(0,0,0,.06);
+      --bg: #eef3f7;
+      --bg-accent: #d9e4ec;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-strong: #ffffff;
+      --panel-muted: #f3f7fb;
+      --text: #0f1720;
+      --muted: #485769;
+      --border: rgba(15, 23, 32, 0.12);
+      --border-strong: rgba(15, 23, 32, 0.22);
+      --brand: #183446;
+      --brand-2: #0c1923;
+      --accent: #b95d1f;
+      --accent-soft: rgba(185, 93, 31, 0.14);
+      --accent-strong: #8f430e;
+      --warning: #b42318;
+      --shadow: 0 22px 55px rgba(17, 24, 39, 0.12);
+      --focus-ring: 0 0 0 3px rgba(185, 93, 31, 0.25);
+      --header-text-muted: rgba(255, 255, 255, 0.86);
+      --nav-surface: rgba(247, 250, 252, 0.9);
+      --grid-line: rgba(24, 52, 70, 0.06);
+      --body-glow: rgba(185, 93, 31, 0.14);
     }
     [data-theme="dark"]{
       color-scheme: dark;
-      --bg: #0b0f19;
-      --panel: #0f1525;
-      --panel-2: #111a2d;
-      --text: #e7eaf1;
-      --muted: #a5b0c2;
-      --border: #1f2a44;
-      --border-2: #2a3655;
-      --brand: #0b1020;
-      --brand-2: #0b1020;
-      --btn: #111a2d;
-      --btn-text: #e7eaf1;
-      --btn-border: #2a3655;
-      --btn-primary: #e7eaf1;
-      --btn-primary-text: #0b1020;
-      --warn: #ff6b6b;
-      --mono-bg: #070a12;
-      --mono-text: #e7eaf1;
-      --shadow: 0 2px 14px rgba(0,0,0,.35);
+      --bg: #08121a;
+      --bg-accent: #122433;
+      --panel: rgba(15, 24, 34, 0.94);
+      --panel-strong: #13202c;
+      --panel-muted: #0c1822;
+      --text: #eef4fb;
+      --muted: #b8c7d8;
+      --border: rgba(255, 255, 255, 0.1);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --brand: #0a1520;
+      --brand-2: #040a10;
+      --accent: #ff9f57;
+      --accent-soft: rgba(255, 159, 87, 0.18);
+      --accent-strong: #ffd2af;
+      --warning: #ff8b7c;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+      --focus-ring: 0 0 0 3px rgba(255, 159, 87, 0.24);
+      --header-text-muted: rgba(233, 241, 248, 0.84);
+      --nav-surface: rgba(9, 17, 25, 0.9);
+      --grid-line: rgba(255, 255, 255, 0.05);
+      --body-glow: rgba(255, 159, 87, 0.12);
     }
 
-    /* =========================================================
-       BASE LAYOUT
-       ========================================================= */
-    *{ box-sizing:border-box; }
-    html, body{ height:100%; }
+    *{ box-sizing: border-box; }
+    html{
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header-height) + var(--nav-height) + 20px);
+    }
     body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
       font-size: var(--fs-2);
-      line-height: 1.45;
+      line-height: 1.5;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, var(--body-glow), transparent 32%),
+        linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, var(--bg-accent)));
       -webkit-text-size-adjust: 100%;
     }
+    body::before{
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.5;
+    }
+    a{ color: inherit; }
+    button, input, select{ font: inherit; color: inherit; }
 
-    header{
+    .site-header{
       position: sticky;
-      top:0;
-      z-index: 50;
-      padding: 14px 14px;
-      background: linear-gradient(180deg, var(--brand), var(--brand-2));
-      color:#fff;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(10px);
+      top: 0;
+      z-index: 60;
+      padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px;
+      background: linear-gradient(135deg, rgba(47, 61, 68, 0.97), rgba(29, 38, 43, 0.96));
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
-
-    .headwrap{
-      max-width: 1120px;
+    .header-wrap{
+      max-width: 1220px;
       margin: 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
     }
-
-    header h1{
-      margin:0;
-      font-size: var(--fs-3);
-      font-weight: 800;
-      letter-spacing: .2px;
+    .brand-lockup{ min-width: 0; }
+    .brand-lockup h1{
+      margin: 0 0 6px;
+      font-family: var(--font-heading);
+      font-size: var(--fs-4);
+      line-height: 1.05;
     }
-    header p{
-      margin: 4px 0 0;
+    .brand-lockup p{
+      margin: 0;
+      max-width: 700px;
       font-size: var(--fs-1);
-      opacity: .86;
+      color: var(--header-text-muted);
     }
-    .headleft{
-      min-width: 0;
-    }
-
     .toolbar{
-      display:flex;
-      gap:10px;
-      align-items:center;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
       flex-wrap: wrap;
-      justify-content:flex-end;
     }
+    .toolbar-note{ font-size: var(--fs-0); color: var(--header-text-muted); }
 
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
+    .toggle-btn,
+    .nav-link,
+    .tool-toggle,
+    .action-btn,
+    .copy-btn{
+      appearance: none;
+      border: 1px solid transparent;
+      outline: none;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+    }
+    .toggle-btn{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.08);
-      color:#fff;
-      cursor:pointer;
-      user-select:none;
-      font-weight:800;
-      font-size: var(--fs-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
+      color: #fff;
+      font-weight: 700;
+      min-height: 46px;
+    }
+    .toggle-btn:hover,
+    .nav-link:hover,
+    .tool-toggle:hover,
+    .action-btn:hover,
+    .copy-btn:hover{ transform: translateY(-1px); }
+    .toggle-btn:focus-visible,
+    .nav-link:focus-visible,
+    .tool-toggle:focus-visible,
+    .action-btn:focus-visible,
+    .copy-btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible{ box-shadow: var(--focus-ring); }
+
+    .section-nav{
+      position: sticky;
+      top: calc(var(--header-height) - 1px);
+      z-index: 55;
+      padding: 12px 16px;
+      background: var(--nav-surface);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .section-nav-wrap{
+      max-width: 1220px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .nav-link{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       white-space: nowrap;
-    }
-    .toggle:active{ transform: translateY(1px); }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding: 2px 10px;
+      text-decoration: none;
+      padding: 10px 14px;
       border-radius: 999px;
-      font-size: var(--fs-0);
-      background: rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.18);
-      color:#fff;
-      font-weight:800;
-      margin-left: 8px;
+      border-color: var(--border);
+      background: rgba(255,255,255,0.55);
+      color: var(--muted);
+      font-size: var(--fs-1);
+      font-weight: 700;
+      min-height: 44px;
+    }
+    [data-theme="dark"] .nav-link{ background: rgba(255,255,255,0.03); }
+    .nav-link.active{
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+      color: var(--accent-strong);
     }
 
-    main{
-      max-width: 1120px;
-      margin: 16px auto;
-      padding: 0 14px 34px;
+    .app-shell{
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 24px 16px 42px;
     }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
+    .desktop-grid{
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 20px;
     }
-
-    .card{
+    .tool-card{
+      grid-column: span 12;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: var(--pad-2);
       overflow: hidden;
+      scroll-margin-top: calc(var(--header-height) + var(--nav-height) + 18px);
     }
+    .tool-card[data-tool="thread"],
+    .tool-card[data-tool="mow"]{ grid-column: span 6; }
+    .tool-card[data-tool="bolt"]{ grid-column: span 7; }
+    .tool-card[data-tool="triangle"]{ grid-column: span 5; }
 
-    .card h2{
-      margin: 0 0 8px;
-      font-size: clamp(15px, 1.8vw, 18px);
-      font-weight: 900;
+    .tool-toggle{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px 20px;
+      text-align: left;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+      border: none;
+      border-bottom: 1px solid var(--border);
     }
-
-    .muted{
+    .tool-title strong{
+      display: block;
+      font-family: var(--font-heading);
+      font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.6rem);
+    }
+    .tool-title span{
+      display: block;
+      margin-top: 5px;
       color: var(--muted);
       font-size: var(--fs-1);
     }
-
-    /* Mobile: one-column inputs always.
-       Desktop: 2-column rows when space permits. */
-    .row, .row3{
-      display:grid;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .row{ grid-template-columns: 1fr; }
-    .row3{ grid-template-columns: 1fr; }
-
-    @media (min-width: 860px){
-      .row{ grid-template-columns: 1fr 1fr; }
-      .row3{ grid-template-columns: 1fr 1fr 1fr; }
-    }
-
-    label{
-      display:block;
+    .tool-pill{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
       font-size: var(--fs-0);
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 900;
-      letter-spacing: .15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      flex-shrink: 0;
     }
-
-    input, select, button, textarea{
-      width:100%;
-      padding: 12px 12px;
-      border: 1px solid var(--border-2);
+    .tool-body{ padding: 0 24px 24px; }
+    .tool-form{
+      display: grid;
+      gap: 22px;
+      padding-top: 22px;
+    }
+    .field-group,
+    .result-details{ display: grid; gap: 14px; }
+    .field-grid{
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+    .field-grid.two{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .field-grid.three{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .span-2{ grid-column: span 2; }
+    .field{ display: grid; gap: 7px; min-width: 0; }
+    .field label{
+      font-size: var(--fs-0);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hint{ font-size: var(--fs-0); color: var(--muted); }
+    input,
+    select{
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
       border-radius: var(--radius-sm);
-      font-size: var(--fs-2);
-      outline:none;
-      background: var(--panel);
-      color: var(--text);
-      min-height: 46px; /* tap-friendly */
+      border: 1px solid var(--border-strong);
+      background: var(--panel-strong);
+      outline: none;
     }
+    input::placeholder{ color: color-mix(in srgb, var(--muted) 76%, transparent); }
 
-    textarea{ min-height: 110px; resize: vertical; }
-
-    input:focus, select:focus, textarea:focus{
-      border-color: #60a5fa;
-      box-shadow: var(--focus-ring);
-    }
-
-    /* Prevent iOS Safari zoom on focus by ensuring >=16px */
-    @supports (-webkit-touch-callout: none){
-      input, select, button, textarea{ font-size: 16px; }
-      label{ font-size: 13px; }
-    }
-
-    .actions{
-      display:flex;
-      gap: 10px;
-      margin-top: 10px;
+    .action-row{
+      display: flex;
       flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
-    .actions > button{
-      flex: 1 1 220px; /* buttons become a nice grid on mobile */
+    .action-btn{
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border-color: var(--border-strong);
+      background: var(--panel-muted);
+      font-weight: 800;
+      color: var(--text);
     }
-
-    button{
-      cursor:pointer;
-      font-weight: 900;
-      border: 1px solid var(--btn-border);
-      background: var(--btn);
-      color: var(--btn-text);
+    .action-btn.primary{
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #6f3d1e));
+      border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+      color: #fff8f0;
+      box-shadow: 0 12px 24px rgba(198, 107, 45, 0.24);
     }
-    button.primary{
-      background: var(--btn-primary);
-      border-color: var(--btn-primary);
-      color: var(--btn-primary-text);
-    }
-    button:active{ transform: translateY(1px); }
-
-    .out{
-      background: var(--mono-bg);
-      color: var(--mono-text);
-      border-radius: var(--radius);
-      padding: 12px;
-      margin-top: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 13px;
-      line-height: 1.35;
-      white-space: pre-wrap;
-      overflow-x: auto; /* mobile-friendly */
-    }
-
-    .warn{
-      color: var(--warn);
-      font-weight: 1000;
-      margin-top: 8px;
+    .action-btn.secondary{ background: transparent; color: var(--muted); }
+    .warning{
+      display: none;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--border));
+      background: color-mix(in srgb, var(--warning) 10%, var(--panel-strong));
+      color: var(--warning);
       font-size: var(--fs-1);
+      font-weight: 700;
     }
+    .warning.show{ display: block; }
 
-    .small{
+    .result-shell{
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: calc(var(--radius) - 6px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0)), var(--panel-muted);
+      border: 1px solid var(--border);
+    }
+    .result-head{
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .result-label{
+      font-size: var(--fs-0);
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .result-primary{
+      margin-top: 6px;
+      font-size: clamp(1.25rem, 1.08rem + 0.9vw, 1.9rem);
+      line-height: 1.15;
+      font-weight: 900;
+      color: var(--accent-strong);
+      font-family: var(--font-heading);
+    }
+    .copy-btn{
+      flex-shrink: 0;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border-color: var(--border-strong);
+      background: var(--panel-strong);
+      font-size: var(--fs-1);
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .copy-btn[hidden]{ display: none; }
+    .result-stats{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+    }
+    .stat-card{
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-strong);
+    }
+    .stat-card span{
+      display: block;
       font-size: var(--fs-0);
       color: var(--muted);
-      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-card strong{ display: block; margin-top: 5px; font-size: var(--fs-2); line-height: 1.2; }
+    .detail-list{ margin: 0; padding-left: 18px; color: var(--muted); font-size: var(--fs-1); }
+    .detail-list li + li{ margin-top: 8px; }
+    .detail-card{
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-strong);
+      padding: 12px 14px;
+    }
+    .detail-card strong{
+      display: block;
+      font-size: var(--fs-0);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .detail-card pre{
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+    .detail-card code{ font-family: var(--font-mono); font-size: 0.9em; }
+    .field-inline-note{ font-size: var(--fs-0); color: var(--accent-strong); min-height: 1.3em; }
+
+    @supports (-webkit-touch-callout: none){
+      input,
+      select,
+      button{ font-size: 16px; }
     }
 
-    /* Column spans */
-    .col-12{ grid-column: span 12; }
-    .col-6{ grid-column: span 12; }
-    .col-7{ grid-column: span 12; }
-    .col-5{ grid-column: span 12; }
-
-    @media (min-width: 980px){
-      .col-6{ grid-column: span 6; }
-      .col-7{ grid-column: span 7; }
-      .col-5{ grid-column: span 5; }
+    @media (max-width: 1060px){
+      .tool-card[data-tool="thread"],
+      .tool-card[data-tool="mow"],
+      .tool-card[data-tool="bolt"],
+      .tool-card[data-tool="triangle"]{ grid-column: span 12; }
     }
-
-    /* Slightly tighter header on very small screens */
-    @media (max-width: 420px){
-      header{ padding: 12px 12px; }
-      .toggle{ padding: 7px 9px; }
-      .pill{ display:none; }
+    @media (max-width: 860px){
+      .header-wrap{ flex-direction: column; align-items: stretch; }
+      .toolbar{ justify-content: space-between; }
+      .field-grid.two,
+      .field-grid.three{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .span-2{ grid-column: auto; }
+      .tool-toggle{ padding: 18px 18px 16px; }
+      .tool-body{ padding: 0 18px 18px; }
+      .tool-card:not(.open) .tool-body{ display: none; }
+      .tool-card .tool-pill::after{ content: " open"; opacity: 0.72; }
+      .tool-card.open .tool-pill::after{ content: " close"; }
+    }
+    @media (max-width: 520px){
+      .site-header,
+      .section-nav,
+      .app-shell{ padding-left: 14px; padding-right: 14px; }
+      .action-row{ display: grid; grid-template-columns: 1fr; }
+      .copy-btn{ width: 100%; }
+      .result-head{ flex-direction: column; }
     }
   </style>
 </head>
-
 <body>
-<header>
-  <div class="headwrap">
-    <div class="headleft">
-      <h1>Machinist Calculators <span class="pill">single HTML</span></h1>
-      <p>Threads, tap drill, measurement over wires (60°), bolt circle, right-triangle offsets.</p>
+  <header class="site-header" id="siteHeader">
+    <div class="header-wrap">
+      <div class="brand-lockup">
+        <h1>Marco's Calculator</h1>
+        <p>Shop math for threads, bolt circles, and setup work.</p>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-note">Built for quick answers on the bench or at the machine.</div>
+        <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme">Theme: <span id="themeLabel">Auto</span></button>
+      </div>
     </div>
+  </header>
 
-    <div class="toolbar">
-      <button class="toggle" id="themeToggle" type="button" aria-label="Toggle theme">
-        Theme: <span id="themeLabel">Auto</span>
-      </button>
+  <nav class="section-nav" id="sectionNav" aria-label="Calculator sections">
+    <div class="section-nav-wrap">
+      <a class="nav-link active" href="#tool-thread" data-tool-link="thread">Thread &amp; Tap Drill</a>
+      <a class="nav-link" href="#tool-mow" data-tool-link="mow">Over Wires</a>
+      <a class="nav-link" href="#tool-bolt" data-tool-link="bolt">Bolt Circle</a>
+      <a class="nav-link" href="#tool-triangle" data-tool-link="triangle">Offset Solver</a>
     </div>
-  </div>
-</header>
+  </nav>
 
-<main>
-  <div class="grid">
+  <main class="app-shell">
+    <div class="desktop-grid">
+      <section class="tool-card open" id="tool-thread" data-tool="thread">
+        <button class="tool-toggle" type="button" data-tool-toggle="thread" aria-expanded="true">
+          <div class="tool-title">
+            <strong>Thread Spec Helper + Tap Drill</strong>
+            <span>Use a quick thread spec or enter major diameter and pitch details manually.</span>
+          </div>
+          <span class="tool-pill">Threads</span>
+        </button>
+        <div class="tool-body">
+          <form class="tool-form" id="threadForm">
+            <div class="field-grid two">
+              <div class="field span-2">
+                <label for="threadQuickSpec">Quick thread spec</label>
+                <input id="threadQuickSpec" type="text" placeholder="Try 1/4-20, 3/8-16, M8x1.25, or M60x2" autocomplete="off" />
+                <div class="hint">If a quick spec is present, it is parsed automatically when you calculate.</div>
+                <div class="field-inline-note" id="threadQuickNote" aria-live="polite"></div>
+              </div>
+              <div class="field">
+                <label for="threadSystem">Thread system</label>
+                <select id="threadSystem">
+                  <option value="un">Unified (UNC/UNF/UNEF)</option>
+                  <option value="metric">ISO Metric (M)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="tapDrillPercent">Percent thread</label>
+                <select id="tapDrillPercent">
+                  <option value="60">60% (easy tapping)</option>
+                  <option value="65">65% (common)</option>
+                  <option value="70" selected>70% (common)</option>
+                  <option value="75">75% (tight)</option>
+                </select>
+              </div>
+            </div>
 
-    <!-- THREAD SPEC + TAP DRILL -->
-    <section class="card col-6">
-      <h2>Thread Spec Helper + Tap Drill</h2>
-      <div class="muted">
-        Enter a thread and get pitch, recommended tap drill (rule-of-thumb), and quick reference.
-      </div>
+            <div class="field-grid two" id="threadUnifiedFields">
+              <div class="field">
+                <label for="unMajorIn">Major diameter (in)</label>
+                <input id="unMajorIn" type="number" step="0.0001" placeholder="0.250 for 1/4-20" />
+              </div>
+              <div class="field">
+                <label for="unTPI">TPI</label>
+                <input id="unTPI" type="number" step="1" placeholder="20" />
+              </div>
+            </div>
 
-      <div class="row">
-        <div>
-          <label for="threadSystem">Thread system</label>
-          <select id="threadSystem">
-            <option value="un">Unified (UNC/UNF/UNEF)</option>
-            <option value="metric">ISO Metric (M)</option>
-          </select>
+            <div class="field-grid two" id="threadMetricFields" hidden>
+              <div class="field">
+                <label for="mMajorMm">Major diameter (mm)</label>
+                <input id="mMajorMm" type="number" step="0.001" placeholder="8 for M8x1.25" />
+              </div>
+              <div class="field">
+                <label for="mPitchMm">Pitch (mm)</label>
+                <input id="mPitchMm" type="number" step="0.001" placeholder="1.25" />
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Calculate</button>
+              <button class="action-btn secondary" id="btnThreadClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="threadWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="threadPrimary">Tap drill and pitch details will show here.</div>
+                </div>
+                <button class="copy-btn" id="threadCopy" type="button" hidden>Copy result</button>
+              </div>
+              <div class="result-stats" id="threadStats"></div>
+              <div class="result-details" id="threadDetails"></div>
+            </div>
+          </form>
         </div>
-        <div>
-          <label for="tapDrillPercent">Percent thread (tap drill)</label>
-          <select id="tapDrillPercent">
-            <option value="60">60% (easy tapping)</option>
-            <option value="65">65% (common)</option>
-            <option value="70" selected>70% (common)</option>
-            <option value="75">75% (tighter)</option>
-          </select>
+      </section>
+
+      <section class="tool-card open" id="tool-mow" data-tool="mow">
+        <button class="tool-toggle" type="button" data-tool-toggle="mow" aria-expanded="true">
+          <div class="tool-title">
+            <strong>Measurement Over Wires (60&deg; Threads)</strong>
+            <span>Swap between solving pitch diameter from a mic reading or the other way around.</span>
+          </div>
+          <span class="tool-pill">Wires</span>
+        </button>
+        <div class="tool-body">
+          <form class="tool-form" id="mowForm">
+            <div class="field-grid two">
+              <div class="field">
+                <label for="mowUnits">Units</label>
+                <select id="mowUnits">
+                  <option value="in">Inches</option>
+                  <option value="mm" selected>Millimeters</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="mowMode">Solve mode</label>
+                <select id="mowMode">
+                  <option value="solveM" selected>Solve M from pitch diameter E</option>
+                  <option value="solveE">Solve E from measurement M</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="mowPreset">Quick fill</label>
+                <select id="mowPreset">
+                  <option value="">(none)</option>
+                  <option value="M60x2">M60x2</option>
+                </select>
+                <div class="hint" id="mowPresetNote"></div>
+              </div>
+              <div class="field">
+                <label for="mowWireSet">Wire set for best-wire snap</label>
+                <select id="mowWireSet">
+                  <option value="auto" selected>Auto</option>
+                  <option value="inch">Inch wire set</option>
+                  <option value="metric">Metric wire set</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-grid two">
+              <div class="field">
+                <label id="mowPitchLabel" for="mowPitchInput">Pitch input</label>
+                <input id="mowPitchInput" type="number" step="0.0001" />
+                <div class="hint" id="mowPitchHint"></div>
+              </div>
+              <div class="field">
+                <label for="mowWire">Wire diameter (W)</label>
+                <input id="mowWire" type="number" step="0.0001" placeholder="Wire size in selected units" />
+                <div class="hint">Theoretical best wire: W = P / sqrt(3).</div>
+              </div>
+            </div>
+
+            <div class="field-grid two">
+              <div class="field">
+                <label for="mowE">Pitch diameter (E)</label>
+                <input id="mowE" type="number" step="0.0001" placeholder="Enter E to compute M" />
+              </div>
+              <div class="field">
+                <label for="mowM">Measurement over wires (M)</label>
+                <input id="mowM" type="number" step="0.0001" placeholder="Computed M appears here" />
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Calculate</button>
+              <button class="action-btn" id="btnMowSuggest" type="button">Suggest best wire</button>
+              <button class="action-btn secondary" id="btnMowClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="mowWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="mowPrimary">Measurement-over-wires output will show here.</div>
+                </div>
+                <button class="copy-btn" id="mowCopy" type="button" hidden>Copy result</button>
+              </div>
+              <div class="result-stats" id="mowStats"></div>
+              <div class="result-details" id="mowDetails"></div>
+            </div>
+          </form>
         </div>
-      </div>
+      </section>
 
-      <div id="unFields" class="row">
-        <div>
-          <label for="unMajorIn">Major diameter (in)</label>
-          <input id="unMajorIn" type="number" step="0.0001" placeholder='Example: 0.250 for 1/4-20' />
+      <section class="tool-card open" id="tool-bolt" data-tool="bolt">
+        <button class="tool-toggle" type="button" data-tool-toggle="bolt" aria-expanded="true">
+          <div class="tool-title">
+            <strong>Bolt Circle Coordinates</strong>
+            <span>Generate evenly spaced XY coordinates and copy the full coordinate list in one click.</span>
+          </div>
+          <span class="tool-pill">Bolt</span>
+        </button>
+        <div class="tool-body">
+          <form class="tool-form" id="boltForm">
+            <div class="field-grid three">
+              <div class="field">
+                <label for="bcUnits">Units</label>
+                <select id="bcUnits">
+                  <option value="in">Inches</option>
+                  <option value="mm" selected>Millimeters</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="bcDia">Bolt circle diameter</label>
+                <input id="bcDia" type="number" step="0.0001" placeholder="100" />
+              </div>
+              <div class="field">
+                <label for="bcHoles">Number of holes</label>
+                <input id="bcHoles" type="number" step="1" min="1" placeholder="6" />
+              </div>
+            </div>
+
+            <div class="field-grid two">
+              <div class="field">
+                <label for="bcStartAngle">Start angle (deg)</label>
+                <input id="bcStartAngle" type="number" step="0.01" value="0" />
+                <div class="hint">0&deg; starts at +X. Use 90&deg; to start on +Y.</div>
+              </div>
+              <div class="field">
+                <label for="bcClockwise">Direction</label>
+                <select id="bcClockwise">
+                  <option value="ccw" selected>Counter-clockwise (CCW)</option>
+                  <option value="cw">Clockwise (CW)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Generate coordinates</button>
+              <button class="action-btn secondary" id="btnBcClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="bcWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="bcPrimary">Coordinates will appear here when you generate them.</div>
+                </div>
+                <button class="copy-btn" id="bcCopy" type="button" hidden>Copy coordinates</button>
+              </div>
+              <div class="result-stats" id="bcStats"></div>
+              <div class="result-details" id="bcDetails"></div>
+            </div>
+          </form>
         </div>
-        <div>
-          <label for="unTPI">TPI</label>
-          <input id="unTPI" type="number" step="1" placeholder="Example: 20" />
+      </section>
+
+      <section class="tool-card open" id="tool-triangle" data-tool="triangle">
+        <button class="tool-toggle" type="button" data-tool-toggle="triangle" aria-expanded="true">
+          <div class="tool-title">
+            <strong>Right-Triangle / Offset Solver</strong>
+            <span>Switch modes depending on which side or angle you already know.</span>
+          </div>
+          <span class="tool-pill">Offsets</span>
+        </button>
+        <div class="tool-body">
+          <form class="tool-form" id="triangleForm">
+            <div class="field-grid two">
+              <div class="field">
+                <label for="rtUnits">Units</label>
+                <select id="rtUnits">
+                  <option value="in">Inches</option>
+                  <option value="mm" selected>Millimeters</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="rtMode">Solve mode</label>
+                <select id="rtMode">
+                  <option value="runRise" selected>Given run and rise</option>
+                  <option value="hypAngle">Given hypotenuse and angle</option>
+                  <option value="runAngle">Given run and angle</option>
+                  <option value="riseAngle">Given rise and angle</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-grid two" id="rtRow1">
+              <div class="field">
+                <label for="rtRun">Run (X)</label>
+                <input id="rtRun" type="number" step="0.0001" placeholder="Enter run" />
+              </div>
+              <div class="field">
+                <label for="rtRise">Rise (Y)</label>
+                <input id="rtRise" type="number" step="0.0001" placeholder="Enter rise" />
+              </div>
+            </div>
+
+            <div class="field-grid two" id="rtRow2" hidden>
+              <div class="field">
+                <label for="rtHyp">Hypotenuse</label>
+                <input id="rtHyp" type="number" step="0.0001" placeholder="Enter hypotenuse" />
+              </div>
+              <div class="field">
+                <label for="rtAngle">Angle (deg)</label>
+                <input id="rtAngle" type="number" step="0.01" placeholder="Enter angle" />
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Solve triangle</button>
+              <button class="action-btn secondary" id="btnRtClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="rtWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="rtPrimary">Solved offsets and angle details will show here.</div>
+                </div>
+                <button class="copy-btn" id="rtCopy" type="button" hidden>Copy result</button>
+              </div>
+              <div class="result-stats" id="rtStats"></div>
+              <div class="result-details" id="rtDetails"></div>
+            </div>
+          </form>
         </div>
-      </div>
+      </section>
+    </div>
+  </main>
 
-      <div id="metricFields" class="row" style="display:none;">
-        <div>
-          <label for="mMajorMm">Major diameter (mm)</label>
-          <input id="mMajorMm" type="number" step="0.001" placeholder="Example: 60 for M60×2" />
-        </div>
-        <div>
-          <label for="mPitchMm">Pitch (mm)</label>
-          <input id="mPitchMm" type="number" step="0.001" placeholder="Example: 2 for M60×2" />
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="btnThreadCalc" type="button">Calculate</button>
-        <button id="btnThreadClear" type="button">Clear</button>
-      </div>
-
-      <div id="threadWarn" class="warn" style="display:none;"></div>
-      <div class="out" id="threadOut">Waiting for input…</div>
-
-      <div class="small">
-        Tap drill formulas are practical rules of thumb:
-        <br>- Unified (inch): Drill ≈ Major − (Percent/100)/TPI
-        <br>- Metric: Drill ≈ Major − (Percent/100)·Pitch
-      </div>
-    </section>
-
-    <!-- MEASUREMENT OVER WIRES -->
-    <section class="card col-6">
-      <h2>Measurement Over Wires (60° Threads)</h2>
-      <div class="muted">
-        <b>M</b> is the micrometer reading across the three wires. If you don’t know M, set Mode to
-        <b>“Solve M from Pitch Diameter (E)”</b> and enter E.
-        <br>Formula: <b>M = E + 3W − (√3/2)·P</b> and <b>E = M − 3W + (√3/2)·P</b>.
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="mowUnits">Units</label>
-          <select id="mowUnits">
-            <option value="in">Inches</option>
-            <option value="mm" selected>Millimeters</option>
-          </select>
-        </div>
-        <div>
-          <label for="mowMode">Mode (choose what you know)</label>
-          <select id="mowMode">
-            <option value="solveM" selected>Solve Measurement over Wires (M) from Pitch Diameter (E)</option>
-            <option value="solveE">Solve Pitch Diameter (E) from Measurement over Wires (M)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="mowPreset">Quick fill</label>
-          <select id="mowPreset">
-            <option value="">(none)</option>
-            <option value="M60x2">M60×2 (auto-fill P, best wire W, and E_basic)</option>
-          </select>
-          <div id="mowPresetNote" class="small"></div>
-        </div>
-        <div>
-          <label for="mowWireSet">Wire set (for snapping best wire)</label>
-          <select id="mowWireSet">
-            <option value="auto" selected>Auto (inch set for in, metric set for mm)</option>
-            <option value="inch">Inch wire set</option>
-            <option value="metric">Metric wire set</option>
-          </select>
-          <div class="small">Used when snapping “best wire” to closest available size.</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label id="mowPitchLabel" for="mowPitchInput">Pitch input</label>
-          <input id="mowPitchInput" type="number" step="0.0001" />
-          <div class="small" id="mowPitchHint"></div>
-        </div>
-        <div>
-          <label for="mowWire">Wire diameter (W)</label>
-          <input id="mowWire" type="number" step="0.0001" placeholder="Wire diameter in chosen units" />
-          <div class="small">Best wire (theoretical): W ≈ P/√3 ≈ 0.57735·P</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="mowE">Pitch diameter (E) (usually from spec/target)</label>
-          <input id="mowE" type="number" step="0.0001" placeholder="Enter E to compute M" />
-          <div class="small">If you don’t know E, you can use a “basic” estimate, but tolerances are not applied.</div>
-        </div>
-        <div>
-          <label for="mowM">Measurement over wires (M) (mic reading across wires)</label>
-          <input id="mowM" type="number" step="0.0001" placeholder="Computed M will appear here" />
-          <div class="small">This is the value you would measure with a mic over the three wires.</div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="btnMowCalc" type="button">Calculate</button>
-        <button id="btnMowSuggest" type="button">Suggest Best Wire (snap)</button>
-        <button id="btnMowClear" type="button">Clear</button>
-      </div>
-
-      <div id="mowWarn" class="warn" style="display:none;"></div>
-      <div class="out" id="mowOut">Waiting for input…</div>
-    </section>
-
-    <!-- BOLT CIRCLE -->
-    <section class="card col-7">
-      <h2>Bolt Circle Coordinates</h2>
-      <div class="muted">Generate XY coordinates for evenly spaced holes on a bolt circle.</div>
-
-      <div class="row3">
-        <div>
-          <label for="bcUnits">Units</label>
-          <select id="bcUnits">
-            <option value="in">Inches</option>
-            <option value="mm" selected>Millimeters</option>
-          </select>
-        </div>
-        <div>
-          <label for="bcDia">Bolt circle diameter (BCD)</label>
-          <input id="bcDia" type="number" step="0.0001" placeholder="Example: 100" />
-        </div>
-        <div>
-          <label for="bcHoles">Number of holes</label>
-          <input id="bcHoles" type="number" step="1" min="1" placeholder="Example: 6" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label for="bcStartAngle">Start angle (deg)</label>
-          <input id="bcStartAngle" type="number" step="0.01" value="0" />
-          <div class="small">0° starts at +X axis. Use 90° to start at +Y.</div>
-        </div>
-        <div>
-          <label for="bcClockwise">Direction</label>
-          <select id="bcClockwise">
-            <option value="ccw" selected>Counter-clockwise (CCW)</option>
-            <option value="cw">Clockwise (CW)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="btnBcCalc" type="button">Generate</button>
-        <button id="btnBcClear" type="button">Clear</button>
-      </div>
-
-      <div id="bcWarn" class="warn" style="display:none;"></div>
-      <div class="out" id="bcOut">Waiting for input…</div>
-    </section>
-
-    <!-- RIGHT TRIANGLE SOLVER -->
-    <section class="card col-5">
-      <h2>Right-Triangle / Offset Solver</h2>
-      <div class="muted">Solve offsets using rise/run, hypotenuse, or angle.</div>
-
-      <div class="row">
-        <div>
-          <label for="rtUnits">Units</label>
-          <select id="rtUnits">
-            <option value="in">Inches</option>
-            <option value="mm" selected>Millimeters</option>
-          </select>
-        </div>
-        <div>
-          <label for="rtMode">Solve mode</label>
-          <select id="rtMode">
-            <option value="runRise" selected>Given run & rise → angle & hyp</option>
-            <option value="hypAngle">Given hyp & angle → run & rise</option>
-            <option value="runAngle">Given run & angle → rise & hyp</option>
-            <option value="riseAngle">Given rise & angle → run & hyp</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row" id="rtRow1">
-        <div>
-          <label for="rtRun">Run (X)</label>
-          <input id="rtRun" type="number" step="0.0001" placeholder="Enter run" />
-        </div>
-        <div>
-          <label for="rtRise">Rise (Y)</label>
-          <input id="rtRise" type="number" step="0.0001" placeholder="Enter rise" />
-        </div>
-      </div>
-
-      <div class="row" id="rtRow2" style="display:none;">
-        <div>
-          <label for="rtHyp">Hypotenuse</label>
-          <input id="rtHyp" type="number" step="0.0001" placeholder="Enter hyp" />
-        </div>
-        <div>
-          <label for="rtAngle">Angle (deg)</label>
-          <input id="rtAngle" type="number" step="0.01" placeholder="Enter angle" />
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" id="btnRtCalc" type="button">Calculate</button>
-        <button id="btnRtClear" type="button">Clear</button>
-      </div>
-
-      <div id="rtWarn" class="warn" style="display:none;"></div>
-      <div class="out" id="rtOut">Waiting for input…</div>
-    </section>
-
-  </div>
-</main>
-
-<script>
-  // =========================================================
-  // Theme toggle (Auto / Light / Dark) with persistence
-  // =========================================================
-  (function initTheme(){
-    const key = "mc_theme_mode"; // auto|light|dark
-    const btn = document.getElementById("themeToggle");
-    const label = document.getElementById("themeLabel");
-
-    function apply(mode){
-      // mode: auto|light|dark
-      document.documentElement.removeAttribute("data-theme");
-      if (mode === "light" || mode === "dark"){
-        document.documentElement.setAttribute("data-theme", mode);
+  <script>
+    (function initTheme(){
+      const key = "marcos_calc_theme_mode";
+      const btn = document.getElementById("themeToggle");
+      const label = document.getElementById("themeLabel");
+      function applyTheme(mode){
+        document.documentElement.removeAttribute("data-theme");
+        if (mode === "light" || mode === "dark") document.documentElement.setAttribute("data-theme", mode);
+        label.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
       }
-      label.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+      function nextTheme(current){
+        if (current === "auto") return "light";
+        if (current === "light") return "dark";
+        return "auto";
+      }
+      let themeMode = localStorage.getItem(key) || "auto";
+      applyTheme(themeMode);
+      btn.addEventListener("click", () => {
+        themeMode = nextTheme(themeMode);
+        localStorage.setItem(key, themeMode);
+        applyTheme(themeMode);
+      });
+    })();
+
+    const SQRT3 = Math.sqrt(3);
+    const SQRT3_OVER_2 = SQRT3 / 2;
+    const mobileAccordion = window.matchMedia("(max-width: 860px)");
+    const toolCards = Array.from(document.querySelectorAll(".tool-card"));
+    const navLinks = Array.from(document.querySelectorAll("[data-tool-link]"));
+    const copyButtons = Array.from(document.querySelectorAll(".copy-btn"));
+    const results = {
+      thread: { primary: document.getElementById("threadPrimary"), stats: document.getElementById("threadStats"), details: document.getElementById("threadDetails"), copy: document.getElementById("threadCopy") },
+      mow: { primary: document.getElementById("mowPrimary"), stats: document.getElementById("mowStats"), details: document.getElementById("mowDetails"), copy: document.getElementById("mowCopy") },
+      bolt: { primary: document.getElementById("bcPrimary"), stats: document.getElementById("bcStats"), details: document.getElementById("bcDetails"), copy: document.getElementById("bcCopy") },
+      triangle: { primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") }
+    };
+
+    function escapeHtml(value){
+      return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
     }
-
-    function nextMode(current){
-      if (current === "auto") return "light";
-      if (current === "light") return "dark";
-      return "auto";
+    function showWarn(element, message){
+      element.textContent = message || "";
+      element.classList.toggle("show", Boolean(message));
     }
-
-    let mode = localStorage.getItem(key) || "auto";
-    apply(mode);
-
-    btn.addEventListener("click", () => {
-      mode = nextMode(mode);
-      localStorage.setItem(key, mode);
-      apply(mode);
+    function num(value){
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : NaN;
+    }
+    function fmt(value, places){
+      if (!Number.isFinite(value)) return "—";
+      const digits = Math.max(0, Math.min(12, places));
+      return Number(value).toFixed(digits).replace(/\.?0+$/, "");
+    }
+    function degToRad(value){ return value * Math.PI / 180; }
+    function radToDeg(value){ return value * 180 / Math.PI; }
+    function unitLabel(units){ return units === "in" ? "in" : "mm"; }
+    function renderStats(items){
+      if (!items || !items.length) return "";
+      return items.map((item) => `<div class="stat-card"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong></div>`).join("");
+    }
+    function renderList(items){
+      return `<ul class="detail-list">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+    }
+    function renderCodeCard(title, body){
+      return `<div class="detail-card"><strong>${escapeHtml(title)}</strong><pre>${escapeHtml(body)}</pre></div>`;
+    }
+    function setResult(toolName, config){
+      const target = results[toolName];
+      target.primary.textContent = config.primary;
+      target.stats.innerHTML = renderStats(config.stats || []);
+      target.details.innerHTML = config.detailsHtml || "";
+      if (config.copyText){
+        target.copy.hidden = false;
+        target.copy.dataset.copyText = config.copyText;
+      } else {
+        target.copy.hidden = true;
+        target.copy.dataset.copyText = "";
+      }
+    }
+    async function writeClipboard(text){
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "absolute";
+      helper.style.left = "-9999px";
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      document.body.removeChild(helper);
+    }
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const original = button.textContent;
+        const text = button.dataset.copyText || "";
+        if (!text) return;
+        try {
+          await writeClipboard(text);
+          button.textContent = "Copied";
+          window.setTimeout(() => { button.textContent = original; }, 1400);
+        } catch {
+          button.textContent = "Copy failed";
+          window.setTimeout(() => { button.textContent = original; }, 1600);
+        }
+      });
     });
-  })();
 
-  // ----------------------------
-  // Utilities
-  // ----------------------------
-  const SQRT3_OVER_2 = Math.sqrt(3) / 2;
-
-  function showWarn(el, msg){
-    el.style.display = msg ? "block" : "none";
-    el.textContent = msg || "";
-  }
-
-  function num(v){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : NaN;
-  }
-
-  function fmt(n, places=6){
-    if (!Number.isFinite(n)) return "—";
-    const p = Math.max(0, Math.min(12, places));
-    return Number(n).toFixed(p).replace(/\.?0+$/,'');
-  }
-
-  function degToRad(d){ return d * Math.PI / 180; }
-  function radToDeg(r){ return r * 180 / Math.PI; }
-
-  // Wire sets for snapping
-  const WIRE_SET_INCH = [
-    0.010,0.012,0.014,0.016,0.018,0.020,0.022,0.024,0.025,
-    0.026,0.028,0.030,0.032,0.035,0.040,0.045,0.050,0.055,
-    0.060,0.063,0.070,0.080,0.090,0.100
-  ];
-  const WIRE_SET_MM = [
-    0.25,0.30,0.35,0.40,0.45,0.50,0.60,0.70,0.80,0.90,
-    1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,2.00
-  ];
-
-  function closestInSet(value, setArr){
-    let best = setArr[0];
-    let bestD = Math.abs(value - best);
-    for (const w of setArr){
-      const d = Math.abs(value - w);
-      if (d < bestD){ best = w; bestD = d; }
+    function updateStickyMetrics(){
+      document.documentElement.style.setProperty("--header-height", `${document.getElementById("siteHeader").offsetHeight}px`);
+      document.documentElement.style.setProperty("--nav-height", `${document.getElementById("sectionNav").offsetHeight}px`);
     }
-    return best;
-  }
+    function setActiveNav(toolName){
+      navLinks.forEach((link) => link.classList.toggle("active", link.dataset.toolLink === toolName));
+    }
+    function openTool(toolName){
+      toolCards.forEach((card) => {
+        const isTarget = card.dataset.tool === toolName;
+        if (mobileAccordion.matches) {
+          card.classList.toggle("open", isTarget);
+        } else {
+          card.classList.add("open");
+        }
+        card.querySelector("[data-tool-toggle]").setAttribute("aria-expanded", card.classList.contains("open") ? "true" : "false");
+      });
+      setActiveNav(toolName);
+    }
+    function syncAccordionState(){
+      if (mobileAccordion.matches) {
+        const current = document.querySelector(".tool-card.open") || document.querySelector('[data-tool="thread"]');
+        openTool(current.dataset.tool);
+      } else {
+        toolCards.forEach((card) => {
+          card.classList.add("open");
+          card.querySelector("[data-tool-toggle]").setAttribute("aria-expanded", "true");
+        });
+      }
+    }
+    document.querySelectorAll("[data-tool-toggle]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const toolName = button.dataset.toolToggle;
+        if (mobileAccordion.matches) {
+          openTool(toolName);
+        } else {
+          document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
+          setActiveNav(toolName);
+        }
+      });
+    });
+    navLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const toolName = link.dataset.toolLink;
+        openTool(toolName);
+        document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+    const sectionObserver = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) setActiveNav(visible.target.dataset.tool);
+    }, { threshold: [0.3, 0.55, 0.8], rootMargin: "-12% 0px -45% 0px" });
+    toolCards.forEach((card) => sectionObserver.observe(card));
+    window.addEventListener("resize", updateStickyMetrics);
+    if (typeof mobileAccordion.addEventListener === "function"){
+      mobileAccordion.addEventListener("change", syncAccordionState);
+    } else if (typeof mobileAccordion.addListener === "function"){
+      mobileAccordion.addListener(syncAccordionState);
+    }
+    updateStickyMetrics();
+    syncAccordionState();
 
-  // ----------------------------
-  // Thread Spec + Tap Drill
-  // ----------------------------
-  const threadSystem = document.getElementById("threadSystem");
-  const unFields = document.getElementById("unFields");
-  const metricFields = document.getElementById("metricFields");
-  const btnThreadCalc = document.getElementById("btnThreadCalc");
-  const btnThreadClear = document.getElementById("btnThreadClear");
-  const threadWarn = document.getElementById("threadWarn");
-  const threadOut = document.getElementById("threadOut");
+    const WIRE_SET_INCH = [0.010,0.012,0.014,0.016,0.018,0.020,0.022,0.024,0.025,0.026,0.028,0.030,0.032,0.035,0.040,0.045,0.050,0.055,0.060,0.063,0.070,0.080,0.090,0.100];
+    const WIRE_SET_MM = [0.25,0.30,0.35,0.40,0.45,0.50,0.60,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,2.00];
+    function closestInSet(value, setArray){
+      let closest = setArray[0];
+      let delta = Math.abs(value - closest);
+      for (const candidate of setArray){
+        const candidateDelta = Math.abs(value - candidate);
+        if (candidateDelta < delta){ closest = candidate; delta = candidateDelta; }
+      }
+      return closest;
+    }
+    function parseFraction(value){
+      const trimmed = value.trim();
+      if (!trimmed) return NaN;
+      if (trimmed.includes("/")){
+        const [numerator, denominator] = trimmed.split("/");
+        const top = Number(numerator);
+        const bottom = Number(denominator);
+        if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom === 0) return NaN;
+        return top / bottom;
+      }
+      return Number(trimmed);
+    }
+    function parseThreadSpec(input){
+      const normalized = input.trim().toLowerCase().replace(/×/g, "x").replace(/\s+/g, "");
+      if (!normalized) return null;
+      const metricMatch = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
+      if (metricMatch){
+        return { system: "metric", major: Number(metricMatch[1]), pitch: Number(metricMatch[2]), label: `M${metricMatch[1]}x${metricMatch[2]}` };
+      }
+      const unifiedMatch = normalized.match(/^([0-9.]+\/[0-9.]+|[0-9]+(?:\.[0-9]+)?)[-x]([0-9]+(?:\.[0-9]+)?)$/);
+      if (unifiedMatch){
+        const major = parseFraction(unifiedMatch[1]);
+        const tpi = Number(unifiedMatch[2]);
+        if (major > 0 && tpi > 0){
+          return { system: "un", major, tpi, label: `${unifiedMatch[1]}-${unifiedMatch[2]}` };
+        }
+      }
+      return null;
+    }
 
-  threadSystem.addEventListener("change", () => {
-    const sys = threadSystem.value;
-    unFields.style.display = (sys === "un") ? "" : "none";
-    metricFields.style.display = (sys === "metric") ? "" : "none";
-    showWarn(threadWarn, "");
-    threadOut.textContent = "Waiting for input…";
-  });
+    const threadForm = document.getElementById("threadForm");
+    const threadSystem = document.getElementById("threadSystem");
+    const threadUnifiedFields = document.getElementById("threadUnifiedFields");
+    const threadMetricFields = document.getElementById("threadMetricFields");
+    const threadQuickSpec = document.getElementById("threadQuickSpec");
+    const threadQuickNote = document.getElementById("threadQuickNote");
+    const threadWarn = document.getElementById("threadWarn");
+    function updateThreadFields(){
+      const showUnified = threadSystem.value === "un";
+      threadUnifiedFields.hidden = !showUnified;
+      threadMetricFields.hidden = showUnified;
+    }
+    function updateThreadPreview(){
+      const quick = threadQuickSpec.value.trim();
+      if (!quick){ threadQuickNote.textContent = ""; return; }
+      const parsed = parseThreadSpec(quick);
+      threadQuickNote.textContent = parsed ? `Quick spec recognized as ${parsed.label}.` : "Quick spec not recognized yet. Use formats like 1/4-20 or M8x1.25.";
+    }
+    threadSystem.addEventListener("change", updateThreadFields);
+    threadQuickSpec.addEventListener("input", updateThreadPreview);
+    updateThreadFields();
+    updateThreadPreview();
 
-  btnThreadClear.addEventListener("click", () => {
-    document.getElementById("unMajorIn").value = "";
-    document.getElementById("unTPI").value = "";
-    document.getElementById("mMajorMm").value = "";
-    document.getElementById("mPitchMm").value = "";
-    showWarn(threadWarn, "");
-    threadOut.textContent = "Waiting for input…";
-  });
+    threadForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showWarn(threadWarn, "");
+      const percent = num(document.getElementById("tapDrillPercent").value) / 100;
+      const quick = threadQuickSpec.value.trim();
+      let system = threadSystem.value;
+      let parsed = null;
+      if (quick){
+        parsed = parseThreadSpec(quick);
+        if (!parsed){
+          showWarn(threadWarn, "Quick thread spec not recognized. Try 1/4-20 or M8x1.25, or fill the manual fields.");
+          return;
+        }
+        system = parsed.system;
+        threadSystem.value = system;
+        updateThreadFields();
+        if (system === "un"){
+          document.getElementById("unMajorIn").value = fmt(parsed.major, 4);
+          document.getElementById("unTPI").value = fmt(parsed.tpi, 0);
+        } else {
+          document.getElementById("mMajorMm").value = fmt(parsed.major, 3);
+          document.getElementById("mPitchMm").value = fmt(parsed.pitch, 3);
+        }
+      }
+      if (system === "un"){
+        const major = num(document.getElementById("unMajorIn").value);
+        const tpi = num(document.getElementById("unTPI").value);
+        if (!(major > 0) || !(tpi > 0)){ showWarn(threadWarn, "Enter a positive major diameter and TPI."); return; }
+        const pitch = 1 / tpi;
+        const drill = major - (percent / tpi);
+        const basicPitchDiameter = major - 0.6495190528 * pitch;
+        const label = parsed ? parsed.label : `${fmt(major, 4)}-${fmt(tpi, 0)}`;
+        setResult("thread", {
+          primary: `Tap drill: ${fmt(drill, 6)} in`,
+          stats: [
+            { label: "Thread", value: label },
+            { label: "Pitch", value: `${fmt(pitch, 6)} in` },
+            { label: "Major", value: `${fmt(major, 6)} in` },
+            { label: "E basic", value: `${fmt(basicPitchDiameter, 6)} in` }
+          ],
+          detailsHtml: renderList([
+            `Tap drill rule used: Major - (${Math.round(percent * 100)}% / TPI).`,
+            "Use a standard drill near the computed size for a practical shop selection.",
+            "The basic pitch diameter shown here does not include class-of-fit tolerances."
+          ]) + renderCodeCard("Formula snapshot", [`Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`, `Tap drill = ${fmt(drill, 6)} in`, `E_basic = ${fmt(basicPitchDiameter, 6)} in`].join("\n")),
+          copyText: [`Marco's Calculator - Thread Spec`, `Spec: ${label}`, `System: Unified`, `Tap drill: ${fmt(drill, 6)} in`, `Pitch: ${fmt(pitch, 6)} in`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`].join("\n")
+        });
+      } else {
+        const major = num(document.getElementById("mMajorMm").value);
+        const pitch = num(document.getElementById("mPitchMm").value);
+        if (!(major > 0) || !(pitch > 0)){ showWarn(threadWarn, "Enter a positive metric major diameter and pitch."); return; }
+        const drill = major - (percent * pitch);
+        const basicPitchDiameter = major - 0.6495190528 * pitch;
+        const label = parsed ? parsed.label : `M${fmt(major, 3)}x${fmt(pitch, 3)}`;
+        setResult("thread", {
+          primary: `Tap drill: ${fmt(drill, 3)} mm`,
+          stats: [
+            { label: "Thread", value: label },
+            { label: "Pitch", value: `${fmt(pitch, 3)} mm` },
+            { label: "Major", value: `${fmt(major, 3)} mm` },
+            { label: "E basic", value: `${fmt(basicPitchDiameter, 3)} mm` }
+          ],
+          detailsHtml: renderList([
+            `Tap drill rule used: Major - (${Math.round(percent * 100)}% x Pitch).`,
+            "This is a practical tap-drill estimate, not a tolerance-class lookup.",
+            "Use the over-wires tool when you need a target M or E value for inspection."
+          ]) + renderCodeCard("Formula snapshot", [`Tap drill = ${fmt(drill, 3)} mm`, `E_basic = ${fmt(basicPitchDiameter, 3)} mm`].join("\n")),
+          copyText: [`Marco's Calculator - Thread Spec`, `Spec: ${label}`, `System: ISO Metric`, `Tap drill: ${fmt(drill, 3)} mm`, `Pitch: ${fmt(pitch, 3)} mm`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`].join("\n")
+        });
+      }
+    });
+    document.getElementById("btnThreadClear").addEventListener("click", () => {
+      threadForm.reset();
+      threadSystem.value = "un";
+      updateThreadFields();
+      threadQuickNote.textContent = "";
+      showWarn(threadWarn, "");
+      setResult("thread", {
+        primary: "Tap drill and pitch details will show here.",
+        stats: [],
+        detailsHtml: renderList([
+          "Use a quick spec like 1/4-20 or M8x1.25 when you want the fastest workflow.",
+          "The calculated tap drill is a practical rule-of-thumb, not a class-of-fit lookup."
+        ]),
+        copyText: ""
+      });
+    });
 
-  btnThreadCalc.addEventListener("click", () => {
-    showWarn(threadWarn, "");
-    const pct = num(document.getElementById("tapDrillPercent").value) / 100;
+    const mowForm = document.getElementById("mowForm");
+    const mowUnits = document.getElementById("mowUnits");
+    const mowMode = document.getElementById("mowMode");
+    const mowPreset = document.getElementById("mowPreset");
+    const mowPresetNote = document.getElementById("mowPresetNote");
+    const mowWireSet = document.getElementById("mowWireSet");
+    const mowPitchLabel = document.getElementById("mowPitchLabel");
+    const mowPitchInput = document.getElementById("mowPitchInput");
+    const mowPitchHint = document.getElementById("mowPitchHint");
+    const mowWire = document.getElementById("mowWire");
+    const mowE = document.getElementById("mowE");
+    const mowM = document.getElementById("mowM");
+    const mowWarn = document.getElementById("mowWarn");
 
-    if (threadSystem.value === "un"){
-      const major = num(document.getElementById("unMajorIn").value);
-      const tpi   = num(document.getElementById("unTPI").value);
-      if (!(major > 0) || !(tpi > 0)){
-        showWarn(threadWarn, "Enter a positive major diameter (in) and a positive TPI.");
+    function getPitchP(){
+      const pitchInput = num(mowPitchInput.value);
+      if (!(pitchInput > 0)) return NaN;
+      return mowUnits.value === "in" ? 1 / pitchInput : pitchInput;
+    }
+    function updateMowHints(){
+      if (mowUnits.value === "in"){
+        mowPitchLabel.textContent = "TPI (threads per inch)";
+        mowPitchInput.placeholder = "20";
+        mowPitchHint.textContent = "In inch mode, enter TPI. Pitch P is calculated as 1 / TPI.";
+      } else {
+        mowPitchLabel.textContent = "Pitch P (mm)";
+        mowPitchInput.placeholder = "2";
+        mowPitchHint.textContent = "In metric mode, enter pitch directly in millimeters.";
+      }
+      if (mowMode.value === "solveM"){
+        mowE.placeholder = "Enter E to compute M";
+        mowM.placeholder = "Computed M appears here";
+      } else {
+        mowM.placeholder = "Enter M to compute E";
+        mowE.placeholder = "Computed E appears here";
+      }
+    }
+    function applyMowPreset(value){
+      showWarn(mowWarn, "");
+      if (!value){ mowPresetNote.textContent = ""; return; }
+      if (value === "M60x2"){
+        mowUnits.value = "mm";
+        mowMode.value = "solveM";
+        updateMowHints();
+        const pitch = 2.0;
+        const wire = pitch / SQRT3;
+        const major = 60;
+        const basicPitchDiameter = major - 0.6495190528 * pitch;
+        const measurement = basicPitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+        mowPitchInput.value = "2";
+        mowWire.value = wire.toFixed(4);
+        mowE.value = basicPitchDiameter.toFixed(3);
+        mowM.value = measurement.toFixed(3);
+        mowPresetNote.textContent = `Loaded M60x2 with best wire ${wire.toFixed(4)} mm and basic E ${basicPitchDiameter.toFixed(3)} mm.`;
+      }
+    }
+    mowUnits.addEventListener("change", updateMowHints);
+    mowMode.addEventListener("change", updateMowHints);
+    mowPreset.addEventListener("change", () => applyMowPreset(mowPreset.value));
+    updateMowHints();
+
+    document.getElementById("btnMowSuggest").addEventListener("click", () => {
+      showWarn(mowWarn, "");
+      const pitch = getPitchP();
+      if (!(pitch > 0)){
+        showWarn(mowWarn, "Enter pitch first. Use TPI in inch mode or pitch in millimeters in metric mode.");
         return;
       }
-      const pitch = 1 / tpi;
-      const drill = major - (pct / tpi);
-      const Eb = major - 0.6495190528 * pitch;
+      const theoretical = pitch / SQRT3;
+      let wireSetChoice = mowWireSet.value;
+      if (wireSetChoice === "auto") wireSetChoice = mowUnits.value === "in" ? "inch" : "metric";
+      const snapped = wireSetChoice === "inch" ? closestInSet(theoretical, WIRE_SET_INCH) : closestInSet(theoretical, WIRE_SET_MM);
+      mowWire.value = snapped.toFixed(3);
+      setResult("mow", {
+        primary: `Best wire suggestion: ${fmt(snapped, 6)} ${unitLabel(mowUnits.value)}`,
+        stats: [
+          { label: "Pitch P", value: `${fmt(pitch, 6)} ${unitLabel(mowUnits.value)}` },
+          { label: "Theory", value: `${fmt(theoretical, 6)} ${unitLabel(mowUnits.value)}` },
+          { label: "Stock set", value: wireSetChoice === "inch" ? "Inch" : "Metric" }
+        ],
+        detailsHtml: renderList([
+          "The theoretical best wire is P / sqrt(3).",
+          "The suggested value is snapped to the nearest size in the selected wire set.",
+          "Enter E or M next, then press Calculate to finish the over-wires math."
+        ]),
+        copyText: [`Marco's Calculator - Wire Suggestion`, `Pitch: ${fmt(pitch, 6)} ${unitLabel(mowUnits.value)}`, `Theoretical best wire: ${fmt(theoretical, 6)} ${unitLabel(mowUnits.value)}`, `Snapped wire: ${fmt(snapped, 6)} ${unitLabel(mowUnits.value)}`].join("\n")
+      });
+    });
 
-      threadOut.textContent =
-        `System: Unified (inch)\n` +
-        `Major diameter d: ${fmt(major, 6)} in\n` +
-        `TPI: ${fmt(tpi, 0)}\n` +
-        `Pitch P: ${fmt(pitch, 6)} in\n\n` +
-        `Tap drill (rule-of-thumb @ ${Math.round(pct*100)}%): ${fmt(drill, 6)} in\n` +
-        `Basic pitch diameter estimate E_basic: ${fmt(Eb, 6)} in\n\n` +
-        `Notes:\n` +
-        `- For a better tap drill selection, choose a standard drill near the computed value.\n` +
-        `- Tolerances/classes are not applied to E_basic.`;
-    } else {
-      const major = num(document.getElementById("mMajorMm").value);
-      const pitch = num(document.getElementById("mPitchMm").value);
-      if (!(major > 0) || !(pitch > 0)){
-        showWarn(threadWarn, "Enter a positive major diameter (mm) and a positive pitch (mm).");
-        return;
+    mowForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showWarn(mowWarn, "");
+      const pitch = getPitchP();
+      const wire = num(mowWire.value);
+      const units = unitLabel(mowUnits.value);
+      if (!(pitch > 0)) { showWarn(mowWarn, "Pitch must be positive. Use TPI in inch mode or pitch in millimeters in metric mode."); return; }
+      if (!(wire > 0)) { showWarn(mowWarn, "Wire diameter W must be positive."); return; }
+      const bestWire = pitch / SQRT3;
+      if (mowMode.value === "solveM"){
+        const pitchDiameter = num(mowE.value);
+        if (!(pitchDiameter > 0)) { showWarn(mowWarn, "Enter a positive pitch diameter E to compute M."); return; }
+        const measurement = pitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+        mowM.value = measurement.toFixed(6);
+        setResult("mow", {
+          primary: `M = ${fmt(measurement, 6)} ${units}`,
+          stats: [
+            { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
+            { label: "Wire W", value: `${fmt(wire, 6)} ${units}` },
+            { label: "Input E", value: `${fmt(pitchDiameter, 6)} ${units}` },
+            { label: "Best wire", value: `${fmt(bestWire, 6)} ${units}` }
+          ],
+          detailsHtml: renderList([
+            "Solved micrometer reading across the three wires from the pitch diameter target.",
+            "Replace E with your actual chart or gage target before recalculating when needed.",
+            "The best-wire value is shown for comparison even if you use a different actual wire size."
+          ]) + renderCodeCard("Formula snapshot", [`M = E + 3W - (sqrt(3)/2)P`, `M = ${fmt(measurement, 6)} ${units}`].join("\n")),
+          copyText: [`Marco's Calculator - Measurement Over Wires`, `Mode: Solve M from E`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`, `Measurement over wires M: ${fmt(measurement, 6)} ${units}`].join("\n")
+        });
+      } else {
+        const measurement = num(mowM.value);
+        if (!(measurement > 0)) { showWarn(mowWarn, "Enter a positive measurement M to compute E."); return; }
+        const pitchDiameter = measurement - 3 * wire + (SQRT3_OVER_2 * pitch);
+        mowE.value = pitchDiameter.toFixed(6);
+        setResult("mow", {
+          primary: `E = ${fmt(pitchDiameter, 6)} ${units}`,
+          stats: [
+            { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
+            { label: "Wire W", value: `${fmt(wire, 6)} ${units}` },
+            { label: "Input M", value: `${fmt(measurement, 6)} ${units}` },
+            { label: "Best wire", value: `${fmt(bestWire, 6)} ${units}` }
+          ],
+          detailsHtml: renderList([
+            "Solved pitch diameter from the mic reading and wire size.",
+            "If your wire differs from the best-wire recommendation, the result still uses the actual W you entered.",
+            "Keep the units consistent all the way through the calculation."
+          ]) + renderCodeCard("Formula snapshot", [`E = M - 3W + (sqrt(3)/2)P`, `E = ${fmt(pitchDiameter, 6)} ${units}`].join("\n")),
+          copyText: [`Marco's Calculator - Measurement Over Wires`, `Mode: Solve E from M`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Measurement M: ${fmt(measurement, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`].join("\n")
+        });
       }
-      const drill = major - (pct * pitch);
-      const Eb = major - 0.6495190528 * pitch;
+    });
 
-      threadOut.textContent =
-        `System: ISO Metric\n` +
-        `Major diameter d: ${fmt(major, 3)} mm\n` +
-        `Pitch P: ${fmt(pitch, 3)} mm\n\n` +
-        `Tap drill (rule-of-thumb @ ${Math.round(pct*100)}%): ${fmt(drill, 3)} mm\n` +
-        `Basic pitch diameter estimate E_basic: ${fmt(Eb, 3)} mm\n\n` +
-        `Notes:\n` +
-        `- Tolerances/classes are not applied to E_basic.\n` +
-        `- Use the Over-Wires tool to compute M if you have E (or compute E if you have M).`;
-    }
-  });
-
-  // ----------------------------
-  // Measurement Over Wires (60°)
-  // ----------------------------
-  const mowUnits = document.getElementById("mowUnits");
-  const mowMode  = document.getElementById("mowMode");
-  const mowPreset = document.getElementById("mowPreset");
-  const mowPresetNote = document.getElementById("mowPresetNote");
-  const mowWireSet = document.getElementById("mowWireSet");
-  const mowPitchHint = document.getElementById("mowPitchHint");
-  const mowPitchLabel = document.getElementById("mowPitchLabel");
-  const mowPitchInput = document.getElementById("mowPitchInput");
-  const mowWire = document.getElementById("mowWire");
-  const mowM = document.getElementById("mowM");
-  const mowE = document.getElementById("mowE");
-  const btnMowCalc = document.getElementById("btnMowCalc");
-  const btnMowSuggest = document.getElementById("btnMowSuggest");
-  const btnMowClear = document.getElementById("btnMowClear");
-  const mowWarn = document.getElementById("mowWarn");
-  const mowOut = document.getElementById("mowOut");
-
-  function getPitchP(){
-    const units = mowUnits.value;
-    const pin = num(mowPitchInput.value);
-    if (!(pin > 0)) return NaN;
-    if (units === "in"){
-      // pin is TPI
-      return 1 / pin;
-    }
-    // pin is pitch (mm)
-    return pin;
-  }
-
-  function updateMowHints(){
-    if (mowUnits.value === "in"){
-      mowPitchLabel.textContent = "TPI (threads per inch)";
-      mowPitchHint.textContent = "Inches mode: enter TPI. Pitch is computed as P = 1/TPI (in).";
-      mowPitchInput.placeholder = "Example: 20";
-    } else {
-      mowPitchLabel.textContent = "Pitch P (mm)";
-      mowPitchHint.textContent = "Metric mode: enter pitch in mm (example: 2 for M60×2).";
-      mowPitchInput.placeholder = "Example: 2";
-    }
-
-    if (mowMode.value === "solveM"){
-      mowE.placeholder = "Enter E to compute M";
-      mowM.placeholder = "Computed M will appear here";
-    } else {
-      mowM.placeholder = "Enter M (mic reading) to compute E";
-      mowE.placeholder = "Computed E will appear here";
-    }
-  }
-
-  mowUnits.addEventListener("change", updateMowHints);
-  mowMode.addEventListener("change", updateMowHints);
-  updateMowHints();
-
-  function applyMowPreset(name){
-    showWarn(mowWarn, "");
-    if (!name){
-      mowPresetNote.textContent = "";
-      return;
-    }
-    if (name === "M60x2"){
-      // Force metric
+    document.getElementById("btnMowClear").addEventListener("click", () => {
+      mowForm.reset();
       mowUnits.value = "mm";
-      mowMode.value = "solveM"; // compute M
+      mowMode.value = "solveM";
+      mowPreset.value = "";
+      mowPresetNote.textContent = "";
       updateMowHints();
+      showWarn(mowWarn, "");
+      setResult("mow", {
+        primary: "Measurement-over-wires output will show here.",
+        stats: [],
+        detailsHtml: renderList([
+          "Use M = E + 3W - (sqrt(3)/2)P to solve the mic reading from a target pitch diameter.",
+          "Use the best-wire helper if you want the nearest stocked wire size instead of the theoretical value."
+        ]),
+        copyText: ""
+      });
+    });
 
-      const P = 2.0;
-      mowPitchInput.value = "2";
-
-      const Wbest = P / Math.sqrt(3); // 1.1547...
-      mowWire.value = Wbest.toFixed(4);
-
-      const d = 60.0;
-      const Eb = d - 0.6495190528 * P; // basic estimate
-      mowE.value = Eb.toFixed(3);
-
-      const Mcalc = Eb + 3*Wbest - (SQRT3_OVER_2 * P);
-      mowM.value = Mcalc.toFixed(3);
-
-      mowPresetNote.textContent =
-        `Filled M60×2 using basic estimates (no tolerance class): P=2.0 mm, ` +
-        `W≈${Wbest.toFixed(4)} mm, E_basic≈${Eb.toFixed(3)} mm, so M≈${Mcalc.toFixed(3)} mm.`;
-      mowOut.textContent =
-        `Preset M60×2 applied.\n` +
-        `This gives you a starting expected M based on E_basic.\n` +
-        `If you have a target pitch diameter from a chart/gage, replace E with that value and recalc.`;
-    }
-  }
-
-  mowPreset.addEventListener("change", () => applyMowPreset(mowPreset.value));
-
-  btnMowClear.addEventListener("click", () => {
-    mowPreset.value = "";
-    mowPresetNote.textContent = "";
-    mowPitchInput.value = "";
-    mowWire.value = "";
-    mowM.value = "";
-    mowE.value = "";
-    showWarn(mowWarn, "");
-    mowOut.textContent = "Waiting for input…";
-  });
-
-  btnMowSuggest.addEventListener("click", () => {
-    showWarn(mowWarn, "");
-    const P = getPitchP();
-    if (!(P > 0)){
-      showWarn(mowWarn, "Enter pitch input first (TPI in inches mode, pitch in mm in metric mode).");
-      return;
-    }
-    const theoretical = P / Math.sqrt(3);
-
-    let setChoice = mowWireSet.value;
-    if (setChoice === "auto"){
-      setChoice = (mowUnits.value === "in") ? "inch" : "metric";
-    }
-    const snapped = (setChoice === "inch")
-      ? closestInSet(theoretical, WIRE_SET_INCH)
-      : closestInSet(theoretical, WIRE_SET_MM);
-
-    mowWire.value = snapped.toFixed(3);
-
-    mowOut.textContent =
-      `Pitch P: ${fmt(P, 6)} ${mowUnits.value}\n` +
-      `Theoretical best wire (P/√3): ${fmt(theoretical, 6)} ${mowUnits.value}\n` +
-      `Snapped wire (closest in set): ${fmt(snapped, 6)} ${mowUnits.value} (${setChoice} set)\n\n` +
-      `Now enter the value you know (E or M) and click Calculate.`;
-  });
-
-  btnMowCalc.addEventListener("click", () => {
-    showWarn(mowWarn, "");
-    const P = getPitchP();
-    const W = num(mowWire.value);
-
-    if (!(P > 0)) { showWarn(mowWarn, "Pitch must be positive (TPI in inches mode, pitch in mm in metric mode)."); return; }
-    if (!(W > 0)) { showWarn(mowWarn, "Wire diameter W must be positive."); return; }
-
-    const bestWire = P / Math.sqrt(3);
-
-    if (mowMode.value === "solveM"){
-      const E = num(mowE.value);
-      if (!(E > 0)) { showWarn(mowWarn, "Enter a positive pitch diameter E to compute M."); return; }
-      const M = E + 3*W - (SQRT3_OVER_2 * P);
-      mowM.value = M.toFixed(6);
-      mowOut.textContent =
-        `Units: ${mowUnits.value}\n` +
-        `Pitch P: ${fmt(P, 6)}\n` +
-        `Wire W: ${fmt(W, 6)}\n` +
-        `Theoretical best wire (P/√3): ${fmt(bestWire, 6)}\n\n` +
-        `Input E: ${fmt(E, 6)}\n` +
-        `Computed M (mic over wires): ${fmt(M, 6)}\n\n` +
-        `Formula: M = E + 3W − (√3/2)·P`;
-    } else {
-      const M = num(mowM.value);
-      if (!(M > 0)) { showWarn(mowWarn, "Enter a positive measurement M to compute E."); return; }
-      const E = M - 3*W + (SQRT3_OVER_2 * P);
-      mowE.value = E.toFixed(6);
-      mowOut.textContent =
-        `Units: ${mowUnits.value}\n` +
-        `Pitch P: ${fmt(P, 6)}\n` +
-        `Wire W: ${fmt(W, 6)}\n` +
-        `Theoretical best wire (P/√3): ${fmt(bestWire, 6)}\n\n` +
-        `Input M: ${fmt(M, 6)}\n` +
-        `Computed E: ${fmt(E, 6)}\n\n` +
-        `Formula: E = M − 3W + (√3/2)·P`;
-    }
-  });
-
-  // ----------------------------
-  // Bolt Circle
-  // ----------------------------
-  const bcDia = document.getElementById("bcDia");
-  const bcHoles = document.getElementById("bcHoles");
-  const bcStartAngle = document.getElementById("bcStartAngle");
-  const bcClockwise = document.getElementById("bcClockwise");
-  const btnBcCalc = document.getElementById("btnBcCalc");
-  const btnBcClear = document.getElementById("btnBcClear");
-  const bcWarn = document.getElementById("bcWarn");
-  const bcOut = document.getElementById("bcOut");
-
-  btnBcClear.addEventListener("click", () => {
-    bcDia.value = "";
-    bcHoles.value = "";
-    bcStartAngle.value = "0";
-    bcClockwise.value = "ccw";
-    showWarn(bcWarn, "");
-    bcOut.textContent = "Waiting for input…";
-  });
-
-  btnBcCalc.addEventListener("click", () => {
-    showWarn(bcWarn, "");
-    const dia = num(bcDia.value);
-    const holes = num(bcHoles.value);
-    const start = num(bcStartAngle.value);
-
-    if (!(dia > 0)) { showWarn(bcWarn, "Bolt circle diameter must be positive."); return; }
-    if (!(holes >= 1 && Number.isInteger(holes))) { showWarn(bcWarn, "Number of holes must be an integer ≥ 1."); return; }
-    if (!Number.isFinite(start)) { showWarn(bcWarn, "Start angle must be a number."); return; }
-
-    const r = dia / 2;
-    const step = 360 / holes;
-    const dir = (bcClockwise.value === "cw") ? -1 : 1;
-
-    let lines = [];
-    lines.push(`BCD: ${fmt(dia, 6)}  |  Radius: ${fmt(r, 6)}`);
-    lines.push(`Holes: ${holes}  |  Start angle: ${fmt(start, 4)}°  |  Direction: ${bcClockwise.value.toUpperCase()}`);
-    lines.push("");
-    lines.push("Index, Angle(deg), X, Y");
-
-    for (let i=0; i<holes; i++){
-      const angDeg = start + dir * (i * step);
-      const a = degToRad(angDeg);
-      const x = r * Math.cos(a);
-      const y = r * Math.sin(a);
-      lines.push(`${i+1}, ${fmt(angDeg,4)}, ${fmt(x,6)}, ${fmt(y,6)}`);
-    }
-
-    bcOut.textContent = lines.join("\n");
-  });
-
-  // ----------------------------
-  // Right Triangle
-  // ----------------------------
-  const rtMode = document.getElementById("rtMode");
-  const rtRow1 = document.getElementById("rtRow1");
-  const rtRow2 = document.getElementById("rtRow2");
-  const rtRun = document.getElementById("rtRun");
-  const rtRise = document.getElementById("rtRise");
-  const rtHyp = document.getElementById("rtHyp");
-  const rtAngle = document.getElementById("rtAngle");
-  const btnRtCalc = document.getElementById("btnRtCalc");
-  const btnRtClear = document.getElementById("btnRtClear");
-  const rtWarn = document.getElementById("rtWarn");
-  const rtOut = document.getElementById("rtOut");
-
-  function updateRtUI(){
-    const mode = rtMode.value;
-    if (mode === "runRise"){
-      rtRow1.style.display = "";
-      rtRow2.style.display = "none";
-    } else if (mode === "hypAngle"){
-      rtRow1.style.display = "none";
-      rtRow2.style.display = "";
-    } else {
-      rtRow1.style.display = "";
-      rtRow2.style.display = "";
-    }
-    showWarn(rtWarn, "");
-    rtOut.textContent = "Waiting for input…";
-  }
-
-  rtMode.addEventListener("change", updateRtUI);
-  updateRtUI();
-
-  btnRtClear.addEventListener("click", () => {
-    rtRun.value = "";
-    rtRise.value = "";
-    rtHyp.value = "";
-    rtAngle.value = "";
-    showWarn(rtWarn, "");
-    rtOut.textContent = "Waiting for input…";
-  });
-
-  btnRtCalc.addEventListener("click", () => {
-    showWarn(rtWarn, "");
-    const mode = rtMode.value;
-
-    if (mode === "runRise"){
-      const run = num(rtRun.value);
-      const rise = num(rtRise.value);
-      if (!(run > 0) || !(rise > 0)){
-        showWarn(rtWarn, "Enter positive run and rise.");
-        return;
+    const boltForm = document.getElementById("boltForm");
+    const bcDia = document.getElementById("bcDia");
+    const bcHoles = document.getElementById("bcHoles");
+    const bcStartAngle = document.getElementById("bcStartAngle");
+    const bcClockwise = document.getElementById("bcClockwise");
+    const bcWarn = document.getElementById("bcWarn");
+    boltForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showWarn(bcWarn, "");
+      const diameter = num(bcDia.value);
+      const holes = num(bcHoles.value);
+      const startAngle = num(bcStartAngle.value);
+      const units = unitLabel(document.getElementById("bcUnits").value);
+      if (!(diameter > 0)) { showWarn(bcWarn, "Bolt circle diameter must be positive."); return; }
+      if (!(holes >= 1 && Number.isInteger(holes))) { showWarn(bcWarn, "Number of holes must be an integer 1 or greater."); return; }
+      if (!Number.isFinite(startAngle)) { showWarn(bcWarn, "Start angle must be a valid number."); return; }
+      const radius = diameter / 2;
+      const step = 360 / holes;
+      const direction = bcClockwise.value === "cw" ? -1 : 1;
+      const directionLabel = bcClockwise.value.toUpperCase();
+      const lines = ["Index, Angle (deg), X, Y"];
+      for (let index = 0; index < holes; index += 1){
+        const angleDeg = startAngle + direction * (index * step);
+        const angleRad = degToRad(angleDeg);
+        const x = radius * Math.cos(angleRad);
+        const y = radius * Math.sin(angleRad);
+        lines.push(`${index + 1}, ${fmt(angleDeg, 4)}, ${fmt(x, 6)}, ${fmt(y, 6)}`);
       }
-      const hyp = Math.hypot(run, rise);
-      const ang = radToDeg(Math.atan2(rise, run));
-      rtOut.textContent =
-        `Given:\nRun: ${fmt(run,6)}\nRise: ${fmt(rise,6)}\n\n` +
-        `Solved:\nHyp: ${fmt(hyp,6)}\nAngle: ${fmt(ang,4)}°\nSlope: ${fmt(rise/run,6)}`;
-      return;
-    }
+      setResult("bolt", {
+        primary: `${holes} coordinates ready in ${units}`,
+        stats: [
+          { label: "BCD", value: `${fmt(diameter, 6)} ${units}` },
+          { label: "Radius", value: `${fmt(radius, 6)} ${units}` },
+          { label: "Step angle", value: `${fmt(step, 4)} deg` },
+          { label: "Direction", value: directionLabel }
+        ],
+        detailsHtml: renderList([
+          "The selected units are echoed directly in the answer cards so the result matches the control choice.",
+          "Angles are measured from the +X axis; use 90 degrees to start on +Y.",
+          "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet."
+        ]) + renderCodeCard("Coordinate list", lines.join("\n")),
+        copyText: [`Marco's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, "", ...lines].join("\n")
+      });
+    });
+    document.getElementById("btnBcClear").addEventListener("click", () => {
+      boltForm.reset();
+      document.getElementById("bcUnits").value = "mm";
+      bcStartAngle.value = "0";
+      bcClockwise.value = "ccw";
+      showWarn(bcWarn, "");
+      setResult("bolt", {
+        primary: "Coordinates will appear here when you generate them.",
+        stats: [],
+        detailsHtml: renderList([
+          "The selected unit is carried into the output so the result no longer feels ambiguous.",
+          "Copying the coordinate block gives you an easy handoff to setup sheets or CNC notes."
+        ]),
+        copyText: ""
+      });
+    });
 
-    if (mode === "hypAngle"){
-      const hyp = num(rtHyp.value);
-      const ang = num(rtAngle.value);
-      if (!(hyp > 0) || !(ang > 0) || !(ang < 90)){
-        showWarn(rtWarn, "Enter positive hypotenuse and an angle between 0 and 90 degrees.");
-        return;
+    const triangleForm = document.getElementById("triangleForm");
+    const rtMode = document.getElementById("rtMode");
+    const rtRow1 = document.getElementById("rtRow1");
+    const rtRow2 = document.getElementById("rtRow2");
+    const rtRun = document.getElementById("rtRun");
+    const rtRise = document.getElementById("rtRise");
+    const rtHyp = document.getElementById("rtHyp");
+    const rtAngle = document.getElementById("rtAngle");
+    const rtWarn = document.getElementById("rtWarn");
+    function updateTriangleFields(){
+      const mode = rtMode.value;
+      rtRow1.hidden = mode === "hypAngle";
+      rtRow2.hidden = mode === "runRise";
+    }
+    rtMode.addEventListener("change", updateTriangleFields);
+    updateTriangleFields();
+
+    triangleForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showWarn(rtWarn, "");
+      const mode = rtMode.value;
+      const units = unitLabel(document.getElementById("rtUnits").value);
+      let result;
+      if (mode === "runRise"){
+        const run = num(rtRun.value);
+        const rise = num(rtRise.value);
+        if (!(run > 0) || !(rise > 0)) { showWarn(rtWarn, "Enter positive run and rise values."); return; }
+        const hyp = Math.hypot(run, rise);
+        const angle = radToDeg(Math.atan2(rise, run));
+        result = {
+          primary: `Angle = ${fmt(angle, 4)} deg`,
+          stats: [
+            { label: "Run", value: `${fmt(run, 6)} ${units}` },
+            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
+            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Slope", value: fmt(rise / run, 6) }
+          ],
+          details: [
+            "Solved angle and hypotenuse from the entered run and rise.",
+            "Slope is listed as rise divided by run.",
+            "Use this mode when you already know the two offset legs."
+          ],
+          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+        };
+      } else if (mode === "hypAngle"){
+        const hyp = num(rtHyp.value);
+        const angle = num(rtAngle.value);
+        if (!(hyp > 0) || !(angle > 0) || !(angle < 90)) { showWarn(rtWarn, "Enter a positive hypotenuse and an angle between 0 and 90 degrees."); return; }
+        const radians = degToRad(angle);
+        const run = hyp * Math.cos(radians);
+        const rise = hyp * Math.sin(radians);
+        result = {
+          primary: `Run = ${fmt(run, 6)} ${units}`,
+          stats: [
+            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
+            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Slope", value: fmt(rise / run, 6) }
+          ],
+          details: [
+            "Solved run and rise from the hypotenuse and the included angle.",
+            "Angles must stay between 0 and 90 degrees for this right-triangle solver.",
+            "The selected unit is carried through the answer cards and copied output."
+          ],
+          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+        };
+      } else if (mode === "runAngle"){
+        const run = num(rtRun.value);
+        const angle = num(rtAngle.value);
+        if (!(run > 0) || !(angle > 0) || !(angle < 90)) { showWarn(rtWarn, "Enter a positive run and an angle between 0 and 90 degrees."); return; }
+        const radians = degToRad(angle);
+        const rise = run * Math.tan(radians);
+        const hyp = run / Math.cos(radians);
+        result = {
+          primary: `Rise = ${fmt(rise, 6)} ${units}`,
+          stats: [
+            { label: "Run", value: `${fmt(run, 6)} ${units}` },
+            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Slope", value: fmt(rise / run, 6) }
+          ],
+          details: [
+            "Solved rise and hypotenuse from the run plus included angle.",
+            "This is useful when the horizontal travel is fixed and you need the vertical offset.",
+            "Press Enter after editing any field to solve immediately."
+          ],
+          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+        };
+      } else {
+        const rise = num(rtRise.value);
+        const angle = num(rtAngle.value);
+        if (!(rise > 0) || !(angle > 0) || !(angle < 90)) { showWarn(rtWarn, "Enter a positive rise and an angle between 0 and 90 degrees."); return; }
+        const radians = degToRad(angle);
+        const run = rise / Math.tan(radians);
+        const hyp = rise / Math.sin(radians);
+        result = {
+          primary: `Run = ${fmt(run, 6)} ${units}`,
+          stats: [
+            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
+            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Slope", value: fmt(rise / run, 6) }
+          ],
+          details: [
+            "Solved run and hypotenuse from the rise plus included angle.",
+            "Use this mode when the vertical offset is fixed and you need the horizontal reach.",
+            "The selected unit is preserved in both the visible answer and the copied summary."
+          ],
+          copyText: [`Marco's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+        };
       }
-      const a = degToRad(ang);
-      const run = hyp * Math.cos(a);
-      const rise = hyp * Math.sin(a);
-      rtOut.textContent =
-        `Given:\nHyp: ${fmt(hyp,6)}\nAngle: ${fmt(ang,4)}°\n\n` +
-        `Solved:\nRun: ${fmt(run,6)}\nRise: ${fmt(rise,6)}\nSlope: ${fmt(rise/run,6)}`;
-      return;
-    }
+      setResult("triangle", { primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
+    });
 
-    if (mode === "runAngle"){
-      const run = num(rtRun.value);
-      const ang = num(rtAngle.value);
-      if (!(run > 0) || !(ang > 0) || !(ang < 90)){
-        showWarn(rtWarn, "Enter positive run and an angle between 0 and 90 degrees.");
-        return;
-      }
-      const a = degToRad(ang);
-      const rise = run * Math.tan(a);
-      const hyp = run / Math.cos(a);
-      rtOut.textContent =
-        `Given:\nRun: ${fmt(run,6)}\nAngle: ${fmt(ang,4)}°\n\n` +
-        `Solved:\nRise: ${fmt(rise,6)}\nHyp: ${fmt(hyp,6)}\nSlope: ${fmt(rise/run,6)}`;
-      return;
-    }
+    document.getElementById("btnRtClear").addEventListener("click", () => {
+      triangleForm.reset();
+      document.getElementById("rtUnits").value = "mm";
+      rtMode.value = "runRise";
+      updateTriangleFields();
+      showWarn(rtWarn, "");
+      setResult("triangle", {
+        primary: "Solved offsets and angle details will show here.",
+        stats: [],
+        detailsHtml: renderList([
+          "The selected unit now carries through the answer cards so the choice has a visible effect.",
+          "Press Enter in any field to solve without leaving the keyboard."
+        ]),
+        copyText: ""
+      });
+    });
 
-    if (mode === "riseAngle"){
-      const rise = num(rtRise.value);
-      const ang = num(rtAngle.value);
-      if (!(rise > 0) || !(ang > 0) || !(ang < 90)){
-        showWarn(rtWarn, "Enter positive rise and an angle between 0 and 90 degrees.");
-        return;
-      }
-      const a = degToRad(ang);
-      const run = rise / Math.tan(a);
-      const hyp = rise / Math.sin(a);
-      rtOut.textContent =
-        `Given:\nRise: ${fmt(rise,6)}\nAngle: ${fmt(ang,4)}°\n\n` +
-        `Solved:\nRun: ${fmt(run,6)}\nHyp: ${fmt(hyp,6)}\nSlope: ${fmt(rise/run,6)}`;
-      return;
-    }
-  });
-
-  // Init outputs
-  document.getElementById("threadOut").textContent = "Waiting for input…";
-  document.getElementById("mowOut").textContent = "Waiting for input…";
-  document.getElementById("bcOut").textContent = "Waiting for input…";
-  document.getElementById("rtOut").textContent = "Waiting for input…";
-</script>
+    setResult("thread", {
+      primary: "Tap drill and pitch details will show here.",
+      stats: [],
+      detailsHtml: renderList([
+        "Use a quick spec like 1/4-20 or M8x1.25 when you want the fastest workflow.",
+        "The calculated tap drill is a practical rule-of-thumb, not a class-of-fit lookup."
+      ]),
+      copyText: ""
+    });
+    setResult("mow", {
+      primary: "Measurement-over-wires output will show here.",
+      stats: [],
+      detailsHtml: renderList([
+        "Use M = E + 3W - (sqrt(3)/2)P to solve the mic reading from a target pitch diameter.",
+        "Use the best-wire helper if you want the nearest stocked wire size instead of the theoretical value."
+      ]),
+      copyText: ""
+    });
+    setResult("bolt", {
+      primary: "Coordinates will appear here when you generate them.",
+      stats: [],
+      detailsHtml: renderList([
+        "The selected unit is carried into the output so the result no longer feels ambiguous.",
+        "Copying the coordinate block gives you an easy handoff to setup sheets or CNC notes."
+      ]),
+      copyText: ""
+    });
+    setResult("triangle", {
+      primary: "Solved offsets and angle details will show here.",
+      stats: [],
+      detailsHtml: renderList([
+        "The selected unit now carries through the answer cards so the choice has a visible effect.",
+        "Press Enter in any field to solve without leaving the keyboard."
+      ]),
+      copyText: ""
+    });
+  </script>
 </body>
 </html>
