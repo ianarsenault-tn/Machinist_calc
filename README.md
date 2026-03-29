@@ -130,6 +130,182 @@ Then open:
 http://localhost:8000/
 ```
 
+## Hosting the App
+
+Because Marcos's Calculator is a static single-file application, hosting is straightforward. There is no backend, database, or build step required.
+
+In practice, there are two main ways to host it:
+
+- Run it locally for testing
+- Serve it from a web server for network or public access
+
+### Local Hosting for Testing
+
+This is the fastest way to run the app with a proper local URL.
+
+#### Windows
+
+1. Open PowerShell or Command Prompt.
+2. Change into the project folder:
+
+```powershell
+cd "C:\path\to\project"
+```
+
+3. Start a simple local server:
+
+```powershell
+python -m http.server 8000
+```
+
+4. Open your browser and visit:
+
+```text
+http://localhost:8000/
+```
+
+Notes:
+
+- If the main file is named `index.html`, it loads automatically at the root URL
+- If Python is not installed, install it from [python.org](https://www.python.org/downloads/)
+
+#### Linux
+
+1. Open a terminal.
+2. Change into the project folder:
+
+```bash
+cd /path/to/project
+```
+
+3. Start a local server:
+
+```bash
+python3 -m http.server 8000
+```
+
+4. Open your browser and visit:
+
+```text
+http://localhost:8000/
+```
+
+If Python 3 is not installed:
+
+```bash
+sudo apt update
+sudo apt install python3
+```
+
+### Hosting on a Real Web Server
+
+If you want the app available on your local network or the public internet, place `index.html` in a static web root and serve it with a web server.
+
+#### Windows with IIS
+
+1. Enable IIS:
+   - Open `Control Panel`
+   - Go to `Programs and Features`
+   - Select `Turn Windows features on or off`
+   - Enable `Internet Information Services`
+2. Copy `index.html` into the IIS web root:
+
+```text
+C:\inetpub\wwwroot\
+```
+
+3. Replace the default landing page if needed.
+4. Open:
+
+```text
+http://localhost/
+```
+
+For network or public hosting:
+
+- Allow port `80` through Windows Firewall
+- Configure router port forwarding if the site should be accessible from outside your network
+- Point your domain to the server IP if using a custom domain
+
+#### Linux with Nginx
+
+1. Install Nginx:
+
+```bash
+sudo apt update
+sudo apt install nginx
+```
+
+2. Copy the file into the default web root:
+
+```bash
+sudo cp index.html /var/www/html/index.html
+```
+
+3. Reload Nginx:
+
+```bash
+sudo systemctl reload nginx
+```
+
+4. Open:
+
+```text
+http://your-server-ip/
+```
+
+#### Linux with Apache
+
+1. Install Apache:
+
+```bash
+sudo apt update
+sudo apt install apache2
+```
+
+2. Copy the file into the default web root:
+
+```bash
+sudo cp index.html /var/www/html/index.html
+```
+
+3. Restart Apache:
+
+```bash
+sudo systemctl restart apache2
+```
+
+4. Open:
+
+```text
+http://your-server-ip/
+```
+
+### Static Hosting Services
+
+For public deployment, static hosting platforms are often the easiest long-term choice.
+
+Good options include:
+
+- GitHub Pages
+- Netlify
+- Vercel
+- Cloudflare Pages
+
+Typical deployment flow:
+
+1. Place `index.html` in the repository root
+2. Push the repository to GitHub
+3. Connect the repository to the hosting provider
+4. Deploy the project
+
+### Hosting Notes
+
+- Keep the main file named `index.html`
+- No backend runtime is required for production hosting
+- Theme preference is stored in the browser using `localStorage`
+- If you later split the project into multiple files, make sure relative paths remain correct
+
 ## Usage Tips
 
 - Use the top navigation on desktop to jump between tools quickly
