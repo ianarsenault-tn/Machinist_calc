@@ -528,7 +528,7 @@
       </div>
       <div class="toolbar">
         <div class="toolbar-note">Built for quick answers on the bench or at the machine.</div>
-        <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme">Theme: <span id="themeLabel">Auto</span></button>
+        <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme">Theme: <span id="themeLabel">Dark</span></button>
       </div>
     </div>
   </header>
@@ -856,16 +856,16 @@
       const btn = document.getElementById("themeToggle");
       const label = document.getElementById("themeLabel");
       function applyTheme(mode){
-        document.documentElement.removeAttribute("data-theme");
-        if (mode === "light" || mode === "dark") document.documentElement.setAttribute("data-theme", mode);
+        document.documentElement.setAttribute("data-theme", mode === "light" ? "light" : "dark");
         label.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
       }
       function nextTheme(current){
-        if (current === "auto") return "light";
-        if (current === "light") return "dark";
-        return "auto";
+        return current === "light" ? "dark" : "light";
       }
-      let themeMode = localStorage.getItem(key) || "auto";
+      let themeMode = localStorage.getItem(key);
+      if (themeMode !== "light" && themeMode !== "dark"){
+        themeMode = "dark";
+      }
       applyTheme(themeMode);
       btn.addEventListener("click", () => {
         themeMode = nextTheme(themeMode);
