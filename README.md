@@ -92,12 +92,15 @@ This project is intentionally simple.
 
 ```text
 project-root/
+├── favicon.png
 ├── index.html
 └── README.md
 ```
 
 ### File Notes
 
+- `favicon.png`
+  - Logo asset used for the browser favicon, touch icon, social preview image, and visible header branding
 - `index.html`
   - Current application
   - Contains the HTML, CSS, and JavaScript in one file
@@ -320,6 +323,7 @@ The application is built with:
 - Responsive CSS with theme tokens
 - Vanilla JavaScript calculator logic
 - Clipboard copy support
+- Favicon and social preview metadata
 - Local browser storage for theme preference
 
 No frameworks, package managers, or external dependencies are required.
