@@ -4,6 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Marcos's Calculator</title>
+  <meta name="description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <meta property="og:title" content="Marcos's Calculator" />
+  <meta property="og:description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="favicon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Marcos's Calculator" />
+  <meta name="twitter:description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <meta name="twitter:image" content="favicon.png" />
   <style>
     :root{
       color-scheme: light dark;
@@ -18,104 +29,104 @@
       --radius: 22px;
       --radius-md: 16px;
       --radius-sm: 12px;
-      --bg: #eef3f7;
-      --bg-accent: #d9e4ec;
+      --bg: #edf4fb;
+      --bg-accent: #d8e7f6;
       --panel: rgba(255, 255, 255, 0.94);
       --panel-strong: #ffffff;
-      --panel-muted: #f3f7fb;
-      --text: #0f1720;
-      --muted: #485769;
-      --border: rgba(15, 23, 32, 0.12);
-      --border-strong: rgba(15, 23, 32, 0.22);
-      --brand: #183446;
-      --brand-2: #0c1923;
-      --accent: #b95d1f;
-      --accent-soft: rgba(185, 93, 31, 0.14);
-      --accent-strong: #8f430e;
+      --panel-muted: #eef5fc;
+      --text: #091625;
+      --muted: #42566d;
+      --border: rgba(7, 26, 51, 0.12);
+      --border-strong: rgba(7, 26, 51, 0.22);
+      --brand: #081a33;
+      --brand-2: #0f345f;
+      --accent: #1278e3;
+      --accent-soft: rgba(18, 120, 227, 0.14);
+      --accent-strong: #0b5db7;
       --warning: #b42318;
       --shadow: 0 22px 55px rgba(17, 24, 39, 0.12);
-      --focus-ring: 0 0 0 3px rgba(185, 93, 31, 0.25);
-      --header-text-muted: rgba(255, 255, 255, 0.86);
-      --nav-surface: rgba(247, 250, 252, 0.9);
-      --grid-line: rgba(24, 52, 70, 0.06);
-      --body-glow: rgba(185, 93, 31, 0.14);
+      --focus-ring: 0 0 0 3px rgba(18, 120, 227, 0.24);
+      --header-text-muted: rgba(234, 243, 255, 0.86);
+      --nav-surface: rgba(243, 248, 254, 0.92);
+      --grid-line: rgba(8, 26, 51, 0.05);
+      --body-glow: rgba(18, 120, 227, 0.12);
       --header-height: 0px;
       --nav-height: 0px;
     }
 
     @media (prefers-color-scheme: dark){
       :root{
-        --bg: #08121a;
-        --bg-accent: #122433;
-        --panel: rgba(15, 24, 34, 0.94);
-        --panel-strong: #13202c;
-        --panel-muted: #0c1822;
-        --text: #eef4fb;
-        --muted: #b8c7d8;
-        --border: rgba(255, 255, 255, 0.1);
-        --border-strong: rgba(255, 255, 255, 0.18);
-        --brand: #0a1520;
-        --brand-2: #040a10;
-        --accent: #ff9f57;
-        --accent-soft: rgba(255, 159, 87, 0.18);
-        --accent-strong: #ffd2af;
+        --bg: #020912;
+        --bg-accent: #071b33;
+        --panel: rgba(8, 17, 30, 0.94);
+        --panel-strong: #0d1d33;
+        --panel-muted: #071423;
+        --text: #edf4ff;
+        --muted: #b4c5da;
+        --border: rgba(148, 177, 219, 0.14);
+        --border-strong: rgba(148, 177, 219, 0.22);
+        --brand: #01060d;
+        --brand-2: #071220;
+        --accent: #2b92ff;
+        --accent-soft: rgba(43, 146, 255, 0.18);
+        --accent-strong: #9eceff;
         --warning: #ff8b7c;
         --shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
-        --focus-ring: 0 0 0 3px rgba(255, 159, 87, 0.24);
-        --header-text-muted: rgba(233, 241, 248, 0.84);
-        --nav-surface: rgba(9, 17, 25, 0.9);
-        --grid-line: rgba(255, 255, 255, 0.05);
-        --body-glow: rgba(255, 159, 87, 0.12);
+        --focus-ring: 0 0 0 3px rgba(43, 146, 255, 0.24);
+        --header-text-muted: rgba(226, 237, 252, 0.84);
+        --nav-surface: rgba(5, 13, 23, 0.92);
+        --grid-line: rgba(159, 197, 255, 0.05);
+        --body-glow: rgba(43, 146, 255, 0.12);
       }
     }
 
     [data-theme="light"]{
       color-scheme: light;
-      --bg: #eef3f7;
-      --bg-accent: #d9e4ec;
+      --bg: #edf4fb;
+      --bg-accent: #d8e7f6;
       --panel: rgba(255, 255, 255, 0.94);
       --panel-strong: #ffffff;
-      --panel-muted: #f3f7fb;
-      --text: #0f1720;
-      --muted: #485769;
-      --border: rgba(15, 23, 32, 0.12);
-      --border-strong: rgba(15, 23, 32, 0.22);
-      --brand: #183446;
-      --brand-2: #0c1923;
-      --accent: #b95d1f;
-      --accent-soft: rgba(185, 93, 31, 0.14);
-      --accent-strong: #8f430e;
+      --panel-muted: #eef5fc;
+      --text: #091625;
+      --muted: #42566d;
+      --border: rgba(7, 26, 51, 0.12);
+      --border-strong: rgba(7, 26, 51, 0.22);
+      --brand: #081a33;
+      --brand-2: #0f345f;
+      --accent: #1278e3;
+      --accent-soft: rgba(18, 120, 227, 0.14);
+      --accent-strong: #0b5db7;
       --warning: #b42318;
       --shadow: 0 22px 55px rgba(17, 24, 39, 0.12);
-      --focus-ring: 0 0 0 3px rgba(185, 93, 31, 0.25);
-      --header-text-muted: rgba(255, 255, 255, 0.86);
-      --nav-surface: rgba(247, 250, 252, 0.9);
-      --grid-line: rgba(24, 52, 70, 0.06);
-      --body-glow: rgba(185, 93, 31, 0.14);
+      --focus-ring: 0 0 0 3px rgba(18, 120, 227, 0.24);
+      --header-text-muted: rgba(234, 243, 255, 0.86);
+      --nav-surface: rgba(243, 248, 254, 0.92);
+      --grid-line: rgba(8, 26, 51, 0.05);
+      --body-glow: rgba(18, 120, 227, 0.12);
     }
     [data-theme="dark"]{
       color-scheme: dark;
-      --bg: #08121a;
-      --bg-accent: #122433;
-      --panel: rgba(15, 24, 34, 0.94);
-      --panel-strong: #13202c;
-      --panel-muted: #0c1822;
-      --text: #eef4fb;
-      --muted: #b8c7d8;
-      --border: rgba(255, 255, 255, 0.1);
-      --border-strong: rgba(255, 255, 255, 0.18);
-      --brand: #0a1520;
-      --brand-2: #040a10;
-      --accent: #ff9f57;
-      --accent-soft: rgba(255, 159, 87, 0.18);
-      --accent-strong: #ffd2af;
+      --bg: #020912;
+      --bg-accent: #071b33;
+      --panel: rgba(8, 17, 30, 0.94);
+      --panel-strong: #0d1d33;
+      --panel-muted: #071423;
+      --text: #edf4ff;
+      --muted: #b4c5da;
+      --border: rgba(148, 177, 219, 0.14);
+      --border-strong: rgba(148, 177, 219, 0.22);
+      --brand: #01060d;
+      --brand-2: #071220;
+      --accent: #2b92ff;
+      --accent-soft: rgba(43, 146, 255, 0.18);
+      --accent-strong: #9eceff;
       --warning: #ff8b7c;
       --shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
-      --focus-ring: 0 0 0 3px rgba(255, 159, 87, 0.24);
-      --header-text-muted: rgba(233, 241, 248, 0.84);
-      --nav-surface: rgba(9, 17, 25, 0.9);
-      --grid-line: rgba(255, 255, 255, 0.05);
-      --body-glow: rgba(255, 159, 87, 0.12);
+      --focus-ring: 0 0 0 3px rgba(43, 146, 255, 0.24);
+      --header-text-muted: rgba(226, 237, 252, 0.84);
+      --nav-surface: rgba(5, 13, 23, 0.92);
+      --grid-line: rgba(159, 197, 255, 0.05);
+      --body-glow: rgba(43, 146, 255, 0.12);
     }
 
     *{ box-sizing: border-box; }
@@ -154,9 +165,11 @@
       top: 0;
       z-index: 60;
       padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 16px;
-      background: linear-gradient(135deg, rgba(47, 61, 68, 0.97), rgba(29, 38, 43, 0.96));
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 28%, transparent), transparent 34%),
+        linear-gradient(135deg, color-mix(in srgb, var(--brand) 92%, #000), color-mix(in srgb, var(--brand-2) 94%, #000));
       color: #fff;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, rgba(255,255,255,0.12));
       backdrop-filter: blur(14px);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
@@ -169,6 +182,25 @@
       gap: 18px;
     }
     .brand-lockup{ min-width: 0; }
+    .brand-row{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-mark{
+      width: 76px;
+      height: 76px;
+      object-fit: contain;
+      flex-shrink: 0;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--brand-2) 72%, rgba(255,255,255,0.08));
+      border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255,255,255,0.18));
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+      padding: 6px;
+    }
+    .brand-text{
+      min-width: 0;
+    }
     .brand-lockup h1{
       margin: 0 0 6px;
       font-family: var(--font-heading);
@@ -207,8 +239,8 @@
       gap: 10px;
       padding: 11px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.18);
+      background: color-mix(in srgb, var(--brand-2) 65%, rgba(255,255,255,0.08));
+      border-color: color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,0.18));
       color: #fff;
       font-weight: 700;
       min-height: 46px;
@@ -252,13 +284,13 @@
       padding: 10px 14px;
       border-radius: 999px;
       border-color: var(--border);
-      background: rgba(255,255,255,0.55);
+      background: color-mix(in srgb, var(--panel-strong) 82%, var(--bg-accent));
       color: var(--muted);
       font-size: var(--fs-1);
       font-weight: 700;
       min-height: 44px;
     }
-    [data-theme="dark"] .nav-link{ background: rgba(255,255,255,0.03); }
+    [data-theme="dark"] .nav-link{ background: color-mix(in srgb, var(--panel-strong) 72%, var(--brand)); }
     .nav-link.active{
       background: var(--accent-soft);
       border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
@@ -379,10 +411,10 @@
       color: var(--text);
     }
     .action-btn.primary{
-      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #6f3d1e));
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--brand)));
       border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
       color: #fff8f0;
-      box-shadow: 0 12px 24px rgba(198, 107, 45, 0.24);
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 26%, transparent);
     }
     .action-btn.secondary{ background: transparent; color: var(--muted); }
     .warning{
@@ -500,6 +532,11 @@
     @media (max-width: 860px){
       .header-wrap{ flex-direction: column; align-items: stretch; }
       .toolbar{ justify-content: space-between; }
+      .brand-row{ align-items: flex-start; }
+      .brand-mark{
+        width: 64px;
+        height: 64px;
+      }
       .field-grid.two,
       .field-grid.three{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
       .span-2{ grid-column: auto; }
@@ -513,6 +550,14 @@
       .site-header,
       .section-nav,
       .app-shell{ padding-left: 14px; padding-right: 14px; }
+      .brand-row{
+        gap: 12px;
+      }
+      .brand-mark{
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+      }
       .action-row{ display: grid; grid-template-columns: 1fr; }
       .copy-btn{ width: 100%; }
       .result-head{ flex-direction: column; }
@@ -523,8 +568,13 @@
   <header class="site-header" id="siteHeader">
     <div class="header-wrap">
       <div class="brand-lockup">
-        <h1>Marcos's Calculator</h1>
-        <p>Shop math for threads, bolt circles, and setup work.</p>
+        <div class="brand-row">
+          <img class="brand-mark" src="favicon.png" alt="Marcos's Calculator logo" />
+          <div class="brand-text">
+            <h1>Marcos's Calculator</h1>
+            <p>Shop math for threads, bolt circles, and setup work.</p>
+          </div>
+        </div>
       </div>
       <div class="toolbar">
         <div class="toolbar-note">Built for quick answers on the bench or at the machine.</div>
