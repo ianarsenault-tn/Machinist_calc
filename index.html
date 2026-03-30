@@ -926,6 +926,9 @@
 
     const SQRT3 = Math.sqrt(3);
     const SQRT3_OVER_2 = SQRT3 / 2;
+    const BASIC_PITCH_DIAMETER_FACTOR = 0.6495190528;
+    const BASIC_INTERNAL_MINOR_FACTOR = 1.0825317547;
+    const TAP_DRILL_PERCENT_FACTOR = 76.98;
     const mobileAccordion = window.matchMedia("(max-width: 860px)");
     const toolCards = Array.from(document.querySelectorAll(".tool-card"));
     const navLinks = Array.from(document.querySelectorAll("[data-tool-link]"));
@@ -1140,10 +1143,15 @@
     threadForm.addEventListener("submit", (event) => {
       event.preventDefault();
       showWarn(threadWarn, "");
-      const percent = num(document.getElementById("tapDrillPercent").value) / 100;
+      const percentValue = num(document.getElementById("tapDrillPercent").value);
+      const percentDisplay = Number.isInteger(percentValue) ? fmt(percentValue, 0) : fmt(percentValue, 2);
       const quick = threadQuickSpec.value.trim();
       let system = threadSystem.value;
       let parsed = null;
+      if (!(percentValue > 0)){
+        showWarn(threadWarn, "Enter a positive tap-drill percent.");
+        return;
+      }
       if (quick){
         parsed = parseThreadSpec(quick);
         if (!parsed){
@@ -1166,8 +1174,9 @@
         const tpi = num(document.getElementById("unTPI").value);
         if (!(major > 0) || !(tpi > 0)){ showWarn(threadWarn, "Enter a positive major diameter and TPI."); return; }
         const pitch = 1 / tpi;
-        const drill = major - (percent / tpi);
-        const basicPitchDiameter = major - 0.6495190528 * pitch;
+        const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
+        const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `${fmt(major, 4)}-${fmt(tpi, 0)}`;
         setResult("thread", {
           primary: `Tap drill: ${fmt(drill, 6)} in`,
@@ -1175,21 +1184,38 @@
             { label: "Thread", value: label },
             { label: "Pitch", value: `${fmt(pitch, 6)} in` },
             { label: "Major", value: `${fmt(major, 6)} in` },
-            { label: "E basic", value: `${fmt(basicPitchDiameter, 6)} in` }
+            { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 6)} in` },
+            { label: "Internal minor", value: `${fmt(basicInternalMinor, 6)} in` }
           ],
           detailsHtml: renderList([
-            `Tap drill rule used: Major - (${Math.round(percent * 100)}% / TPI).`,
+            `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
             "Use a standard drill near the computed size for a practical shop selection.",
-            "The basic pitch diameter shown here does not include class-of-fit tolerances."
-          ]) + renderCodeCard("Formula snapshot", [`Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`, `Tap drill = ${fmt(drill, 6)} in`, `E_basic = ${fmt(basicPitchDiameter, 6)} in`].join("\n")),
-          copyText: [`Marcos's Calculator - Thread Spec`, `Spec: ${label}`, `System: Unified`, `Tap drill: ${fmt(drill, 6)} in`, `Pitch: ${fmt(pitch, 6)} in`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`].join("\n")
+            "Pitch diameter and internal minor diameter are both shown so the inside-thread size is not confused with pitch diameter.",
+            "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread.",
+            "Basic diameter values shown here do not include class-of-fit tolerances."
+          ]) + renderCodeCard("Formula snapshot", [
+            `Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`,
+            `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 6)} in`,
+            `E_basic = Major - 0.649519 x P = ${fmt(basicPitchDiameter, 6)} in`,
+            `D1_basic = Major - 1.082532 x P = ${fmt(basicInternalMinor, 6)} in`
+          ].join("\n")),
+          copyText: [
+            `Marcos's Calculator - Thread Spec`,
+            `Spec: ${label}`,
+            `System: Unified`,
+            `Tap drill: ${fmt(drill, 6)} in`,
+            `Pitch: ${fmt(pitch, 6)} in`,
+            `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`,
+            `Basic internal minor diameter: ${fmt(basicInternalMinor, 6)} in`
+          ].join("\n")
         });
       } else {
         const major = num(document.getElementById("mMajorMm").value);
         const pitch = num(document.getElementById("mPitchMm").value);
         if (!(major > 0) || !(pitch > 0)){ showWarn(threadWarn, "Enter a positive metric major diameter and pitch."); return; }
-        const drill = major - (percent * pitch);
-        const basicPitchDiameter = major - 0.6495190528 * pitch;
+        const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
+        const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `M${fmt(major, 3)}x${fmt(pitch, 3)}`;
         setResult("thread", {
           primary: `Tap drill: ${fmt(drill, 3)} mm`,
@@ -1197,14 +1223,28 @@
             { label: "Thread", value: label },
             { label: "Pitch", value: `${fmt(pitch, 3)} mm` },
             { label: "Major", value: `${fmt(major, 3)} mm` },
-            { label: "E basic", value: `${fmt(basicPitchDiameter, 3)} mm` }
+            { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 3)} mm` },
+            { label: "Internal minor", value: `${fmt(basicInternalMinor, 3)} mm` }
           ],
           detailsHtml: renderList([
-            `Tap drill rule used: Major - (${Math.round(percent * 100)}% x Pitch).`,
-            "This is a practical tap-drill estimate, not a tolerance-class lookup.",
-            "Use the over-wires tool when you need a target M or E value for inspection."
-          ]) + renderCodeCard("Formula snapshot", [`Tap drill = ${fmt(drill, 3)} mm`, `E_basic = ${fmt(basicPitchDiameter, 3)} mm`].join("\n")),
-          copyText: [`Marcos's Calculator - Thread Spec`, `Spec: ${label}`, `System: ISO Metric`, `Tap drill: ${fmt(drill, 3)} mm`, `Pitch: ${fmt(pitch, 3)} mm`, `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`].join("\n")
+            `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+            "This is a practical tap-drill estimate for a 60 degree thread, not a tolerance-class lookup.",
+            "Pitch diameter and internal minor diameter are both shown to avoid misreading the inside-thread size.",
+            "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread."
+          ]) + renderCodeCard("Formula snapshot", [
+            `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 3)} mm`,
+            `E_basic = Major - 0.649519 x P = ${fmt(basicPitchDiameter, 3)} mm`,
+            `D1_basic = Major - 1.082532 x P = ${fmt(basicInternalMinor, 3)} mm`
+          ].join("\n")),
+          copyText: [
+            `Marcos's Calculator - Thread Spec`,
+            `Spec: ${label}`,
+            `System: ISO Metric`,
+            `Tap drill: ${fmt(drill, 3)} mm`,
+            `Pitch: ${fmt(pitch, 3)} mm`,
+            `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`,
+            `Basic internal minor diameter: ${fmt(basicInternalMinor, 3)} mm`
+          ].join("\n")
         });
       }
     });
