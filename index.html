@@ -533,6 +533,71 @@
       font-size: var(--fs-0);
       color: var(--muted);
     }
+    .quick-pick-group{
+      display: grid;
+      gap: 12px;
+    }
+    .quick-pick-stack{
+      display: grid;
+      gap: 8px;
+    }
+    .quick-pick-stack span{
+      font-size: var(--fs-0);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .chip-row{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip-btn{
+      appearance: none;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+      color: var(--accent-strong);
+      border-radius: 999px;
+      padding: 8px 12px;
+      min-height: 38px;
+      font-size: var(--fs-0);
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .chip-btn:hover{
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+      box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+    .chip-btn:focus-visible{
+      box-shadow: var(--focus-ring);
+      outline: none;
+    }
+    .reference-card{
+      display: grid;
+      gap: 8px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-muted) 92%, transparent);
+    }
+    .reference-card strong{
+      font-size: var(--fs-0);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+    }
+    .reference-card p{
+      margin: 0;
+      color: var(--text);
+      font-size: var(--fs-1);
+      line-height: 1.45;
+    }
+    .reference-card .hint{
+      margin: 0;
+    }
     input,
     select{
       width: 100%;
@@ -671,6 +736,16 @@
       color: var(--muted);
       margin-bottom: 8px;
     }
+    .detail-copy{
+      display: grid;
+      gap: 8px;
+    }
+    .detail-copy p{
+      margin: 0;
+      font-size: var(--fs-1);
+      line-height: 1.45;
+      color: var(--text);
+    }
     .detail-card pre{
       margin: 0;
       white-space: pre-wrap;
@@ -716,23 +791,6 @@
       .hero-card{
         width: 100%;
         justify-content: flex-start;
-      }
-    }
-    @media (min-width: 1180px){
-      .tool-card[data-tool="thread"] .tool-form,
-      .tool-card[data-tool="mow"] .tool-form{
-        grid-template-columns: minmax(0, 1.1fr) minmax(310px, 0.9fr);
-        column-gap: 24px;
-        align-items: start;
-      }
-      .tool-card[data-tool="thread"] .tool-form > :not(.result-shell),
-      .tool-card[data-tool="mow"] .tool-form > :not(.result-shell){ grid-column: 1; }
-      .tool-card[data-tool="thread"] .tool-form > .result-shell,
-      .tool-card[data-tool="mow"] .tool-form > .result-shell{
-        grid-column: 2;
-        grid-row: 1 / span 7;
-        position: sticky;
-        top: calc(var(--header-height) + var(--nav-height) + 18px);
       }
     }
     @media (max-width: 860px){
@@ -886,6 +944,32 @@
                 <div class="hint">If a quick spec is present, it is parsed automatically when you calculate.</div>
                 <div class="field-inline-note" id="threadQuickNote" aria-live="polite"></div>
               </div>
+              <div class="quick-pick-group span-2" aria-label="Common thread quick picks">
+                <div class="quick-pick-stack">
+                  <span>Common inch sizes</span>
+                  <div class="chip-row">
+                    <button class="chip-btn" type="button" data-thread-pick="1/4-20">1/4-20</button>
+                    <button class="chip-btn" type="button" data-thread-pick="1/4-28">1/4-28</button>
+                    <button class="chip-btn" type="button" data-thread-pick="5/16-18">5/16-18</button>
+                    <button class="chip-btn" type="button" data-thread-pick="5/16-24">5/16-24</button>
+                    <button class="chip-btn" type="button" data-thread-pick="3/8-16">3/8-16</button>
+                    <button class="chip-btn" type="button" data-thread-pick="3/8-24">3/8-24</button>
+                    <button class="chip-btn" type="button" data-thread-pick="1/2-13">1/2-13</button>
+                  </div>
+                </div>
+                <div class="quick-pick-stack">
+                  <span>Common metric sizes</span>
+                  <div class="chip-row">
+                    <button class="chip-btn" type="button" data-thread-pick="M4x0.7">M4x0.7</button>
+                    <button class="chip-btn" type="button" data-thread-pick="M5x0.8">M5x0.8</button>
+                    <button class="chip-btn" type="button" data-thread-pick="M6x1">M6x1</button>
+                    <button class="chip-btn" type="button" data-thread-pick="M8x1.25">M8x1.25</button>
+                    <button class="chip-btn" type="button" data-thread-pick="M10x1.5">M10x1.5</button>
+                    <button class="chip-btn" type="button" data-thread-pick="M12x1.75">M12x1.75</button>
+                  </div>
+                </div>
+                <div class="hint">Tap a common size to load it and calculate immediately using your selected percent thread and fit reference.</div>
+              </div>
               <div class="field">
                 <label for="threadSystem">Thread system</label>
                 <select id="threadSystem">
@@ -901,6 +985,10 @@
                   <option value="70" selected>70% (common)</option>
                   <option value="75">75% (tight)</option>
                 </select>
+              </div>
+              <div class="field span-2">
+                <label for="threadClassRef">Fit / tolerance reference</label>
+                <select id="threadClassRef"></select>
               </div>
             </div>
 
@@ -924,6 +1012,12 @@
                 <label for="mPitchMm">Pitch (mm)</label>
                 <input id="mPitchMm" type="number" step="0.001" placeholder="1.25" />
               </div>
+            </div>
+
+            <div class="reference-card" id="threadRefCard">
+              <strong id="threadRefTitle">Basic geometry only</strong>
+              <p id="threadRefBody">Shows theoretical pitch and minor diameters before class-based tolerance is applied.</p>
+              <p class="hint" id="threadRefHint">Use this when you want a fast shop estimate and will check final limits from your thread standard.</p>
             </div>
 
             <div class="action-row">
@@ -1243,6 +1337,9 @@
     function renderList(items){
       return `<ul class="detail-list">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
     }
+    function renderTextCard(title, paragraphs){
+      return `<div class="detail-card"><strong>${escapeHtml(title)}</strong><div class="detail-copy">${paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div></div>`;
+    }
     function renderCodeCard(title, body){
       return `<div class="detail-card"><strong>${escapeHtml(title)}</strong><pre>${escapeHtml(body)}</pre></div>`;
     }
@@ -1400,6 +1497,79 @@
       }
       return null;
     }
+    const THREAD_REFERENCE = {
+      un: [
+        {
+          value: "basic",
+          label: "Basic geometry only",
+          short: "Basic",
+          title: "Basic geometry only",
+          body: "Shows theoretical pitch and minor diameters before class-based tolerance is applied.",
+          hint: "Use this when you want a fast shop estimate and will check final limits from your thread standard."
+        },
+        {
+          value: "2B",
+          label: "2B general-purpose internal fit",
+          short: "2B",
+          title: "Unified class 2B",
+          body: "Common internal Unified fit for everyday production tapped holes and standard fastening work.",
+          hint: "Use published 2B limits from your thread standard for gaging and drawing control; the calculator geometry remains basic."
+        },
+        {
+          value: "3B",
+          label: "3B close internal fit",
+          short: "3B",
+          title: "Unified class 3B",
+          body: "Closer internal Unified fit used where tighter engagement and reduced looseness matter more than assembly ease.",
+          hint: "Use published 3B limits from your standard when inspection or mating fit needs to be controlled."
+        }
+      ],
+      metric: [
+        {
+          value: "basic",
+          label: "Basic geometry only",
+          short: "Basic",
+          title: "Basic geometry only",
+          body: "Shows theoretical pitch and minor diameters before metric tolerance class limits are applied.",
+          hint: "Use this when you want a fast geometry check and will pull the final class limits from your metric thread standard."
+        },
+        {
+          value: "6H",
+          label: "6H standard internal metric fit",
+          short: "6H",
+          title: "Metric class 6H",
+          body: "Most common internal metric tolerance class for general-purpose tapped holes and standard mating fasteners.",
+          hint: "Use 6H limits from the metric thread standard for final acceptance; the calculator values stay at basic geometry."
+        },
+        {
+          value: "5H",
+          label: "5H closer internal metric fit",
+          short: "5H",
+          title: "Metric class 5H",
+          body: "Closer internal metric tolerance class used when tighter engagement or more repeatable fit is desired.",
+          hint: "Check the published 5H limits from your metric standard before inspection or production release."
+        },
+        {
+          value: "7H",
+          label: "7H freer internal metric fit",
+          short: "7H",
+          title: "Metric class 7H",
+          body: "Freer internal metric tolerance class used when added assembly clearance is preferred over a closer fit.",
+          hint: "Use standard 7H limits for final control; the calculator still shows the underlying basic thread geometry."
+        }
+      ]
+    };
+    function getThreadReference(system, value){
+      const list = THREAD_REFERENCE[system === "metric" ? "metric" : "un"];
+      return list.find((item) => item.value === value) || list[0];
+    }
+    function requestFormSubmit(form){
+      if (typeof form.requestSubmit === "function"){
+        form.requestSubmit();
+        return;
+      }
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    }
 
     const threadForm = document.getElementById("threadForm");
     const threadSystem = document.getElementById("threadSystem");
@@ -1407,7 +1577,37 @@
     const threadMetricFields = document.getElementById("threadMetricFields");
     const threadQuickSpec = document.getElementById("threadQuickSpec");
     const threadQuickNote = document.getElementById("threadQuickNote");
+    const threadClassRef = document.getElementById("threadClassRef");
+    const threadRefTitle = document.getElementById("threadRefTitle");
+    const threadRefBody = document.getElementById("threadRefBody");
+    const threadRefHint = document.getElementById("threadRefHint");
     const threadWarn = document.getElementById("threadWarn");
+    function updateThreadReferenceCard(){
+      const reference = getThreadReference(threadSystem.value, threadClassRef.value);
+      threadRefTitle.textContent = reference.title;
+      threadRefBody.textContent = reference.body;
+      threadRefHint.textContent = reference.hint;
+    }
+    function updateThreadReferenceOptions(preferredValue){
+      const systemKey = threadSystem.value === "metric" ? "metric" : "un";
+      const references = THREAD_REFERENCE[systemKey];
+      const nextValue = preferredValue || threadClassRef.value || "basic";
+      threadClassRef.innerHTML = references.map((reference) => `<option value="${escapeHtml(reference.value)}">${escapeHtml(reference.label)}</option>`).join("");
+      threadClassRef.value = references.some((reference) => reference.value === nextValue) ? nextValue : "basic";
+      updateThreadReferenceCard();
+    }
+    function fillThreadFromParsed(parsed){
+      threadSystem.value = parsed.system;
+      updateThreadFields();
+      updateThreadReferenceOptions();
+      if (parsed.system === "un"){
+        document.getElementById("unMajorIn").value = fmt(parsed.major, 4);
+        document.getElementById("unTPI").value = fmt(parsed.tpi, 0);
+      } else {
+        document.getElementById("mMajorMm").value = fmt(parsed.major, 3);
+        document.getElementById("mPitchMm").value = fmt(parsed.pitch, 3);
+      }
+    }
     function updateThreadFields(){
       const showUnified = threadSystem.value === "un";
       threadUnifiedFields.hidden = !showUnified;
@@ -1419,9 +1619,26 @@
       const parsed = parseThreadSpec(quick);
       threadQuickNote.textContent = parsed ? `Quick spec recognized as ${parsed.label}.` : "Quick spec not recognized yet. Use formats like 1/4-20 or M8x1.25.";
     }
-    threadSystem.addEventListener("change", updateThreadFields);
+    threadSystem.addEventListener("change", () => {
+      updateThreadFields();
+      updateThreadReferenceOptions();
+    });
+    threadClassRef.addEventListener("change", updateThreadReferenceCard);
     threadQuickSpec.addEventListener("input", updateThreadPreview);
+    document.querySelectorAll("[data-thread-pick]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const spec = button.dataset.threadPick;
+        threadQuickSpec.value = spec;
+        const parsed = parseThreadSpec(spec);
+        if (parsed){
+          fillThreadFromParsed(parsed);
+          updateThreadPreview();
+          requestFormSubmit(threadForm);
+        }
+      });
+    });
     updateThreadFields();
+    updateThreadReferenceOptions("basic");
     updateThreadPreview();
 
     threadForm.addEventListener("submit", (event) => {
@@ -1443,16 +1660,9 @@
           return;
         }
         system = parsed.system;
-        threadSystem.value = system;
-        updateThreadFields();
-        if (system === "un"){
-          document.getElementById("unMajorIn").value = fmt(parsed.major, 4);
-          document.getElementById("unTPI").value = fmt(parsed.tpi, 0);
-        } else {
-          document.getElementById("mMajorMm").value = fmt(parsed.major, 3);
-          document.getElementById("mPitchMm").value = fmt(parsed.pitch, 3);
-        }
+        fillThreadFromParsed(parsed);
       }
+      const fitReference = getThreadReference(system, threadClassRef.value);
       if (system === "un"){
         const major = num(document.getElementById("unMajorIn").value);
         const tpi = num(document.getElementById("unTPI").value);
@@ -1469,6 +1679,7 @@
             { label: "Thread", value: label },
             { label: "Pitch", value: `${fmt(pitch, 6)} in` },
             { label: "Major", value: `${fmt(major, 6)} in` },
+            { label: "Fit ref", value: fitReference.short },
             { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 6)} in` },
             { label: "Internal minor", value: `${fmt(basicInternalMinor, 6)} in` }
           ],
@@ -1478,6 +1689,9 @@
             "Pitch diameter and internal minor diameter are both shown so the inside-thread size is not confused with pitch diameter.",
             "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread.",
             "Basic diameter values shown here do not include class-of-fit tolerances."
+          ]) + renderTextCard("Fit reference", [
+            `${fitReference.title}: ${fitReference.body}`,
+            fitReference.hint
           ]) + renderCodeCard("Formula snapshot", [
             `Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`,
             `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 6)} in`,
@@ -1488,6 +1702,7 @@
             `Marcos's Calculator - Thread Spec`,
             `Spec: ${label}`,
             `System: Unified`,
+            `Fit reference: ${fitReference.title}`,
             `Tap drill: ${fmt(drill, 6)} in`,
             `Pitch: ${fmt(pitch, 6)} in`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`,
@@ -1509,6 +1724,7 @@
             { label: "Thread", value: label },
             { label: "Pitch", value: `${fmt(pitch, 3)} mm` },
             { label: "Major", value: `${fmt(major, 3)} mm` },
+            { label: "Fit ref", value: fitReference.short },
             { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 3)} mm` },
             { label: "Internal minor", value: `${fmt(basicInternalMinor, 3)} mm` }
           ],
@@ -1517,6 +1733,9 @@
             "This is a practical tap-drill estimate for a 60 degree thread, not a tolerance-class lookup.",
             "Pitch diameter and internal minor diameter are both shown to avoid misreading the inside-thread size.",
             "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread."
+          ]) + renderTextCard("Fit reference", [
+            `${fitReference.title}: ${fitReference.body}`,
+            fitReference.hint
           ]) + renderCodeCard("Formula snapshot", [
             `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 3)} mm`,
             `E_basic = Major - 0.649519 x P = ${fmt(basicPitchDiameter, 3)} mm`,
@@ -1526,6 +1745,7 @@
             `Marcos's Calculator - Thread Spec`,
             `Spec: ${label}`,
             `System: ISO Metric`,
+            `Fit reference: ${fitReference.title}`,
             `Tap drill: ${fmt(drill, 3)} mm`,
             `Pitch: ${fmt(pitch, 3)} mm`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`,
@@ -1538,14 +1758,15 @@
       threadForm.reset();
       threadSystem.value = "un";
       updateThreadFields();
+      updateThreadReferenceOptions("basic");
       threadQuickNote.textContent = "";
       showWarn(threadWarn, "");
       setResult("thread", {
         primary: "Tap drill and pitch details will show here.",
         stats: [],
         detailsHtml: renderList([
-          "Use a quick spec like 1/4-20 or M8x1.25 when you want the fastest workflow.",
-          "The calculated tap drill is a practical rule-of-thumb, not a class-of-fit lookup."
+          "Use a quick spec like 1/4-20 or M8x1.25, or tap a common size button for a faster start.",
+          "The fit / tolerance reference is informational and does not replace published class limits."
         ]),
         copyText: ""
       });
