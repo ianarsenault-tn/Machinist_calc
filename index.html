@@ -424,9 +424,6 @@
       animation: rise-in var(--transition-slow) both;
       animation-delay: calc(var(--tool-index, 0) * 90ms + 210ms);
     }
-    .tool-card.panel-live{
-      animation: panel-swap var(--transition-base) both;
-    }
     .tool-card::before{
       content: "";
       position: absolute;
@@ -441,6 +438,16 @@
     .tool-card.active-tool{
       border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
       box-shadow: 0 24px 45px color-mix(in srgb, var(--accent) 12%, transparent), var(--shadow);
+    }
+    @supports (view-transition-name: none){
+      .tool-card.active-tool{
+        view-transition-name: active-tool-panel;
+      }
+      ::view-transition-old(active-tool-panel),
+      ::view-transition-new(active-tool-panel){
+        animation-duration: 220ms;
+        animation-timing-function: cubic-bezier(0.22, 0.8, 0.2, 1);
+      }
     }
     .tool-card.active-tool::before,
     .tool-card:hover::before{
@@ -802,16 +809,6 @@
       100%{
         transform: translateY(0) scale(1);
         opacity: 1;
-      }
-    }
-    @keyframes panel-swap{
-      0%{
-        opacity: 0;
-        transform: translateY(16px) scale(0.992);
-      }
-      100%{
-        opacity: 1;
-        transform: translateY(0) scale(1);
       }
     }
     @keyframes logo-drift{
@@ -1256,13 +1253,6 @@
       shell.classList.add("fresh");
       window.setTimeout(() => shell.classList.remove("fresh"), 650);
     }
-    function flashPanel(card){
-      if (!card) return;
-      card.classList.remove("panel-live");
-      void card.offsetWidth;
-      card.classList.add("panel-live");
-      window.setTimeout(() => card.classList.remove("panel-live"), 420);
-    }
     function setResult(toolName, config){
       const target = results[toolName];
       target.primary.textContent = config.primary;
@@ -1325,9 +1315,7 @@
       navLinks.forEach((link) => link.classList.toggle("active", link.dataset.toolLink === toolName));
       toolCards.forEach((card) => card.classList.toggle("active-tool", card.dataset.tool === toolName));
     }
-    function openTool(toolName, options = {}){
-      const shouldScroll = Boolean(options.scroll);
-      const shouldAnimate = options.animate !== false;
+    function applyToolState(toolName){
       toolCards.forEach((card) => {
         const isTarget = card.dataset.tool === toolName;
         const body = card.querySelector(".tool-body");
@@ -1335,10 +1323,21 @@
         card.classList.toggle("open", isTarget);
         body.inert = !isTarget;
         body.setAttribute("aria-hidden", isTarget ? "false" : "true");
-        if (isTarget && shouldAnimate) flashPanel(card);
       });
       setActiveNav(toolName);
       localStorage.setItem(toolStateKey, toolName);
+    }
+    function openTool(toolName, options = {}){
+      const shouldScroll = Boolean(options.scroll);
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const shouldAnimate = options.animate !== false && !reduceMotion && typeof document.startViewTransition === "function";
+      if (shouldAnimate){
+        document.startViewTransition(() => {
+          applyToolState(toolName);
+        });
+      } else {
+        applyToolState(toolName);
+      }
       if (shouldScroll){
         document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
       }
