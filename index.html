@@ -52,6 +52,9 @@
       --body-glow: rgba(18, 120, 227, 0.12);
       --header-height: 0px;
       --nav-height: 0px;
+      --transition-fast: 180ms cubic-bezier(0.22, 0.8, 0.2, 1);
+      --transition-base: 320ms cubic-bezier(0.22, 0.8, 0.2, 1);
+      --transition-slow: 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     @media (prefers-color-scheme: dark){
@@ -145,6 +148,7 @@
         radial-gradient(circle at top left, var(--body-glow), transparent 32%),
         linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, var(--bg-accent)));
       -webkit-text-size-adjust: 100%;
+      overflow-x: hidden;
     }
     body::before{
       content: "";
@@ -172,6 +176,17 @@
       border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, rgba(255,255,255,0.12));
       backdrop-filter: blur(14px);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      animation: rise-in var(--transition-slow) both;
+    }
+    .site-header::after{
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 78%, #fff), transparent);
+      opacity: 0.7;
     }
     .header-wrap{
       max-width: 1220px;
@@ -197,6 +212,7 @@
       border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255,255,255,0.18));
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
       padding: 6px;
+      animation: logo-drift 5.8s ease-in-out infinite;
     }
     .brand-text{
       min-width: 0;
@@ -224,14 +240,13 @@
 
     .toggle-btn,
     .nav-link,
-    .tool-toggle,
     .action-btn,
     .copy-btn{
       appearance: none;
       border: 1px solid transparent;
       outline: none;
       cursor: pointer;
-      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
     }
     .toggle-btn{
       display: inline-flex;
@@ -247,12 +262,10 @@
     }
     .toggle-btn:hover,
     .nav-link:hover,
-    .tool-toggle:hover,
     .action-btn:hover,
     .copy-btn:hover{ transform: translateY(-1px); }
     .toggle-btn:focus-visible,
     .nav-link:focus-visible,
-    .tool-toggle:focus-visible,
     .action-btn:focus-visible,
     .copy-btn:focus-visible,
     input:focus-visible,
@@ -266,6 +279,7 @@
       background: var(--nav-surface);
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
+      animation: rise-in var(--transition-slow) 90ms both;
     }
     .section-nav-wrap{
       max-width: 1220px;
@@ -274,7 +288,9 @@
       gap: 10px;
       overflow-x: auto;
       padding-bottom: 2px;
+      scrollbar-width: none;
     }
+    .section-nav-wrap::-webkit-scrollbar{ display: none; }
     .nav-link{
       display: inline-flex;
       align-items: center;
@@ -295,19 +311,108 @@
       background: var(--accent-soft);
       border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
       color: var(--accent-strong);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent), 0 10px 18px color-mix(in srgb, var(--accent) 16%, transparent);
     }
 
     .app-shell{
       max-width: 1220px;
       margin: 0 auto;
       padding: 24px 16px 42px;
+      display: grid;
+      gap: 22px;
+    }
+    .hero-panel{
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: calc(var(--radius) - 2px);
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34%),
+        linear-gradient(180deg, color-mix(in srgb, var(--panel) 94%, var(--bg-accent)), color-mix(in srgb, var(--panel-strong) 95%, transparent));
+      box-shadow: var(--shadow);
+      animation: rise-in var(--transition-slow) 150ms both;
+    }
+    .hero-panel::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--accent) 8%, transparent) 45%, transparent 78%);
+      transform: translateX(-100%);
+      animation: sheen 7.5s linear infinite;
+      opacity: 0.48;
+    }
+    .hero-copy{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .hero-eyebrow{
+      margin: 0;
+      font-size: var(--fs-0);
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+    }
+    .hero-copy h2{
+      margin: 0;
+      font-size: var(--fs-0);
+      line-height: 1.3;
+      font-family: var(--font-body);
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .hero-grid{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      flex: 0 1 auto;
+    }
+    .hero-card{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 8%, transparent);
+      transition: transform var(--transition-base), border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    }
+    .hero-card:hover{
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .hero-card strong{
+      font-size: var(--fs-0);
+      line-height: 1.2;
+      font-weight: 800;
+      color: var(--accent-strong);
+      white-space: nowrap;
     }
     .desktop-grid{
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
       gap: 20px;
     }
+    .desktop-grid.single-panel .tool-card{ grid-column: 1 / -1; }
+    .tool-card[hidden]{ display: none !important; }
     .tool-card{
+      position: relative;
       grid-column: span 12;
       background: var(--panel);
       border: 1px solid var(--border);
@@ -315,6 +420,37 @@
       box-shadow: var(--shadow);
       overflow: hidden;
       scroll-margin-top: calc(var(--header-height) + var(--nav-height) + 18px);
+      transition: transform var(--transition-base), border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      animation: rise-in var(--transition-slow) both;
+      animation-delay: calc(var(--tool-index, 0) * 90ms + 210ms);
+    }
+    .tool-card.panel-live{
+      animation: panel-swap var(--transition-base) both;
+    }
+    .tool-card::before{
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 35%, transparent), var(--accent), color-mix(in srgb, var(--accent) 35%, transparent));
+      opacity: 0.85;
+      transform-origin: left center;
+      transform: scaleX(0.42);
+      transition: transform var(--transition-base), opacity var(--transition-fast);
+    }
+    .tool-card.active-tool{
+      border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+      box-shadow: 0 24px 45px color-mix(in srgb, var(--accent) 12%, transparent), var(--shadow);
+    }
+    .tool-card.active-tool::before,
+    .tool-card:hover::before{
+      transform: scaleX(1);
+    }
+    @media (hover: hover) and (pointer: fine){
+      .tool-card:hover{
+        transform: translateY(-4px);
+        border-color: color-mix(in srgb, var(--accent) 26%, var(--border));
+      }
     }
     .tool-card[data-tool="thread"],
     .tool-card[data-tool="mow"]{ grid-column: span 6; }
@@ -330,7 +466,6 @@
       padding: 22px 24px 20px;
       text-align: left;
       background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
-      border: none;
       border-bottom: 1px solid var(--border);
     }
     .tool-title strong{
@@ -357,12 +492,14 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       flex-shrink: 0;
+      margin-left: auto;
     }
     .tool-body{ padding: 0 24px 24px; }
     .tool-form{
       display: grid;
       gap: 22px;
       padding-top: 22px;
+      align-items: start;
     }
     .field-group,
     .result-details{ display: grid; gap: 14px; }
@@ -370,11 +507,12 @@
       display: grid;
       gap: 14px;
       grid-template-columns: repeat(1, minmax(0, 1fr));
+      align-items: start;
     }
     .field-grid.two{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .field-grid.three{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .span-2{ grid-column: span 2; }
-    .field{ display: grid; gap: 7px; min-width: 0; }
+    .field{ display: grid; gap: 7px; min-width: 0; align-content: start; }
     .field label{
       font-size: var(--fs-0);
       font-weight: 800;
@@ -383,6 +521,11 @@
       color: var(--muted);
     }
     .hint{ font-size: var(--fs-0); color: var(--muted); }
+    .row-hint{
+      margin-top: -8px;
+      font-size: var(--fs-0);
+      color: var(--muted);
+    }
     input,
     select{
       width: 100%;
@@ -436,6 +579,12 @@
       border-radius: calc(var(--radius) - 6px);
       background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0)), var(--panel-muted);
       border: 1px solid var(--border);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast), background var(--transition-fast);
+    }
+    .result-shell.fresh{
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+      box-shadow: 0 18px 30px color-mix(in srgb, var(--accent) 15%, transparent);
+      animation: result-pop 560ms cubic-bezier(0.18, 0.84, 0.24, 1);
     }
     .result-head{
       display: flex;
@@ -468,6 +617,16 @@
       font-size: var(--fs-1);
       font-weight: 800;
       color: var(--muted);
+    }
+    .copy-btn.copied{
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+      color: var(--accent-strong);
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+    .copy-btn.failed{
+      border-color: color-mix(in srgb, var(--warning) 44%, var(--border));
+      color: var(--warning);
     }
     .copy-btn[hidden]{ display: none; }
     .result-stats{
@@ -524,15 +683,56 @@
     }
 
     @media (max-width: 1060px){
+      .hero-panel{
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .hero-copy{
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .hero-grid{
+        width: 100%;
+        justify-content: flex-start;
+      }
       .tool-card[data-tool="thread"],
       .tool-card[data-tool="mow"],
       .tool-card[data-tool="bolt"],
       .tool-card[data-tool="triangle"]{ grid-column: span 12; }
     }
+    @media (max-width: 720px){
+      .hero-grid{
+        gap: 7px;
+      }
+      .hero-card{
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+    @media (min-width: 1180px){
+      .tool-card[data-tool="thread"] .tool-form,
+      .tool-card[data-tool="mow"] .tool-form{
+        grid-template-columns: minmax(0, 1.1fr) minmax(310px, 0.9fr);
+        column-gap: 24px;
+        align-items: start;
+      }
+      .tool-card[data-tool="thread"] .tool-form > :not(.result-shell),
+      .tool-card[data-tool="mow"] .tool-form > :not(.result-shell){ grid-column: 1; }
+      .tool-card[data-tool="thread"] .tool-form > .result-shell,
+      .tool-card[data-tool="mow"] .tool-form > .result-shell{
+        grid-column: 2;
+        grid-row: 1 / span 7;
+        position: sticky;
+        top: calc(var(--header-height) + var(--nav-height) + 18px);
+      }
+    }
     @media (max-width: 860px){
       .header-wrap{ flex-direction: column; align-items: stretch; }
       .toolbar{ justify-content: space-between; }
       .brand-row{ align-items: flex-start; }
+      .hero-panel{ padding: 9px 11px; }
       .brand-mark{
         width: 64px;
         height: 64px;
@@ -541,10 +741,18 @@
       .field-grid.three{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
       .span-2{ grid-column: auto; }
       .tool-toggle{ padding: 18px 18px 16px; }
-      .tool-body{ padding: 0 18px 18px; }
-      .tool-card:not(.open) .tool-body{ display: none; }
-      .tool-card .tool-pill::after{ content: " open"; opacity: 0.72; }
-      .tool-card.open .tool-pill::after{ content: " close"; }
+      .tool-body{
+        padding: 0 18px 18px;
+        overflow: hidden;
+        max-height: 9999px;
+        opacity: 1;
+        transition: max-height var(--transition-base), opacity var(--transition-fast), padding var(--transition-fast);
+      }
+      .tool-card:not(.open) .tool-body{
+        max-height: 0;
+        opacity: 0;
+        padding-bottom: 0;
+      }
     }
     @media (max-width: 520px){
       .site-header,
@@ -558,9 +766,61 @@
         height: 56px;
         border-radius: 14px;
       }
+      .hero-panel{ padding: 8px 9px; }
       .action-row{ display: grid; grid-template-columns: 1fr; }
       .copy-btn{ width: 100%; }
       .result-head{ flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto; }
+      *, *::before, *::after{
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @keyframes rise-in{
+      from{
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to{
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes result-pop{
+      0%{
+        transform: translateY(8px) scale(0.985);
+        opacity: 0.65;
+      }
+      55%{
+        transform: translateY(-2px) scale(1.01);
+        opacity: 1;
+      }
+      100%{
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+    @keyframes panel-swap{
+      0%{
+        opacity: 0;
+        transform: translateY(16px) scale(0.992);
+      }
+      100%{
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    @keyframes logo-drift{
+      0%, 100%{ transform: translateY(0); }
+      50%{ transform: translateY(-3px); }
+    }
+    @keyframes sheen{
+      from{ transform: translateX(-100%); }
+      to{ transform: translateX(140%); }
     }
   </style>
 </head>
@@ -593,15 +853,33 @@
   </nav>
 
   <main class="app-shell">
+    <section class="hero-panel" aria-label="Application overview">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Bench-Ready Workflow</p>
+        <h2>Top-nav switching, fast copy, and one active tool at a time.</h2>
+      </div>
+      <div class="hero-grid">
+        <article class="hero-card">
+          <strong>Quick thread parsing</strong>
+        </article>
+        <article class="hero-card">
+          <strong>Copy-ready outputs</strong>
+        </article>
+        <article class="hero-card">
+          <strong>Desktop + mobile friendly</strong>
+        </article>
+      </div>
+    </section>
+
     <div class="desktop-grid">
       <section class="tool-card open" id="tool-thread" data-tool="thread">
-        <button class="tool-toggle" type="button" data-tool-toggle="thread" aria-expanded="true">
+        <div class="tool-toggle">
           <div class="tool-title">
             <strong>Thread Spec Helper + Tap Drill</strong>
             <span>Use a quick thread spec or enter major diameter and pitch details manually.</span>
           </div>
           <span class="tool-pill">Threads</span>
-        </button>
+        </div>
         <div class="tool-body">
           <form class="tool-form" id="threadForm">
             <div class="field-grid two">
@@ -673,13 +951,13 @@
       </section>
 
       <section class="tool-card open" id="tool-mow" data-tool="mow">
-        <button class="tool-toggle" type="button" data-tool-toggle="mow" aria-expanded="true">
+        <div class="tool-toggle">
           <div class="tool-title">
             <strong>Measurement Over Wires (60&deg; Threads)</strong>
             <span>Swap between solving pitch diameter from a mic reading or the other way around.</span>
           </div>
           <span class="tool-pill">Wires</span>
-        </button>
+        </div>
         <div class="tool-body">
           <form class="tool-form" id="mowForm">
             <div class="field-grid two">
@@ -764,13 +1042,13 @@
       </section>
 
       <section class="tool-card open" id="tool-bolt" data-tool="bolt">
-        <button class="tool-toggle" type="button" data-tool-toggle="bolt" aria-expanded="true">
+        <div class="tool-toggle">
           <div class="tool-title">
             <strong>Bolt Circle Coordinates</strong>
             <span>Generate evenly spaced XY coordinates and copy the full coordinate list in one click.</span>
           </div>
           <span class="tool-pill">Bolt</span>
-        </button>
+        </div>
         <div class="tool-body">
           <form class="tool-form" id="boltForm">
             <div class="field-grid three">
@@ -795,7 +1073,6 @@
               <div class="field">
                 <label for="bcStartAngle">Start angle (deg)</label>
                 <input id="bcStartAngle" type="number" step="0.01" value="0" />
-                <div class="hint">0&deg; starts at +X. Use 90&deg; to start on +Y.</div>
               </div>
               <div class="field">
                 <label for="bcClockwise">Direction</label>
@@ -805,6 +1082,7 @@
                 </select>
               </div>
             </div>
+            <div class="row-hint">0&deg; starts at +X. Use 90&deg; to start on +Y.</div>
 
             <div class="action-row">
               <button class="action-btn primary" type="submit">Generate coordinates</button>
@@ -828,13 +1106,13 @@
       </section>
 
       <section class="tool-card open" id="tool-triangle" data-tool="triangle">
-        <button class="tool-toggle" type="button" data-tool-toggle="triangle" aria-expanded="true">
+        <div class="tool-toggle">
           <div class="tool-title">
             <strong>Right-Triangle / Offset Solver</strong>
             <span>Switch modes depending on which side or angle you already know.</span>
           </div>
           <span class="tool-pill">Offsets</span>
-        </button>
+        </div>
         <div class="tool-body">
           <form class="tool-form" id="triangleForm">
             <div class="field-grid two">
@@ -929,16 +1207,18 @@
     const BASIC_PITCH_DIAMETER_FACTOR = 0.6495190528;
     const BASIC_INTERNAL_MINOR_FACTOR = 1.0825317547;
     const TAP_DRILL_PERCENT_FACTOR = 76.98;
-    const mobileAccordion = window.matchMedia("(max-width: 860px)");
+    const toolStateKey = "marcos_calc_active_tool";
     const toolCards = Array.from(document.querySelectorAll(".tool-card"));
     const navLinks = Array.from(document.querySelectorAll("[data-tool-link]"));
     const copyButtons = Array.from(document.querySelectorAll(".copy-btn"));
+    const desktopGrid = document.querySelector(".desktop-grid");
     const results = {
-      thread: { primary: document.getElementById("threadPrimary"), stats: document.getElementById("threadStats"), details: document.getElementById("threadDetails"), copy: document.getElementById("threadCopy") },
-      mow: { primary: document.getElementById("mowPrimary"), stats: document.getElementById("mowStats"), details: document.getElementById("mowDetails"), copy: document.getElementById("mowCopy") },
-      bolt: { primary: document.getElementById("bcPrimary"), stats: document.getElementById("bcStats"), details: document.getElementById("bcDetails"), copy: document.getElementById("bcCopy") },
-      triangle: { primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") }
+      thread: { shell: document.querySelector("#tool-thread .result-shell"), primary: document.getElementById("threadPrimary"), stats: document.getElementById("threadStats"), details: document.getElementById("threadDetails"), copy: document.getElementById("threadCopy") },
+      mow: { shell: document.querySelector("#tool-mow .result-shell"), primary: document.getElementById("mowPrimary"), stats: document.getElementById("mowStats"), details: document.getElementById("mowDetails"), copy: document.getElementById("mowCopy") },
+      bolt: { shell: document.querySelector("#tool-bolt .result-shell"), primary: document.getElementById("bcPrimary"), stats: document.getElementById("bcStats"), details: document.getElementById("bcDetails"), copy: document.getElementById("bcCopy") },
+      triangle: { shell: document.querySelector("#tool-triangle .result-shell"), primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") }
     };
+    toolCards.forEach((card, index) => card.style.setProperty("--tool-index", index));
 
     function escapeHtml(value){
       return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -969,6 +1249,20 @@
     function renderCodeCard(title, body){
       return `<div class="detail-card"><strong>${escapeHtml(title)}</strong><pre>${escapeHtml(body)}</pre></div>`;
     }
+    function flashResult(shell){
+      if (!shell) return;
+      shell.classList.remove("fresh");
+      void shell.offsetWidth;
+      shell.classList.add("fresh");
+      window.setTimeout(() => shell.classList.remove("fresh"), 650);
+    }
+    function flashPanel(card){
+      if (!card) return;
+      card.classList.remove("panel-live");
+      void card.offsetWidth;
+      card.classList.add("panel-live");
+      window.setTimeout(() => card.classList.remove("panel-live"), 420);
+    }
     function setResult(toolName, config){
       const target = results[toolName];
       target.primary.textContent = config.primary;
@@ -981,6 +1275,7 @@
         target.copy.hidden = true;
         target.copy.dataset.copyText = "";
       }
+      if (config.animate) flashResult(target.shell);
     }
     async function writeClipboard(text){
       if (navigator.clipboard && navigator.clipboard.writeText){
@@ -1002,13 +1297,22 @@
         const original = button.textContent;
         const text = button.dataset.copyText || "";
         if (!text) return;
+        button.classList.remove("copied", "failed");
         try {
           await writeClipboard(text);
           button.textContent = "Copied";
-          window.setTimeout(() => { button.textContent = original; }, 1400);
+          button.classList.add("copied");
+          window.setTimeout(() => {
+            button.textContent = original;
+            button.classList.remove("copied");
+          }, 1400);
         } catch {
           button.textContent = "Copy failed";
-          window.setTimeout(() => { button.textContent = original; }, 1600);
+          button.classList.add("failed");
+          window.setTimeout(() => {
+            button.textContent = original;
+            button.classList.remove("failed");
+          }, 1600);
         }
       });
     });
@@ -1019,60 +1323,41 @@
     }
     function setActiveNav(toolName){
       navLinks.forEach((link) => link.classList.toggle("active", link.dataset.toolLink === toolName));
+      toolCards.forEach((card) => card.classList.toggle("active-tool", card.dataset.tool === toolName));
     }
-    function openTool(toolName){
+    function openTool(toolName, options = {}){
+      const shouldScroll = Boolean(options.scroll);
+      const shouldAnimate = options.animate !== false;
       toolCards.forEach((card) => {
         const isTarget = card.dataset.tool === toolName;
-        if (mobileAccordion.matches) {
-          card.classList.toggle("open", isTarget);
-        } else {
-          card.classList.add("open");
-        }
-        card.querySelector("[data-tool-toggle]").setAttribute("aria-expanded", card.classList.contains("open") ? "true" : "false");
+        const body = card.querySelector(".tool-body");
+        card.hidden = !isTarget;
+        card.classList.toggle("open", isTarget);
+        body.inert = !isTarget;
+        body.setAttribute("aria-hidden", isTarget ? "false" : "true");
+        if (isTarget && shouldAnimate) flashPanel(card);
       });
       setActiveNav(toolName);
-    }
-    function syncAccordionState(){
-      if (mobileAccordion.matches) {
-        const current = document.querySelector(".tool-card.open") || document.querySelector('[data-tool="thread"]');
-        openTool(current.dataset.tool);
-      } else {
-        toolCards.forEach((card) => {
-          card.classList.add("open");
-          card.querySelector("[data-tool-toggle]").setAttribute("aria-expanded", "true");
-        });
+      localStorage.setItem(toolStateKey, toolName);
+      if (shouldScroll){
+        document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
-    document.querySelectorAll("[data-tool-toggle]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const toolName = button.dataset.toolToggle;
-        if (mobileAccordion.matches) {
-          openTool(toolName);
-        } else {
-          document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
-          setActiveNav(toolName);
-        }
-      });
-    });
+    function syncAccordionState(){
+      const savedTool = localStorage.getItem(toolStateKey);
+      const fallbackTool = document.querySelector('[data-tool="thread"]').dataset.tool;
+      const toolName = toolCards.some((card) => card.dataset.tool === savedTool) ? savedTool : fallbackTool;
+      openTool(toolName, { animate: false });
+    }
     navLinks.forEach((link) => {
       link.addEventListener("click", (event) => {
         event.preventDefault();
         const toolName = link.dataset.toolLink;
-        openTool(toolName);
-        document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
+        openTool(toolName, { scroll: true });
       });
     });
-    const sectionObserver = new IntersectionObserver((entries) => {
-      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible) setActiveNav(visible.target.dataset.tool);
-    }, { threshold: [0.3, 0.55, 0.8], rootMargin: "-12% 0px -45% 0px" });
-    toolCards.forEach((card) => sectionObserver.observe(card));
+    desktopGrid.classList.add("single-panel");
     window.addEventListener("resize", updateStickyMetrics);
-    if (typeof mobileAccordion.addEventListener === "function"){
-      mobileAccordion.addEventListener("change", syncAccordionState);
-    } else if (typeof mobileAccordion.addListener === "function"){
-      mobileAccordion.addListener(syncAccordionState);
-    }
     updateStickyMetrics();
     syncAccordionState();
 
@@ -1179,6 +1464,7 @@
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `${fmt(major, 4)}-${fmt(tpi, 0)}`;
         setResult("thread", {
+          animate: true,
           primary: `Tap drill: ${fmt(drill, 6)} in`,
           stats: [
             { label: "Thread", value: label },
@@ -1218,6 +1504,7 @@
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `M${fmt(major, 3)}x${fmt(pitch, 3)}`;
         setResult("thread", {
+          animate: true,
           primary: `Tap drill: ${fmt(drill, 3)} mm`,
           stats: [
             { label: "Thread", value: label },
@@ -1339,6 +1626,7 @@
       const snapped = wireSetChoice === "inch" ? closestInSet(theoretical, WIRE_SET_INCH) : closestInSet(theoretical, WIRE_SET_MM);
       mowWire.value = snapped.toFixed(3);
       setResult("mow", {
+        animate: true,
         primary: `Best wire suggestion: ${fmt(snapped, 6)} ${unitLabel(mowUnits.value)}`,
         stats: [
           { label: "Pitch P", value: `${fmt(pitch, 6)} ${unitLabel(mowUnits.value)}` },
@@ -1369,6 +1657,7 @@
         const measurement = pitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
         mowM.value = measurement.toFixed(6);
         setResult("mow", {
+          animate: true,
           primary: `M = ${fmt(measurement, 6)} ${units}`,
           stats: [
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
@@ -1389,6 +1678,7 @@
         const pitchDiameter = measurement - 3 * wire + (SQRT3_OVER_2 * pitch);
         mowE.value = pitchDiameter.toFixed(6);
         setResult("mow", {
+          animate: true,
           primary: `E = ${fmt(pitchDiameter, 6)} ${units}`,
           stats: [
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
@@ -1454,6 +1744,7 @@
         lines.push(`${index + 1}, ${fmt(angleDeg, 4)}, ${fmt(x, 6)}, ${fmt(y, 6)}`);
       }
       setResult("bolt", {
+        animate: true,
         primary: `${holes} coordinates ready in ${units}`,
         stats: [
           { label: "BCD", value: `${fmt(diameter, 6)} ${units}` },
@@ -1597,7 +1888,7 @@
           copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       }
-      setResult("triangle", { primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
+      setResult("triangle", { animate: true, primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
     });
 
     document.getElementById("btnRtClear").addEventListener("click", () => {
