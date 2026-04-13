@@ -15,6 +15,8 @@
   <meta name="twitter:title" content="Marcos's Calculator" />
   <meta name="twitter:description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
   <meta name="twitter:image" content="favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#081a33" />
   <style>
     :root{
       color-scheme: light dark;
@@ -136,6 +138,7 @@
     html{
       scroll-behavior: smooth;
       scroll-padding-top: calc(var(--header-height) + var(--nav-height) + 20px);
+      scrollbar-gutter: stable;
     }
     body{
       margin: 0;
@@ -203,8 +206,8 @@
       gap: 16px;
     }
     .brand-mark{
-      width: 76px;
-      height: 76px;
+      width: 92px;
+      height: 92px;
       object-fit: contain;
       flex-shrink: 0;
       border-radius: 18px;
@@ -212,7 +215,6 @@
       border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255,255,255,0.18));
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
       padding: 6px;
-      animation: logo-drift 5.8s ease-in-out infinite;
     }
     .brand-text{
       min-width: 0;
@@ -259,6 +261,16 @@
       color: #fff;
       font-weight: 700;
       min-height: 46px;
+    }
+    #themeIcon{
+      display: inline-block;
+      width: 1.4em;
+      text-align: center;
+    }
+    #themeLabel{
+      display: inline-block;
+      min-width: 5.6em;
+      text-align: left;
     }
     .toggle-btn:hover,
     .nav-link:hover,
@@ -673,11 +685,13 @@
     }
     .result-primary{
       margin-top: 6px;
-      font-size: clamp(1.25rem, 1.08rem + 0.9vw, 1.9rem);
-      line-height: 1.15;
+      font-size: clamp(1.05rem, 0.95rem + 0.9vw, 1.9rem);
+      line-height: 1.25;
       font-weight: 900;
       color: var(--accent-strong);
       font-family: var(--font-heading);
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .copy-btn{
       flex-shrink: 0;
@@ -703,8 +717,13 @@
     .copy-btn[hidden]{ display: none; }
     .result-stats{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
+    }
+    @media (max-width: 420px){
+      .result-stats{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
     .stat-card{
       padding: 12px;
@@ -758,6 +777,20 @@
     .detail-card code{ font-family: var(--font-mono); font-size: 0.9em; }
     .field-inline-note{ font-size: var(--fs-0); color: var(--accent-strong); min-height: 1.3em; }
 
+    .field-computed input{
+      background: color-mix(in srgb, var(--panel-muted) 88%, var(--bg-accent));
+      color: var(--muted);
+      border-style: dashed;
+    }
+    .field-computed label::after{
+      content: " (computed)";
+      font-size: 0.78em;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      opacity: 0.75;
+    }
+
     @supports (-webkit-touch-callout: none){
       input,
       select,
@@ -799,8 +832,8 @@
       .brand-row{ align-items: flex-start; }
       .hero-panel{ padding: 9px 11px; }
       .brand-mark{
-        width: 64px;
-        height: 64px;
+        width: 78px;
+        height: 78px;
       }
       .field-grid.two,
       .field-grid.three{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
@@ -827,13 +860,12 @@
         gap: 12px;
       }
       .brand-mark{
-        width: 56px;
-        height: 56px;
+        width: 68px;
+        height: 68px;
         border-radius: 14px;
       }
       .hero-panel{ padding: 8px 9px; }
       .action-row{ display: grid; grid-template-columns: 1fr; }
-      .copy-btn{ width: 100%; }
       .result-head{ flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce){
@@ -869,13 +901,260 @@
         opacity: 1;
       }
     }
-    @keyframes logo-drift{
-      0%, 100%{ transform: translateY(0); }
-      50%{ transform: translateY(-3px); }
-    }
     @keyframes sheen{
       from{ transform: translateX(-100%); }
       to{ transform: translateX(140%); }
+    }
+
+    /* ── Spinner hide ── */
+    input[type="number"]{ -moz-appearance: textfield; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button{ -webkit-appearance: none; margin: 0; }
+
+    /* ── Segmented percent control ── */
+    .seg-group{ display: flex; flex-wrap: wrap; gap: 6px; }
+    .seg-btn{
+      appearance: none;
+      flex: 1 1 auto;
+      min-height: 44px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: var(--panel-muted);
+      font: inherit;
+      font-size: var(--fs-0);
+      font-weight: 800;
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .seg-btn:hover{ transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 42%, var(--border)); }
+    .seg-btn.active{
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--brand)));
+      border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+      color: #fff;
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    .seg-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+
+    /* ── MOW mode toggle ── */
+    .mode-toggle-row{ display: flex; gap: 8px; }
+    .mode-btn{
+      appearance: none;
+      flex: 1 1 auto;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: var(--panel-muted);
+      font: inherit;
+      font-size: var(--fs-1);
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      text-align: center;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .mode-btn:hover{ transform: translateY(-1px); }
+    .mode-btn.active{
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+      color: var(--accent-strong);
+      box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .mode-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+
+    /* ── Triangle diagram ── */
+    .rt-diagram{
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-muted) 90%, var(--bg-accent));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .rt-svg{ width: 100%; height: auto; max-height: 200px; overflow: visible; }
+    .rt-edge{ stroke-linecap: round; transition: stroke 280ms, opacity 280ms; }
+    .rt-edge.known{ stroke: var(--accent); opacity: 1; stroke-dasharray: none; }
+    .rt-edge.unknown{ stroke: var(--muted); opacity: 0.4; stroke-dasharray: 5 4; }
+    .rt-edge.neutral{ stroke: var(--border-strong); opacity: 0.9; stroke-dasharray: none; }
+    .rt-label{ font-family: var(--font-body); dominant-baseline: middle; transition: fill 280ms, opacity 280ms; }
+    .rt-label.known{ fill: var(--accent-strong); font-weight: 700; opacity: 1; }
+    .rt-label.unknown{ fill: var(--muted); opacity: 0.6; }
+
+    /* ── Bolt circle SVG ── */
+    .bc-svg-wrap{
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-muted) 90%, var(--bg-accent));
+      display: flex;
+      justify-content: center;
+    }
+    .bc-svg{ width: 100%; height: auto; max-height: 280px; }
+
+    /* ── Chip active state ── */
+    .chip-btn.chip-active{
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+      color: var(--accent-strong);
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+
+    /* ── Toast ── */
+    .toast-container{
+      position: fixed;
+      bottom: max(env(safe-area-inset-bottom, 0px) + 14px, 14px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      pointer-events: none;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+    }
+    .toast{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow);
+      font-size: var(--fs-1);
+      font-weight: 600;
+      color: var(--text);
+      pointer-events: all;
+      animation: rise-in 220ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+      white-space: nowrap;
+    }
+    @keyframes toast-out{ to{ opacity: 0; transform: translateY(8px); } }
+    .toast-undo{
+      appearance: none;
+      border: 1px solid color-mix(in srgb, var(--accent) 65%, var(--border));
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font: inherit;
+      font-size: var(--fs-0);
+      font-weight: 800;
+      padding: 6px 13px;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+    .toast-undo:hover{ transform: translateY(-1px); }
+
+    /* ── Result actions (copy + print row) ── */
+    .result-actions{
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+
+    /* ── Print button ── */
+    .print-btn{
+      appearance: none;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: var(--panel-strong);
+      font: inherit;
+      font-size: var(--fs-1);
+      font-weight: 800;
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+    .print-btn:hover{ transform: translateY(-1px); }
+    .print-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+
+    @media (max-width: 520px){
+      .result-actions{ width: 100%; }
+      .result-actions .copy-btn,
+      .result-actions .print-btn{ flex: 1; }
+    }
+
+    /* ── Print media ── */
+    @media print{
+      *{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body{ background: white !important; color: #111 !important; }
+      body::before{ display: none !important; }
+      .site-header, .section-nav, .hero-panel,
+      .tool-form > .field-grid, .tool-form > .field-group,
+      .tool-form > .quick-pick-group, .tool-form > .action-row,
+      .tool-form > .warning, .tool-form > .reference-card,
+      .tool-form > .row-hint, .rt-diagram, .tool-toggle,
+      .copy-btn, .print-btn, .share-btn, .history-section{ display: none !important; }
+      .tool-card:not(.active-tool){ display: none !important; }
+      .desktop-grid, .app-shell{ display: block; padding: 0; }
+      .tool-card.active-tool{ box-shadow: none; border-color: #ccc; }
+      .result-shell{ box-shadow: none; border-color: #ccc; }
+      .result-stats{ grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ── History section ── */
+    .history-section{ margin-top: 4px; }
+    .history-toggle-btn{
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: transparent;
+      font: inherit; font-size: var(--fs-0); font-weight: 800;
+      color: var(--muted); cursor: pointer; text-align: left; appearance: none;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+    }
+    .history-toggle-btn:hover{ background: var(--panel-muted); }
+    .history-toggle-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+    .history-badge{
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 1.5em; height: 1.5em; padding: 0 5px;
+      border-radius: 999px; background: var(--accent-soft);
+      color: var(--accent-strong); font-size: 0.75em; font-weight: 900;
+    }
+    .history-toggle-chevron{ margin-left: auto; transition: transform var(--transition-fast); display: inline-block; }
+    .history-section.open .history-toggle-chevron{ transform: rotate(180deg); }
+    .history-list{
+      display: grid; gap: 6px; margin-top: 8px;
+      overflow: hidden; max-height: 0; transition: max-height var(--transition-base);
+    }
+    .history-section.open .history-list{ max-height: 9999px; }
+    .history-item-btn{
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 10px;
+      align-items: center; width: 100%; padding: 10px 12px;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+      font: inherit; font-size: var(--fs-0); text-align: left;
+      cursor: pointer; appearance: none;
+      transition: border-color var(--transition-fast), background var(--transition-fast);
+    }
+    .history-item-btn:hover{ border-color: color-mix(in srgb, var(--accent) 42%, var(--border)); background: var(--accent-soft); }
+    .history-item-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+    .history-item-primary{ font-weight: 700; color: var(--accent-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .history-item-time{ font-size: 0.85em; color: var(--muted); white-space: nowrap; }
+
+    /* ── Share button ── */
+    .share-btn{
+      appearance: none; min-height: 42px; padding: 10px 14px;
+      border-radius: 999px; border: 1px solid var(--border-strong);
+      background: var(--panel-strong); font: inherit; font-size: var(--fs-1);
+      font-weight: 800; color: var(--muted); cursor: pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+    }
+    .share-btn:hover{ transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 42%, var(--border)); }
+    .share-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+    .share-btn[hidden]{ display: none; }
+    .share-btn.shared{
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+      color: var(--accent-strong);
+    }
+    @media (max-width: 520px){
+      .result-actions .share-btn{ flex: 1; }
     }
   </style>
 </head>
@@ -893,7 +1172,7 @@
       </div>
       <div class="toolbar">
         <div class="toolbar-note">Built for quick answers on the bench or at the machine.</div>
-        <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme">Theme: <span id="themeLabel">Dark</span></button>
+        <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme"><span id="themeIcon" aria-hidden="true">☾</span> <span id="themeLabel">Switch to Light</span></button>
       </div>
     </div>
   </header>
@@ -908,24 +1187,6 @@
   </nav>
 
   <main class="app-shell">
-    <section class="hero-panel" aria-label="Application overview">
-      <div class="hero-copy">
-        <p class="hero-eyebrow">Bench-Ready Workflow</p>
-        <h2>Top-nav switching, fast copy, and one active tool at a time.</h2>
-      </div>
-      <div class="hero-grid">
-        <article class="hero-card">
-          <strong>Quick thread parsing</strong>
-        </article>
-        <article class="hero-card">
-          <strong>Copy-ready outputs</strong>
-        </article>
-        <article class="hero-card">
-          <strong>Desktop + mobile friendly</strong>
-        </article>
-      </div>
-    </section>
-
     <div class="desktop-grid">
       <section class="tool-card open" id="tool-thread" data-tool="thread">
         <div class="tool-toggle">
@@ -968,6 +1229,16 @@
                     <button class="chip-btn" type="button" data-thread-pick="M12x1.75">M12x1.75</button>
                   </div>
                 </div>
+                <div class="quick-pick-stack">
+                  <span>Machine screws</span>
+                  <div class="chip-row">
+                    <button class="chip-btn" type="button" data-thread-pick="#4-40">#4-40</button>
+                    <button class="chip-btn" type="button" data-thread-pick="#6-32">#6-32</button>
+                    <button class="chip-btn" type="button" data-thread-pick="#8-32">#8-32</button>
+                    <button class="chip-btn" type="button" data-thread-pick="#10-24">#10-24</button>
+                    <button class="chip-btn" type="button" data-thread-pick="#10-32">#10-32</button>
+                  </div>
+                </div>
                 <div class="hint">Tap a common size to load it and calculate immediately using your selected percent thread and fit reference.</div>
               </div>
               <div class="field">
@@ -978,13 +1249,15 @@
                 </select>
               </div>
               <div class="field">
-                <label for="tapDrillPercent">Percent thread</label>
-                <select id="tapDrillPercent">
-                  <option value="60">60% (easy tapping)</option>
-                  <option value="65">65% (common)</option>
-                  <option value="70" selected>70% (common)</option>
-                  <option value="75">75% (tight)</option>
-                </select>
+                <label>Percent thread</label>
+                <div class="seg-group" role="group" aria-label="Percent thread">
+                  <button class="seg-btn" type="button" data-pct="60">60%</button>
+                  <button class="seg-btn" type="button" data-pct="65">65%</button>
+                  <button class="seg-btn active" type="button" data-pct="70">70%</button>
+                  <button class="seg-btn" type="button" data-pct="75">75%</button>
+                  <button class="seg-btn" type="button" data-pct="80">80%</button>
+                </div>
+                <input type="hidden" id="tapDrillPercent" value="70" />
               </div>
               <div class="field span-2">
                 <label for="threadClassRef">Fit / tolerance reference</label>
@@ -1032,10 +1305,22 @@
                   <div class="result-label">Primary answer</div>
                   <div class="result-primary" id="threadPrimary">Tap drill and pitch details will show here.</div>
                 </div>
-                <button class="copy-btn" id="threadCopy" type="button" hidden>Copy result</button>
+                <div class="result-actions">
+                  <button class="copy-btn" id="threadCopy" type="button" hidden>Copy result</button>
+                  <button class="share-btn" id="threadShare" type="button" data-share-tool="thread" hidden>Share</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
               </div>
               <div class="result-stats" id="threadStats"></div>
               <div class="result-details" id="threadDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-thread" style="display:none">
+              <button class="history-toggle-btn" type="button" id="histToggle-thread">
+                <span>Recent</span>
+                <span class="history-badge" id="histBadge-thread">0</span>
+                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+              </button>
+              <div class="history-list" id="histList-thread" role="list"></div>
             </div>
           </form>
         </div>
@@ -1060,10 +1345,14 @@
                 </select>
               </div>
               <div class="field">
-                <label for="mowMode">Solve mode</label>
-                <select id="mowMode">
-                  <option value="solveM" selected>Solve M from pitch diameter E</option>
-                  <option value="solveE">Solve E from measurement M</option>
+                <label>Solve mode</label>
+                <div class="mode-toggle-row" role="group" aria-label="Solve mode">
+                  <button class="mode-btn active" type="button" data-mow-mode="solveM">Solve M from E</button>
+                  <button class="mode-btn" type="button" data-mow-mode="solveE">Solve E from M</button>
+                </div>
+                <select id="mowMode" hidden aria-hidden="true">
+                  <option value="solveM" selected>Solve M from E</option>
+                  <option value="solveE">Solve E from M</option>
                 </select>
               </div>
             </div>
@@ -1072,7 +1361,15 @@
                 <label for="mowPreset">Quick fill</label>
                 <select id="mowPreset">
                   <option value="">(none)</option>
+                  <option value="M8x1.25">M8x1.25</option>
+                  <option value="M10x1.5">M10x1.5</option>
+                  <option value="M12x1.75">M12x1.75</option>
+                  <option value="M16x2">M16x2</option>
+                  <option value="M20x2.5">M20x2.5</option>
                   <option value="M60x2">M60x2</option>
+                  <option value="1/4-20">1/4-20 UNC</option>
+                  <option value="3/8-16">3/8-16 UNC</option>
+                  <option value="1/2-13">1/2-13 UNC</option>
                 </select>
                 <div class="hint" id="mowPresetNote"></div>
               </div>
@@ -1100,11 +1397,11 @@
             </div>
 
             <div class="field-grid two">
-              <div class="field">
+              <div class="field" id="mowFieldE">
                 <label for="mowE">Pitch diameter (E)</label>
                 <input id="mowE" type="number" step="0.0001" placeholder="Enter E to compute M" />
               </div>
-              <div class="field">
+              <div class="field" id="mowFieldM">
                 <label for="mowM">Measurement over wires (M)</label>
                 <input id="mowM" type="number" step="0.0001" placeholder="Computed M appears here" />
               </div>
@@ -1123,10 +1420,22 @@
                   <div class="result-label">Primary answer</div>
                   <div class="result-primary" id="mowPrimary">Measurement-over-wires output will show here.</div>
                 </div>
-                <button class="copy-btn" id="mowCopy" type="button" hidden>Copy result</button>
+                <div class="result-actions">
+                  <button class="copy-btn" id="mowCopy" type="button" hidden>Copy result</button>
+                  <button class="share-btn" id="mowShare" type="button" data-share-tool="mow" hidden>Share</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
               </div>
               <div class="result-stats" id="mowStats"></div>
               <div class="result-details" id="mowDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-mow" style="display:none">
+              <button class="history-toggle-btn" type="button" id="histToggle-mow">
+                <span>Recent</span>
+                <span class="history-badge" id="histBadge-mow">0</span>
+                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+              </button>
+              <div class="history-list" id="histList-mow" role="list"></div>
             </div>
           </form>
         </div>
@@ -1175,6 +1484,18 @@
             </div>
             <div class="row-hint">0&deg; starts at +X. Use 90&deg; to start on +Y.</div>
 
+            <div class="field-grid two">
+              <div class="field">
+                <label for="bcCenterX">Center X offset</label>
+                <input id="bcCenterX" type="number" step="0.0001" value="0" />
+              </div>
+              <div class="field">
+                <label for="bcCenterY">Center Y offset</label>
+                <input id="bcCenterY" type="number" step="0.0001" value="0" />
+              </div>
+            </div>
+            <div class="row-hint">Offsets shift all coordinates from the origin. Leave at 0 for machine-center output.</div>
+
             <div class="action-row">
               <button class="action-btn primary" type="submit">Generate coordinates</button>
               <button class="action-btn secondary" id="btnBcClear" type="button">Clear</button>
@@ -1187,10 +1508,22 @@
                   <div class="result-label">Primary answer</div>
                   <div class="result-primary" id="bcPrimary">Coordinates will appear here when you generate them.</div>
                 </div>
-                <button class="copy-btn" id="bcCopy" type="button" hidden>Copy coordinates</button>
+                <div class="result-actions">
+                  <button class="copy-btn" id="bcCopy" type="button" hidden>Copy coordinates</button>
+                  <button class="share-btn" id="bcShare" type="button" data-share-tool="bolt" hidden>Share</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
               </div>
               <div class="result-stats" id="bcStats"></div>
               <div class="result-details" id="bcDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-bolt" style="display:none">
+              <button class="history-toggle-btn" type="button" id="histToggle-bolt">
+                <span>Recent</span>
+                <span class="history-badge" id="histBadge-bolt">0</span>
+                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+              </button>
+              <div class="history-list" id="histList-bolt" role="list"></div>
             </div>
           </form>
         </div>
@@ -1224,23 +1557,34 @@
                 </select>
               </div>
             </div>
-            <div class="field-grid two" id="rtRow1">
-              <div class="field">
+            <div class="rt-diagram" aria-hidden="true">
+              <svg id="rtDiagramSvg" class="rt-svg" viewBox="0 0 230 195" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line id="svgHyp"   class="rt-edge unknown" x1="24" y1="155" x2="182" y2="26" stroke-width="2.5"/>
+                <line id="svgRun"   class="rt-edge known"   x1="24" y1="155" x2="182" y2="155" stroke-width="2.5"/>
+                <line id="svgRise"  class="rt-edge known"   x1="182" y1="155" x2="182" y2="26" stroke-width="2.5"/>
+                <polyline class="rt-edge neutral" points="170,155 170,143 182,143" stroke-width="1.5"/>
+                <path id="svgTheta" class="rt-edge unknown" d="M 50,155 A 26,26 0 0 1 39,131" stroke-width="1.5"/>
+                <text id="svgLabelRun"   class="rt-label known"   x="103" y="175" text-anchor="middle" font-size="13">Run (X)</text>
+                <text id="svgLabelRise"  class="rt-label known"   x="200" y="93"  text-anchor="start"  font-size="13">Rise (Y)</text>
+                <text id="svgLabelHyp"   class="rt-label unknown" x="90"  y="82"  text-anchor="middle" font-size="13">Hyp</text>
+                <text id="svgLabelTheta" class="rt-label unknown" x="56"  y="151" text-anchor="start"  font-size="14" font-style="italic">θ</text>
+              </svg>
+            </div>
+
+            <div class="field-grid two" id="rtFields">
+              <div class="field" id="rtFieldRun">
                 <label for="rtRun">Run (X)</label>
                 <input id="rtRun" type="number" step="0.0001" placeholder="Enter run" />
               </div>
-              <div class="field">
+              <div class="field" id="rtFieldRise">
                 <label for="rtRise">Rise (Y)</label>
                 <input id="rtRise" type="number" step="0.0001" placeholder="Enter rise" />
               </div>
-            </div>
-
-            <div class="field-grid two" id="rtRow2" hidden>
-              <div class="field">
+              <div class="field" id="rtFieldHyp" hidden>
                 <label for="rtHyp">Hypotenuse</label>
                 <input id="rtHyp" type="number" step="0.0001" placeholder="Enter hypotenuse" />
               </div>
-              <div class="field">
+              <div class="field" id="rtFieldAngle" hidden>
                 <label for="rtAngle">Angle (deg)</label>
                 <input id="rtAngle" type="number" step="0.01" placeholder="Enter angle" />
               </div>
@@ -1258,16 +1602,30 @@
                   <div class="result-label">Primary answer</div>
                   <div class="result-primary" id="rtPrimary">Solved offsets and angle details will show here.</div>
                 </div>
-                <button class="copy-btn" id="rtCopy" type="button" hidden>Copy result</button>
+                <div class="result-actions">
+                  <button class="copy-btn" id="rtCopy" type="button" hidden>Copy result</button>
+                  <button class="share-btn" id="rtShare" type="button" data-share-tool="triangle" hidden>Share</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
               </div>
               <div class="result-stats" id="rtStats"></div>
               <div class="result-details" id="rtDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-triangle" style="display:none">
+              <button class="history-toggle-btn" type="button" id="histToggle-triangle">
+                <span>Recent</span>
+                <span class="history-badge" id="histBadge-triangle">0</span>
+                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+              </button>
+              <div class="history-list" id="histList-triangle" role="list"></div>
             </div>
           </form>
         </div>
       </section>
     </div>
   </main>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
   <script>
     (function initTheme(){
@@ -1276,7 +1634,8 @@
       const label = document.getElementById("themeLabel");
       function applyTheme(mode){
         document.documentElement.setAttribute("data-theme", mode === "light" ? "light" : "dark");
-        label.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+        label.textContent = mode === "light" ? "Dark Mode" : "Light Mode";
+        document.getElementById("themeIcon").textContent = mode === "light" ? "\u2600\uFE0F" : "\u263E";
       }
       function nextTheme(current){
         return current === "light" ? "dark" : "light";
@@ -1362,7 +1721,13 @@
         target.copy.hidden = true;
         target.copy.dataset.copyText = "";
       }
+      const shareBtn = document.querySelector(`[data-share-tool="${toolName}"]`);
+      if (shareBtn) shareBtn.hidden = !config.copyText;
       if (config.animate) flashResult(target.shell);
+      if (config.saveHistory && config.primary && config.formState){
+        histSave(toolName, { ts: Date.now(), primary: config.primary, formState: config.formState });
+        histRender(toolName);
+      }
     }
     async function writeClipboard(text){
       if (navigator.clipboard && navigator.clipboard.writeText){
@@ -1459,6 +1824,272 @@
 
     const WIRE_SET_INCH = [0.010,0.012,0.014,0.016,0.018,0.020,0.022,0.024,0.025,0.026,0.028,0.030,0.032,0.035,0.040,0.045,0.050,0.055,0.060,0.063,0.070,0.080,0.090,0.100];
     const WIRE_SET_MM = [0.25,0.30,0.35,0.40,0.45,0.50,0.60,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,2.00];
+
+    // Machine screw number-to-major-diameter table (inches)
+    const MACHINE_SCREW_DIAMETERS = {
+      0: 0.0600, 1: 0.0730, 2: 0.0860, 3: 0.0990,  4: 0.1120,
+      5: 0.1250, 6: 0.1380, 8: 0.1640, 10: 0.1900, 12: 0.2160
+    };
+
+    // Reverse thread lookup tables — [major_in, tpi, standard_name]
+    const UN_THREAD_TABLE = [
+      [0.0600,80,"#0-80 UNF"],[0.0730,64,"#1-64 UNC"],[0.0730,72,"#1-72 UNF"],
+      [0.0860,56,"#2-56 UNC"],[0.0860,64,"#2-64 UNF"],[0.0990,48,"#3-48 UNC"],
+      [0.0990,56,"#3-56 UNF"],[0.1120,40,"#4-40 UNC"],[0.1120,48,"#4-48 UNF"],
+      [0.1250,40,"#5-40 UNC"],[0.1250,44,"#5-44 UNF"],[0.1380,32,"#6-32 UNC"],
+      [0.1380,40,"#6-40 UNF"],[0.1640,32,"#8-32 UNC"],[0.1640,36,"#8-36 UNF"],
+      [0.1900,24,"#10-24 UNC"],[0.1900,32,"#10-32 UNF"],[0.2160,24,"#12-24 UNC"],
+      [0.2160,28,"#12-28 UNF"],[0.2500,20,"1/4-20 UNC"],[0.2500,28,"1/4-28 UNF"],
+      [0.3125,18,"5/16-18 UNC"],[0.3125,24,"5/16-24 UNF"],[0.3750,16,"3/8-16 UNC"],
+      [0.3750,24,"3/8-24 UNF"],[0.4375,14,"7/16-14 UNC"],[0.4375,20,"7/16-20 UNF"],
+      [0.5000,13,"1/2-13 UNC"],[0.5000,20,"1/2-20 UNF"],[0.5625,12,"9/16-12 UNC"],
+      [0.5625,18,"9/16-18 UNF"],[0.6250,11,"5/8-11 UNC"],[0.6250,18,"5/8-18 UNF"],
+      [0.7500,10,"3/4-10 UNC"],[0.7500,16,"3/4-16 UNF"],[0.8750,9,"7/8-9 UNC"],
+      [0.8750,14,"7/8-14 UNF"],[1.0000,8,"1-8 UNC"],[1.0000,12,"1-12 UNF"],
+      [1.0000,14,"1-14 UNEF"],[1.1250,7,"1-1/8-7 UNC"],[1.1250,12,"1-1/8-12 UNF"],
+      [1.2500,7,"1-1/4-7 UNC"],[1.2500,12,"1-1/4-12 UNF"],[1.3750,6,"1-3/8-6 UNC"],
+      [1.3750,12,"1-3/8-12 UNF"],[1.5000,6,"1-1/2-6 UNC"],[1.5000,12,"1-1/2-12 UNF"]
+    ];
+
+    // [major_mm, pitch_mm, standard_name]
+    const METRIC_THREAD_TABLE = [
+      [1.0,0.25,"M1x0.25"],[1.2,0.25,"M1.2x0.25"],[1.4,0.3,"M1.4x0.3"],[1.6,0.35,"M1.6x0.35"],
+      [1.8,0.35,"M1.8x0.35"],[2.0,0.4,"M2x0.4"],[2.5,0.45,"M2.5x0.45"],[3.0,0.5,"M3x0.5"],
+      [3.5,0.6,"M3.5x0.6"],[4.0,0.7,"M4x0.7"],[5.0,0.8,"M5x0.8"],[6.0,1.0,"M6x1"],
+      [7.0,1.0,"M7x1"],[8.0,1.25,"M8x1.25"],[8.0,1.0,"M8x1 (fine)"],[10.0,1.5,"M10x1.5"],
+      [10.0,1.25,"M10x1.25 (fine)"],[10.0,1.0,"M10x1 (extra fine)"],[12.0,1.75,"M12x1.75"],
+      [12.0,1.25,"M12x1.25 (fine)"],[14.0,2.0,"M14x2"],[14.0,1.5,"M14x1.5 (fine)"],
+      [16.0,2.0,"M16x2"],[16.0,1.5,"M16x1.5 (fine)"],[18.0,2.5,"M18x2.5"],[18.0,1.5,"M18x1.5 (fine)"],
+      [20.0,2.5,"M20x2.5"],[20.0,1.5,"M20x1.5 (fine)"],[22.0,2.5,"M22x2.5"],[22.0,1.5,"M22x1.5 (fine)"],
+      [24.0,3.0,"M24x3"],[24.0,2.0,"M24x2 (fine)"],[27.0,3.0,"M27x3"],[27.0,2.0,"M27x2 (fine)"],
+      [30.0,3.5,"M30x3.5"],[30.0,2.0,"M30x2 (fine)"],[33.0,3.5,"M33x3.5"],[33.0,2.0,"M33x2 (fine)"],
+      [36.0,4.0,"M36x4"],[36.0,3.0,"M36x3 (fine)"],[39.0,4.0,"M39x4"],[39.0,3.0,"M39x3 (fine)"],
+      [42.0,4.5,"M42x4.5"],[42.0,3.0,"M42x3 (fine)"],[45.0,4.5,"M45x4.5"],[45.0,3.0,"M45x3 (fine)"],
+      [48.0,5.0,"M48x5"],[48.0,3.0,"M48x3 (fine)"],[52.0,5.0,"M52x5"],[52.0,4.0,"M52x4 (fine)"],
+      [56.0,5.5,"M56x5.5"],[56.0,4.0,"M56x4 (fine)"],[60.0,5.5,"M60x5.5"],[60.0,4.0,"M60x4 (fine)"],
+      [64.0,6.0,"M64x6"],[64.0,4.0,"M64x4 (fine)"]
+    ];
+
+    // Drill charts: [size_in_inches, label] sorted ascending
+    const DRILL_CHART_INCH = [
+      [0.0135,"#80"],[0.0145,"#79"],[0.016,"#78"],[0.018,"#77"],[0.02,"#76"],
+      [0.021,"#75"],[0.0225,"#74"],[0.024,"#73"],[0.025,"#72"],[0.026,"#71"],
+      [0.028,"#70"],[0.0292,"#69"],[0.031,"#68"],[0.03125,'1/32"'],[0.032,"#67"],
+      [0.033,"#66"],[0.035,"#65"],[0.036,"#64"],[0.037,"#63"],[0.038,"#62"],
+      [0.039,"#61"],[0.04,"#60"],[0.041,"#59"],[0.042,"#58"],[0.043,"#57"],
+      [0.0465,"#56"],[0.052,"#55"],[0.055,"#54"],[0.0595,"#53"],[0.0625,'1/16"'],
+      [0.0635,"#52"],[0.067,"#51"],[0.07,"#50"],[0.073,"#49"],[0.076,"#48"],
+      [0.0785,"#47"],[0.081,"#46"],[0.082,"#45"],[0.086,"#44"],[0.089,"#43"],
+      [0.0935,"#42"],[0.09375,'3/32"'],[0.096,"#41"],[0.098,"#40"],[0.0995,"#39"],
+      [0.1015,"#38"],[0.104,"#37"],[0.1065,"#36"],[0.11,"#35"],[0.111,"#34"],
+      [0.113,"#33"],[0.116,"#32"],[0.12,"#31"],[0.125,'1/8"'],[0.1285,"#30"],
+      [0.136,"#29"],[0.1405,"#28"],[0.144,"#27"],[0.147,"#26"],[0.1495,"#25"],
+      [0.152,"#24"],[0.154,"#23"],[0.157,"#22"],[0.15625,'5/32"'],[0.159,"#21"],
+      [0.161,"#20"],[0.166,"#19"],[0.1695,"#18"],[0.173,"#17"],[0.177,"#16"],
+      [0.18,"#15"],[0.182,"#14"],[0.1875,'3/16"'],[0.185,"#13"],[0.189,"#12"],
+      [0.191,"#11"],[0.1935,"#10"],[0.196,"#9"],[0.199,"#8"],[0.201,"#7"],
+      [0.204,"#6"],[0.2055,"#5"],[0.209,"#4"],[0.213,"#3"],[0.21875,'7/32"'],
+      [0.228,"#2"],[0.234,"A"],[0.238,"B"],[0.242,"C"],[0.246,"D"],
+      [0.25,'E / 1/4"'],[0.257,"F"],[0.261,"G"],[0.265625,'17/64"'],[0.266,"H"],
+      [0.272,"I"],[0.277,"J"],[0.28125,'9/32"'],[0.281,"K"],[0.29,"L"],
+      [0.295,"M"],[0.302,"N"],[0.3125,'5/16"'],[0.316,"O"],[0.323,"P"],
+      [0.328125,'21/64"'],[0.332,"Q"],[0.339,"R"],[0.34375,'11/32"'],[0.348,"S"],
+      [0.358,"T"],[0.359375,'23/64"'],[0.368,"U"],[0.375,'3/8"'],[0.377,"V"],
+      [0.386,"W"],[0.390625,'25/64"'],[0.397,"X"],[0.40625,'13/32"'],[0.404,"Y"],
+      [0.413,"Z"],[0.421875,'27/64"'],[0.4375,'7/16"'],[0.453125,'29/64"'],
+      [0.46875,'15/32"'],[0.484375,'31/64"'],[0.5,'1/2"']
+    ].sort((a, b) => a[0] - b[0]);
+
+    // Metric drill series in mm (converted to inches for comparison)
+    const DRILL_CHART_MM = [
+      0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,
+      1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5,1.55,1.6,1.65,1.7,
+      1.75,1.8,1.85,1.9,1.95,2.0,2.05,2.1,2.15,2.2,2.25,2.3,2.35,2.4,2.45,
+      2.5,2.6,2.7,2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,
+      4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,
+      5.6,5.7,5.8,5.9,6.0,6.1,6.2,6.3,6.4,6.5,6.6,6.7,6.8,6.9,7.0,7.1,
+      7.2,7.3,7.4,7.5,7.6,7.7,7.8,7.9,8.0,8.1,8.2,8.3,8.4,8.5,8.6,8.7,
+      8.8,8.9,9.0,9.1,9.2,9.3,9.4,9.5,9.6,9.7,9.8,9.9,10.0,10.2,10.5,10.8,
+      11.0,11.2,11.5,11.8,12.0,12.5,13.0,13.5,14.0,14.5,15.0,15.5,16.0,
+      16.5,17.0,17.5,18.0,18.5,19.0,19.5,20.0,21.0,22.0,23.0,24.0,25.0
+    ];
+
+    function nearestDrillInch(sizeIn){
+      let best = DRILL_CHART_INCH[0];
+      let bestDelta = Math.abs(sizeIn - best[0]);
+      for (const entry of DRILL_CHART_INCH){
+        const delta = Math.abs(sizeIn - entry[0]);
+        if (delta < bestDelta){ best = entry; bestDelta = delta; }
+      }
+      return { size: best[0], label: best[1] };
+    }
+    function nearestDrillMm(sizeMm){
+      let best = DRILL_CHART_MM[0];
+      let bestDelta = Math.abs(sizeMm - best);
+      for (const candidate of DRILL_CHART_MM){
+        const delta = Math.abs(sizeMm - candidate);
+        if (delta < bestDelta){ best = candidate; bestDelta = delta; }
+      }
+      return { size: best, label: `${best} mm` };
+    }
+
+    // ── ±1 drill triplet lookups ──
+    function nearestDrillsInch(sizeIn){
+      let bestIdx = 0, bestDelta = Infinity;
+      for (let i = 0; i < DRILL_CHART_INCH.length; i++){
+        const delta = Math.abs(sizeIn - DRILL_CHART_INCH[i][0]);
+        if (delta < bestDelta){ bestIdx = i; bestDelta = delta; }
+      }
+      const make = (idx) => (idx >= 0 && idx < DRILL_CHART_INCH.length)
+        ? { size: DRILL_CHART_INCH[idx][0], label: DRILL_CHART_INCH[idx][1] } : null;
+      return { prev: make(bestIdx - 1), nearest: make(bestIdx), next: make(bestIdx + 1) };
+    }
+    function nearestDrillsMm(sizeMm){
+      let bestIdx = 0, bestDelta = Infinity;
+      for (let i = 0; i < DRILL_CHART_MM.length; i++){
+        const delta = Math.abs(sizeMm - DRILL_CHART_MM[i]);
+        if (delta < bestDelta){ bestIdx = i; bestDelta = delta; }
+      }
+      const make = (idx) => (idx >= 0 && idx < DRILL_CHART_MM.length)
+        ? { size: DRILL_CHART_MM[idx], label: `${DRILL_CHART_MM[idx]} mm` } : null;
+      return { prev: make(bestIdx - 1), nearest: make(bestIdx), next: make(bestIdx + 1) };
+    }
+
+    // ── Decimal → nearest fractional inch string ──
+    function gcd(a, b){ return b === 0 ? a : gcd(b, a % b); }
+    function decimalToFractionStr(inches){
+      if (!(inches > 0)) return null;
+      for (const d of [2, 4, 8, 16, 32, 64]){
+        const n = Math.round(inches * d);
+        if (Math.abs(n / d - inches) < 0.0005){
+          const g = gcd(n, d);
+          const sn = n / g, sd = d / g;
+          return sd === 1 ? `${sn}"` : `${sn}/${sd}"`;
+        }
+      }
+      return null;
+    }
+
+    // ── Drill selection detail card ──
+    function renderDrillCard(drill, system){
+      if (system === "un"){
+        const t = nearestDrillsInch(drill);
+        const rows = [];
+        if (t.prev){ const d = drill - t.prev.size; rows.push(`  Smaller: ${t.prev.label.padEnd(12)} ${fmt(t.prev.size,4)} in  (${fmt(d*1000,1)} thou under)`); }
+        const dn = drill - t.nearest.size;
+        rows.push(`\u2605 Nearest: ${t.nearest.label.padEnd(12)} ${fmt(t.nearest.size,4)} in  (${dn >= 0 ? "+" : ""}${fmt(dn*1000,1)} thou)`);
+        if (t.next){ const d = t.next.size - drill; rows.push(`  Larger:  ${t.next.label.padEnd(12)} ${fmt(t.next.size,4)} in  (${fmt(d*1000,1)} thou over)`); }
+        return renderCodeCard("Nearest stock drills", rows.join("\n"));
+      } else {
+        const t = nearestDrillsMm(drill);
+        const rows = [];
+        if (t.prev){ const d = drill - t.prev.size; rows.push(`  Smaller: ${t.prev.label.padEnd(8)}  (${fmt(d,3)} mm under)`); }
+        const dn = drill - t.nearest.size;
+        rows.push(`\u2605 Nearest: ${t.nearest.label.padEnd(8)}  (${dn >= 0 ? "+" : ""}${fmt(dn,3)} mm)`);
+        if (t.next){ const d = t.next.size - drill; rows.push(`  Larger:  ${t.next.label.padEnd(8)}  (${fmt(d,3)} mm over)`); }
+        return renderCodeCard("Nearest stock drills", rows.join("\n"));
+      }
+    }
+
+    // ── Triangle SVG diagram ──
+    function updateTriangleDiagram(){
+      const mode = document.getElementById("rtMode").value;
+      const known = {
+        run:   mode === "runRise" || mode === "runAngle",
+        rise:  mode === "runRise" || mode === "riseAngle",
+        hyp:   mode === "hypAngle",
+        theta: mode !== "runRise"
+      };
+      const map = {
+        run:   { edge: "svgRun",   label: "svgLabelRun"   },
+        rise:  { edge: "svgRise",  label: "svgLabelRise"  },
+        hyp:   { edge: "svgHyp",   label: "svgLabelHyp"   },
+        theta: { edge: "svgTheta", label: "svgLabelTheta" }
+      };
+      for (const [key, ids] of Object.entries(map)){
+        const isKnown = known[key];
+        const edgeEl  = document.getElementById(ids.edge);
+        const labelEl = document.getElementById(ids.label);
+        if (edgeEl){  edgeEl.classList.toggle("known",   isKnown); edgeEl.classList.toggle("unknown",  !isKnown); }
+        if (labelEl){ labelEl.classList.toggle("known",  isKnown); labelEl.classList.toggle("unknown", !isKnown); }
+      }
+    }
+
+    // ── Bolt circle SVG preview ──
+    function buildBoltCircleSvg(holes, startAngle, direction){
+      const S = 260, cx = S / 2, cy = S / 2;
+      const svgR = S / 2 * 0.72;
+      const hR = Math.max(4, Math.min(11, svgR / Math.max(holes, 4) * 1.5));
+      const step = 360 / holes;
+      const dir = direction === "cw" ? -1 : 1;
+      let inner = "";
+      inner += `<circle cx="${cx}" cy="${cy}" r="${svgR}" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      inner += `<line x1="${cx-8}" y1="${cy}" x2="${cx+8}" y2="${cy}" stroke="var(--muted)" stroke-width="1.2" opacity=".5"/>`;
+      inner += `<line x1="${cx}" y1="${cy-8}" x2="${cx}" y2="${cy+8}" stroke="var(--muted)" stroke-width="1.2" opacity=".5"/>`;
+      inner += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--muted)" opacity=".5"/>`;
+      for (let i = 0; i < holes; i++){
+        const rad = degToRad(startAngle + dir * i * step);
+        const hx = cx + svgR * Math.cos(rad);
+        const hy = cy - svgR * Math.sin(rad);
+        inner += `<circle cx="${fmt(hx,2)}" cy="${fmt(hy,2)}" r="${hR}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>`;
+        if (holes <= 32){
+          const lr = svgR + hR + 10;
+          const lx = cx + lr * Math.cos(rad), ly = cy - lr * Math.sin(rad);
+          inner += `<text x="${fmt(lx,2)}" y="${fmt(ly,2)}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="700" fill="var(--text)" font-family="sans-serif">${i + 1}</text>`;
+        }
+      }
+      return `<div class="bc-svg-wrap"><svg class="bc-svg" viewBox="0 0 ${S} ${S}" fill="none">${inner}</svg></div>`;
+    }
+
+    // ── Form state save/restore ──
+    function captureFormInputs(form){
+      const state = {};
+      for (const el of form.elements){
+        if ((el.tagName === "INPUT" || el.tagName === "SELECT") && el.id) state[el.id] = el.value;
+      }
+      return state;
+    }
+    function restoreFormInputs(form, state){
+      for (const el of form.elements){
+        if ((el.tagName === "INPUT" || el.tagName === "SELECT") && el.id && state[el.id] !== undefined) el.value = state[el.id];
+      }
+    }
+
+    // ── Toast notification ──
+    const toastContainer = document.getElementById("toastContainer");
+    function showToast(message, undoFn){
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      const span = document.createElement("span");
+      span.textContent = message;
+      toast.appendChild(span);
+      if (undoFn){
+        const btn = document.createElement("button");
+        btn.className = "toast-undo";
+        btn.type = "button";
+        btn.textContent = "Undo";
+        toast.appendChild(btn);
+        btn.addEventListener("click", () => { undoFn(); dismiss(); });
+      }
+      toastContainer.appendChild(toast);
+      let gone = false;
+      function dismiss(){
+        if (gone) return; gone = true;
+        toast.style.animation = "toast-out 220ms cubic-bezier(0.22,0.8,0.2,1) both";
+        window.setTimeout(() => toast.remove(), 240);
+      }
+      window.setTimeout(dismiss, 4200);
+    }
+
+    // ── Segmented percent & MOW mode button sync ──
+    function syncPctButtons(){
+      const val = document.getElementById("tapDrillPercent").value;
+      document.querySelectorAll("[data-pct]").forEach(b => b.classList.toggle("active", b.dataset.pct === val));
+    }
+    function syncModeButtons(){
+      const val = document.getElementById("mowMode").value;
+      document.querySelectorAll("[data-mow-mode]").forEach(b => b.classList.toggle("active", b.dataset.mowMode === val));
+    }
     function closestInSet(value, setArray){
       let closest = setArray[0];
       let delta = Math.abs(value - closest);
@@ -1483,6 +2114,16 @@
     function parseThreadSpec(input){
       const normalized = input.trim().toLowerCase().replace(/×/g, "x").replace(/\s+/g, "");
       if (!normalized) return null;
+      // Machine screw format: #4-40, #10-32, etc.
+      const machineScrewMatch = normalized.match(/^#(\d+)-(\d+)$/);
+      if (machineScrewMatch){
+        const screwNum = Number(machineScrewMatch[1]);
+        const tpi = Number(machineScrewMatch[2]);
+        const major = MACHINE_SCREW_DIAMETERS[screwNum];
+        if (major && tpi > 0){
+          return { system: "un", major, tpi, label: `#${screwNum}-${tpi}` };
+        }
+      }
       const metricMatch = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
       if (metricMatch){
         return { system: "metric", major: Number(metricMatch[1]), pitch: Number(metricMatch[2]), label: `M${metricMatch[1]}x${metricMatch[2]}` };
@@ -1496,6 +2137,17 @@
         }
       }
       return null;
+    }
+
+    function lookupUnThread(majorIn, tpi){
+      const TOL_D = 0.003, TOL_T = 0.5;
+      const match = UN_THREAD_TABLE.find(([d, t]) => Math.abs(d - majorIn) < TOL_D && Math.abs(t - tpi) < TOL_T);
+      return match ? match[2] : null;
+    }
+    function lookupMetricThread(majorMm, pitchMm){
+      const TOL_D = 0.08, TOL_P = 0.08;
+      const match = METRIC_THREAD_TABLE.find(([d, p]) => Math.abs(d - majorMm) < TOL_D && Math.abs(p - pitchMm) < TOL_P);
+      return match ? match[2] : null;
     }
     const THREAD_REFERENCE = {
       un: [
@@ -1625,6 +2277,25 @@
     });
     threadClassRef.addEventListener("change", updateThreadReferenceCard);
     threadQuickSpec.addEventListener("input", updateThreadPreview);
+    document.querySelectorAll("[data-pct]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.getElementById("tapDrillPercent").value = btn.dataset.pct;
+        syncPctButtons();
+      });
+    });
+
+    document.querySelectorAll("[data-mow-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.getElementById("mowMode").value = btn.dataset.mowMode;
+        syncModeButtons();
+        updateMowHints();
+      });
+    });
+
+    document.querySelectorAll("[data-print]").forEach((btn) => {
+      btn.addEventListener("click", () => window.print());
+    });
+
     document.querySelectorAll("[data-thread-pick]").forEach((button) => {
       button.addEventListener("click", () => {
         const spec = button.dataset.threadPick;
@@ -1633,6 +2304,8 @@
         if (parsed){
           fillThreadFromParsed(parsed);
           updateThreadPreview();
+          document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("chip-active"));
+          button.classList.add("chip-active");
           requestFormSubmit(threadForm);
         }
       });
@@ -1672,19 +2345,28 @@
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `${fmt(major, 4)}-${fmt(tpi, 0)}`;
+        const drillsIn = nearestDrillsInch(drill);
+        const nearDrillIn = drillsIn.nearest;
+        const fracStr = decimalToFractionStr(drill);
+        const stdName = lookupUnThread(major, tpi);
+        const threadFormState = captureFormInputs(threadForm);
         setResult("thread", {
           animate: true,
-          primary: `Tap drill: ${fmt(drill, 6)} in`,
+          saveHistory: true,
+          formState: threadFormState,
+          primary: `Tap drill: ${fmt(drill, 6)} in${fracStr ? ` = ${fracStr}` : ""}  →  ${nearDrillIn.label}`,
           stats: [
-            { label: "Thread", value: label },
+            { label: "Thread", value: stdName || label },
             { label: "Pitch", value: `${fmt(pitch, 6)} in` },
             { label: "Major", value: `${fmt(major, 6)} in` },
             { label: "Fit ref", value: fitReference.short },
+            { label: "Nearest drill", value: `${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)` },
             { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 6)} in` },
             { label: "Internal minor", value: `${fmt(basicInternalMinor, 6)} in` }
           ],
-          detailsHtml: renderList([
+          detailsHtml: renderDrillCard(drill, "un") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+            ...(stdName ? [`Standard thread identified: ${stdName}.`] : []),
             "Use a standard drill near the computed size for a practical shop selection.",
             "Pitch diameter and internal minor diameter are both shown so the inside-thread size is not confused with pitch diameter.",
             "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread.",
@@ -1704,6 +2386,7 @@
             `System: Unified`,
             `Fit reference: ${fitReference.title}`,
             `Tap drill: ${fmt(drill, 6)} in`,
+            `Nearest stock drill: ${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)`,
             `Pitch: ${fmt(pitch, 6)} in`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`,
             `Basic internal minor diameter: ${fmt(basicInternalMinor, 6)} in`
@@ -1717,19 +2400,27 @@
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `M${fmt(major, 3)}x${fmt(pitch, 3)}`;
+        const drillsMm = nearestDrillsMm(drill);
+        const nearDrillMm = drillsMm.nearest;
+        const stdNameM = lookupMetricThread(major, pitch);
+        const threadFormStateM = captureFormInputs(threadForm);
         setResult("thread", {
           animate: true,
-          primary: `Tap drill: ${fmt(drill, 3)} mm`,
+          saveHistory: true,
+          formState: threadFormStateM,
+          primary: `Tap drill: ${fmt(drill, 3)} mm  →  ${nearDrillMm.label}`,
           stats: [
-            { label: "Thread", value: label },
+            { label: "Thread", value: stdNameM || label },
             { label: "Pitch", value: `${fmt(pitch, 3)} mm` },
             { label: "Major", value: `${fmt(major, 3)} mm` },
             { label: "Fit ref", value: fitReference.short },
+            { label: "Nearest drill", value: nearDrillMm.label },
             { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 3)} mm` },
             { label: "Internal minor", value: `${fmt(basicInternalMinor, 3)} mm` }
           ],
-          detailsHtml: renderList([
+          detailsHtml: renderDrillCard(drill, "metric") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+            ...(stdNameM ? [`Standard thread identified: ${stdNameM}.`] : []),
             "This is a practical tap-drill estimate for a 60 degree thread, not a tolerance-class lookup.",
             "Pitch diameter and internal minor diameter are both shown to avoid misreading the inside-thread size.",
             "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread."
@@ -1747,6 +2438,7 @@
             `System: ISO Metric`,
             `Fit reference: ${fitReference.title}`,
             `Tap drill: ${fmt(drill, 3)} mm`,
+            `Nearest stock drill: ${nearDrillMm.label}`,
             `Pitch: ${fmt(pitch, 3)} mm`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`,
             `Basic internal minor diameter: ${fmt(basicInternalMinor, 3)} mm`
@@ -1755,12 +2447,16 @@
       }
     });
     document.getElementById("btnThreadClear").addEventListener("click", () => {
+      const saved = captureFormInputs(threadForm);
+      const savedChip = document.querySelector(".chip-btn.chip-active")?.dataset.threadPick || null;
       threadForm.reset();
       threadSystem.value = "un";
+      syncPctButtons();
       updateThreadFields();
       updateThreadReferenceOptions("basic");
       threadQuickNote.textContent = "";
       showWarn(threadWarn, "");
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("chip-active"));
       setResult("thread", {
         primary: "Tap drill and pitch details will show here.",
         stats: [],
@@ -1769,6 +2465,14 @@
           "The fit / tolerance reference is informational and does not replace published class limits."
         ]),
         copyText: ""
+      });
+      showToast("Thread form cleared.", () => {
+        restoreFormInputs(threadForm, saved);
+        syncPctButtons();
+        updateThreadFields();
+        updateThreadReferenceOptions(threadClassRef.value);
+        updateThreadPreview();
+        if (savedChip) document.querySelector(`[data-thread-pick="${savedChip}"]`)?.classList.add("chip-active");
       });
     });
 
@@ -1791,6 +2495,8 @@
       if (!(pitchInput > 0)) return NaN;
       return mowUnits.value === "in" ? 1 / pitchInput : pitchInput;
     }
+    const mowFieldE = document.getElementById("mowFieldE");
+    const mowFieldM = document.getElementById("mowFieldM");
     function updateMowHints(){
       if (mowUnits.value === "in"){
         mowPitchLabel.textContent = "TPI (threads per inch)";
@@ -1804,29 +2510,36 @@
       if (mowMode.value === "solveM"){
         mowE.placeholder = "Enter E to compute M";
         mowM.placeholder = "Computed M appears here";
+        mowFieldE.classList.remove("field-computed");
+        mowFieldM.classList.add("field-computed");
       } else {
         mowM.placeholder = "Enter M to compute E";
         mowE.placeholder = "Computed E appears here";
+        mowFieldM.classList.remove("field-computed");
+        mowFieldE.classList.add("field-computed");
       }
     }
     function applyMowPreset(value){
       showWarn(mowWarn, "");
       if (!value){ mowPresetNote.textContent = ""; return; }
-      if (value === "M60x2"){
-        mowUnits.value = "mm";
-        mowMode.value = "solveM";
-        updateMowHints();
-        const pitch = 2.0;
-        const wire = pitch / SQRT3;
-        const major = 60;
-        const basicPitchDiameter = major - 0.6495190528 * pitch;
-        const measurement = basicPitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
-        mowPitchInput.value = "2";
-        mowWire.value = wire.toFixed(4);
-        mowE.value = basicPitchDiameter.toFixed(3);
-        mowM.value = measurement.toFixed(3);
-        mowPresetNote.textContent = `Loaded M60x2 with best wire ${wire.toFixed(4)} mm and basic E ${basicPitchDiameter.toFixed(3)} mm.`;
-      }
+      const parsed = parseThreadSpec(value);
+      if (!parsed){ mowPresetNote.textContent = "Preset not recognized."; return; }
+      const isMetric = parsed.system === "metric";
+      const units = isMetric ? "mm" : "in";
+      const pitch = isMetric ? parsed.pitch : 1 / parsed.tpi;
+      const major = parsed.major;
+      const wire = pitch / SQRT3;
+      const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
+      const measurement = basicPitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+      const dp = isMetric ? 3 : 6;
+      mowUnits.value = units;
+      mowMode.value = "solveM";
+      updateMowHints();
+      mowPitchInput.value = isMetric ? String(parsed.pitch) : String(parsed.tpi);
+      mowWire.value = wire.toFixed(4);
+      mowE.value = basicPitchDiameter.toFixed(dp);
+      mowM.value = measurement.toFixed(dp);
+      mowPresetNote.textContent = `Loaded ${parsed.label} — best wire ${fmt(wire, 4)} ${units}, basic E ${fmt(basicPitchDiameter, dp)} ${units}.`;
     }
     mowUnits.addEventListener("change", updateMowHints);
     mowMode.addEventListener("change", updateMowHints);
@@ -1878,6 +2591,8 @@
         mowM.value = measurement.toFixed(6);
         setResult("mow", {
           animate: true,
+          saveHistory: true,
+          formState: captureFormInputs(mowForm),
           primary: `M = ${fmt(measurement, 6)} ${units}`,
           stats: [
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
@@ -1899,6 +2614,8 @@
         mowE.value = pitchDiameter.toFixed(6);
         setResult("mow", {
           animate: true,
+          saveHistory: true,
+          formState: captureFormInputs(mowForm),
           primary: `E = ${fmt(pitchDiameter, 6)} ${units}`,
           stats: [
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
@@ -1917,9 +2634,11 @@
     });
 
     document.getElementById("btnMowClear").addEventListener("click", () => {
+      const saved = captureFormInputs(mowForm);
       mowForm.reset();
       mowUnits.value = "mm";
       mowMode.value = "solveM";
+      syncModeButtons();
       mowPreset.value = "";
       mowPresetNote.textContent = "";
       updateMowHints();
@@ -1932,6 +2651,11 @@
           "Use the best-wire helper if you want the nearest stocked wire size instead of the theoretical value."
         ]),
         copyText: ""
+      });
+      showToast("MOW form cleared.", () => {
+        restoreFormInputs(mowForm, saved);
+        syncModeButtons();
+        updateMowHints();
       });
     });
 
@@ -1947,6 +2671,8 @@
       const diameter = num(bcDia.value);
       const holes = num(bcHoles.value);
       const startAngle = num(bcStartAngle.value);
+      const centerX = num(document.getElementById("bcCenterX").value) || 0;
+      const centerY = num(document.getElementById("bcCenterY").value) || 0;
       const units = unitLabel(document.getElementById("bcUnits").value);
       if (!(diameter > 0)) { showWarn(bcWarn, "Bolt circle diameter must be positive."); return; }
       if (!(holes >= 1 && Number.isInteger(holes))) { showWarn(bcWarn, "Number of holes must be an integer 1 or greater."); return; }
@@ -1955,36 +2681,49 @@
       const step = 360 / holes;
       const direction = bcClockwise.value === "cw" ? -1 : 1;
       const directionLabel = bcClockwise.value.toUpperCase();
+      const hasOffset = centerX !== 0 || centerY !== 0;
+      const chord = diameter * Math.sin(Math.PI / holes);
       const lines = ["Index, Angle (deg), X, Y"];
       for (let index = 0; index < holes; index += 1){
         const angleDeg = startAngle + direction * (index * step);
         const angleRad = degToRad(angleDeg);
-        const x = radius * Math.cos(angleRad);
-        const y = radius * Math.sin(angleRad);
+        const x = centerX + radius * Math.cos(angleRad);
+        const y = centerY + radius * Math.sin(angleRad);
         lines.push(`${index + 1}, ${fmt(angleDeg, 4)}, ${fmt(x, 6)}, ${fmt(y, 6)}`);
       }
+      const centerNote = hasOffset ? `Center offset: (${fmt(centerX, 6)}, ${fmt(centerY, 6)}) ${units}` : "Centered at origin (0, 0)";
+      const boltFormState = captureFormInputs(boltForm);
       setResult("bolt", {
         animate: true,
+        saveHistory: true,
+        formState: boltFormState,
         primary: `${holes} coordinates ready in ${units}`,
         stats: [
           { label: "BCD", value: `${fmt(diameter, 6)} ${units}` },
           { label: "Radius", value: `${fmt(radius, 6)} ${units}` },
           { label: "Step angle", value: `${fmt(step, 4)} deg` },
-          { label: "Direction", value: directionLabel }
+          { label: "Chord (h-to-h)", value: `${fmt(chord, 6)} ${units}` },
+          { label: "Direction", value: directionLabel },
+          { label: "Center X", value: `${fmt(centerX, 6)} ${units}` },
+          { label: "Center Y", value: `${fmt(centerY, 6)} ${units}` }
         ],
-        detailsHtml: renderList([
-          "The selected units are echoed directly in the answer cards so the result matches the control choice.",
+        detailsHtml: buildBoltCircleSvg(holes, startAngle, bcClockwise.value) + renderList([
+          centerNote,
+          `Chord (hole-to-hole): ${fmt(chord, 6)} ${units} — straight-line distance between adjacent holes.`,
           "Angles are measured from the +X axis; use 90 degrees to start on +Y.",
           "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet."
         ]) + renderCodeCard("Coordinate list", lines.join("\n")),
-        copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, "", ...lines].join("\n")
+        copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Chord (hole-to-hole): ${fmt(chord, 6)} ${units}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, centerNote, "", ...lines].join("\n")
       });
     });
     document.getElementById("btnBcClear").addEventListener("click", () => {
+      const saved = captureFormInputs(boltForm);
       boltForm.reset();
       document.getElementById("bcUnits").value = "mm";
       bcStartAngle.value = "0";
       bcClockwise.value = "ccw";
+      document.getElementById("bcCenterX").value = "0";
+      document.getElementById("bcCenterY").value = "0";
       showWarn(bcWarn, "");
       setResult("bolt", {
         primary: "Coordinates will appear here when you generate them.",
@@ -1995,12 +2734,17 @@
         ]),
         copyText: ""
       });
+      showToast("Bolt circle form cleared.", () => {
+        restoreFormInputs(boltForm, saved);
+      });
     });
 
     const triangleForm = document.getElementById("triangleForm");
     const rtMode = document.getElementById("rtMode");
-    const rtRow1 = document.getElementById("rtRow1");
-    const rtRow2 = document.getElementById("rtRow2");
+    const rtFieldRun = document.getElementById("rtFieldRun");
+    const rtFieldRise = document.getElementById("rtFieldRise");
+    const rtFieldHyp = document.getElementById("rtFieldHyp");
+    const rtFieldAngle = document.getElementById("rtFieldAngle");
     const rtRun = document.getElementById("rtRun");
     const rtRise = document.getElementById("rtRise");
     const rtHyp = document.getElementById("rtHyp");
@@ -2008,11 +2752,14 @@
     const rtWarn = document.getElementById("rtWarn");
     function updateTriangleFields(){
       const mode = rtMode.value;
-      rtRow1.hidden = mode === "hypAngle";
-      rtRow2.hidden = mode === "runRise";
+      rtFieldRun.hidden   = !(mode === "runRise" || mode === "runAngle");
+      rtFieldRise.hidden  = !(mode === "runRise" || mode === "riseAngle");
+      rtFieldHyp.hidden   = !(mode === "hypAngle");
+      rtFieldAngle.hidden = !(mode === "hypAngle" || mode === "runAngle" || mode === "riseAngle");
     }
-    rtMode.addEventListener("change", updateTriangleFields);
+    rtMode.addEventListener("change", () => { updateTriangleFields(); updateTriangleDiagram(); });
     updateTriangleFields();
+    updateTriangleDiagram();
 
     triangleForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -2108,14 +2855,16 @@
           copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       }
-      setResult("triangle", { animate: true, primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
+      setResult("triangle", { animate: true, saveHistory: true, formState: captureFormInputs(triangleForm), primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
     });
 
     document.getElementById("btnRtClear").addEventListener("click", () => {
+      const saved = captureFormInputs(triangleForm);
       triangleForm.reset();
       document.getElementById("rtUnits").value = "mm";
       rtMode.value = "runRise";
       updateTriangleFields();
+      updateTriangleDiagram();
       showWarn(rtWarn, "");
       setResult("triangle", {
         primary: "Solved offsets and angle details will show here.",
@@ -2125,6 +2874,150 @@
           "Press Enter in any field to solve without leaving the keyboard."
         ]),
         copyText: ""
+      });
+      showToast("Offset solver form cleared.", () => {
+        restoreFormInputs(triangleForm, saved);
+        updateTriangleFields();
+        updateTriangleDiagram();
+      });
+    });
+
+    // ── Input persistence ──
+    (function initPersistence(){
+      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm"];
+      function saveAll(){
+        FORMS.forEach(id => {
+          const form = document.getElementById(id);
+          if (form) localStorage.setItem("marcos_persist_" + id, JSON.stringify(captureFormInputs(form)));
+        });
+      }
+      FORMS.forEach(id => {
+        const form = document.getElementById(id);
+        if (!form) return;
+        form.addEventListener("input",  saveAll);
+        form.addEventListener("change", saveAll);
+      });
+      // Restore on load
+      FORMS.forEach(id => {
+        const raw = localStorage.getItem("marcos_persist_" + id);
+        if (!raw) return;
+        try {
+          const form = document.getElementById(id);
+          if (form) restoreFormInputs(form, JSON.parse(raw));
+        } catch {}
+      });
+      // Read saved thread reference directly (the select may not have the option yet)
+      let savedThreadRef = "basic";
+      try {
+        const tRaw = localStorage.getItem("marcos_persist_threadForm");
+        if (tRaw) savedThreadRef = JSON.parse(tRaw).threadClassRef || "basic";
+      } catch {}
+      // Sync button/field state after restore
+      syncPctButtons();
+      syncModeButtons();
+      updateThreadFields();
+      updateThreadReferenceOptions(savedThreadRef);
+      updateThreadPreview();
+      updateMowHints();
+      updateTriangleFields();
+      updateTriangleDiagram();
+    })();
+
+    // ── History system ──
+    const HIST_MAX = 5;
+    function histLoad(tool){
+      try { return JSON.parse(localStorage.getItem("marcos_hist_" + tool)) || []; } catch { return []; }
+    }
+    function histSave(tool, entry){
+      let arr = histLoad(tool);
+      arr.unshift(entry);
+      arr = arr.slice(0, HIST_MAX);
+      localStorage.setItem("marcos_hist_" + tool, JSON.stringify(arr));
+    }
+    function histRender(tool){
+      const arr = histLoad(tool);
+      const listEl = document.getElementById("histList-" + tool);
+      const badgeEl = document.getElementById("histBadge-" + tool);
+      const sectionEl = document.getElementById("histSection-" + tool);
+      if (!listEl) return;
+      badgeEl.textContent = arr.length;
+      sectionEl.style.display = arr.length === 0 ? "none" : "";
+      listEl.innerHTML = arr.map((entry, i) => {
+        const ts = new Date(entry.ts);
+        const timeStr = ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return `<div role="listitem"><button class="history-item-btn" type="button" data-hist-tool="${escapeHtml(tool)}" data-hist-index="${i}"><span class="history-item-primary">${escapeHtml(entry.primary)}</span><span class="history-item-time">${escapeHtml(timeStr)}</span></button></div>`;
+      }).join("");
+    }
+
+    // History toggle buttons
+    ["thread","mow","bolt","triangle"].forEach(tool => {
+      const toggleBtn = document.getElementById("histToggle-" + tool);
+      const sectionEl = document.getElementById("histSection-" + tool);
+      if (toggleBtn && sectionEl){
+        toggleBtn.addEventListener("click", () => {
+          sectionEl.classList.toggle("open");
+          toggleBtn.setAttribute("aria-expanded", sectionEl.classList.contains("open") ? "true" : "false");
+        });
+      }
+    });
+
+    // History item click — restore form state and recalculate
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-hist-index]");
+      if (!btn) return;
+      const tool = btn.dataset.histTool;
+      const index = Number(btn.dataset.histIndex);
+      const entry = histLoad(tool)[index];
+      if (!entry) return;
+      const form = document.getElementById(tool + "Form");
+      if (!form) return;
+      restoreFormInputs(form, entry.formState);
+      if (tool === "thread"){ syncPctButtons(); updateThreadFields(); updateThreadReferenceOptions(entry.formState.threadClassRef || "basic"); updateThreadPreview(); }
+      if (tool === "mow"){ syncModeButtons(); updateMowHints(); }
+      if (tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
+      requestFormSubmit(form);
+    });
+
+    // Initialise history panels on load
+    ["thread","mow","bolt","triangle"].forEach(histRender);
+
+    // ── Share URL ──
+    function buildShareUrl(toolName, formState){
+      const params = new URLSearchParams();
+      params.set("tool", toolName);
+      for (const [k, v] of Object.entries(formState)){
+        if (v !== "" && v !== null && v !== undefined) params.set(k, v);
+      }
+      return location.href.split("#")[0] + "#" + params.toString();
+    }
+    function parseShareUrl(){
+      const hash = location.hash.slice(1);
+      if (!hash) return null;
+      try {
+        const params = new URLSearchParams(hash);
+        const tool = params.get("tool");
+        if (!["thread","mow","bolt","triangle"].includes(tool)) return null;
+        const formState = {};
+        for (const [k, v] of params.entries()){ if (k !== "tool") formState[k] = v; }
+        return { tool, formState };
+      } catch { return null; }
+    }
+
+    // Share button click — copy URL to clipboard
+    document.querySelectorAll("[data-share-tool]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const toolName = btn.dataset.shareTool;
+        const form = document.getElementById(toolName + "Form");
+        if (!form) return;
+        const url = buildShareUrl(toolName, captureFormInputs(form));
+        const origText = btn.textContent;
+        writeClipboard(url)
+          .then(() => {
+            btn.textContent = "Copied!";
+            btn.classList.add("shared");
+            window.setTimeout(() => { btn.textContent = origText; btn.classList.remove("shared"); }, 1600);
+          })
+          .catch(() => showToast("Could not copy link to clipboard."));
       });
     });
 
@@ -2164,6 +3057,25 @@
       ]),
       copyText: ""
     });
+
+    // Parse hash on load — runs after defaults so result isn't overwritten
+    (function initShareUrl(){
+      const shared = parseShareUrl();
+      if (!shared) return;
+      const form = document.getElementById(shared.tool + "Form");
+      if (!form) return;
+      openTool(shared.tool, { animate: false });
+      restoreFormInputs(form, shared.formState);
+      if (shared.tool === "thread"){ syncPctButtons(); updateThreadFields(); updateThreadReferenceOptions(shared.formState.threadClassRef || "basic"); updateThreadPreview(); }
+      if (shared.tool === "mow"){ syncModeButtons(); updateMowHints(); }
+      if (shared.tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
+      requestFormSubmit(form);
+    })();
+
+    // ── PWA service worker ──
+    if ("serviceWorker" in navigator){
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
   </script>
 </body>
 </html>
