@@ -827,9 +827,9 @@
       }
     }
     @media (max-width: 860px){
-      .header-wrap{ flex-direction: column; align-items: stretch; }
-      .toolbar{ justify-content: space-between; }
-      .brand-row{ align-items: flex-start; }
+      .header-wrap{ flex-direction: row; align-items: center; }
+      .toolbar{ justify-content: flex-end; flex-shrink: 0; }
+      .brand-row{ align-items: center; }
       .hero-panel{ padding: 9px 11px; }
       .brand-mark{
         width: 78px;
@@ -853,17 +853,25 @@
       }
     }
     @media (max-width: 520px){
-      .site-header,
+      .site-header{
+        padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+        padding-bottom: 10px;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
       .section-nav,
       .app-shell{ padding-left: 14px; padding-right: 14px; }
-      .brand-row{
-        gap: 12px;
-      }
+      .brand-row{ gap: 10px; }
       .brand-mark{
-        width: 68px;
-        height: 68px;
-        border-radius: 14px;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        padding: 4px;
       }
+      .brand-lockup h1{ font-size: clamp(1.25rem, 5vw, 1.55rem); margin-bottom: 2px; }
+      .brand-lockup p{ font-size: var(--fs-0); }
+      .toggle-btn{ padding: 9px 12px; min-height: 40px; gap: 6px; }
+      #themeLabel{ display: none; }
       .hero-panel{ padding: 8px 9px; }
       .action-row{ display: grid; grid-template-columns: 1fr; }
       .result-head{ flex-direction: column; }
@@ -1199,7 +1207,6 @@
         </div>
       </div>
       <div class="toolbar">
-        <div class="toolbar-note">Built for quick answers on the bench or at the machine.</div>
         <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme"><span id="themeIcon" aria-hidden="true">☾</span> <span id="themeLabel">Switch to Light</span></button>
       </div>
     </div>
