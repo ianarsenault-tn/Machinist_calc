@@ -1148,6 +1148,34 @@
     .share-btn:hover{ transform: translateY(-1px); border-color: color-mix(in srgb, var(--accent) 42%, var(--border)); }
     .share-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
     .share-btn[hidden]{ display: none; }
+
+    /* ── Thread → MOW crosslink ── */
+    .crosslink-row{ margin-top: 2px; }
+    .crosslink-btn{
+      appearance: none; display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; min-height: 38px; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent;
+      font: inherit; font-size: var(--fs-0); font-weight: 800;
+      color: var(--accent-strong); cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+    .crosslink-btn:hover{ background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 42%, var(--border)); transform: translateY(-1px); }
+    .crosslink-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+
+    /* ── History clear ── */
+    .history-hdr{ display: flex; align-items: center; gap: 6px; }
+    .history-hdr .history-toggle-btn{ flex: 1; }
+    .hist-clear-btn{
+      appearance: none; flex-shrink: 0;
+      padding: 6px 12px; min-height: 36px; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent;
+      font: inherit; font-size: var(--fs-0); font-weight: 800;
+      color: var(--muted); cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+    }
+    .hist-clear-btn:hover{ background: color-mix(in srgb, var(--warning) 10%, transparent); border-color: color-mix(in srgb, var(--warning) 38%, var(--border)); color: var(--warning); }
+    .hist-clear-btn:focus-visible{ box-shadow: var(--focus-ring); outline: none; }
+
     .share-btn.shared{
       background: var(--accent-soft);
       border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
@@ -1268,22 +1296,22 @@
             <div class="field-grid two" id="threadUnifiedFields">
               <div class="field">
                 <label for="unMajorIn">Major diameter (in)</label>
-                <input id="unMajorIn" type="number" step="0.0001" placeholder="0.250 for 1/4-20" />
+                <input id="unMajorIn" type="number" inputmode="decimal" step="0.0001" placeholder="0.250 for 1/4-20" />
               </div>
               <div class="field">
                 <label for="unTPI">TPI</label>
-                <input id="unTPI" type="number" step="1" placeholder="20" />
+                <input id="unTPI" type="number" inputmode="decimal" step="1" placeholder="20" />
               </div>
             </div>
 
             <div class="field-grid two" id="threadMetricFields" hidden>
               <div class="field">
                 <label for="mMajorMm">Major diameter (mm)</label>
-                <input id="mMajorMm" type="number" step="0.001" placeholder="8 for M8x1.25" />
+                <input id="mMajorMm" type="number" inputmode="decimal" step="0.001" placeholder="8 for M8x1.25" />
               </div>
               <div class="field">
                 <label for="mPitchMm">Pitch (mm)</label>
-                <input id="mPitchMm" type="number" step="0.001" placeholder="1.25" />
+                <input id="mPitchMm" type="number" inputmode="decimal" step="0.001" placeholder="1.25" />
               </div>
             </div>
 
@@ -1312,14 +1340,20 @@
                 </div>
               </div>
               <div class="result-stats" id="threadStats"></div>
+              <div class="crosslink-row" id="threadToMowRow" hidden>
+                <button class="crosslink-btn" id="threadToMow" type="button">&#8594; Use in Over Wires</button>
+              </div>
               <div class="result-details" id="threadDetails"></div>
             </div>
             <div class="history-section" id="histSection-thread" style="display:none">
-              <button class="history-toggle-btn" type="button" id="histToggle-thread">
-                <span>Recent</span>
-                <span class="history-badge" id="histBadge-thread">0</span>
-                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
-              </button>
+              <div class="history-hdr">
+                <button class="history-toggle-btn" type="button" id="histToggle-thread">
+                  <span>Recent</span>
+                  <span class="history-badge" id="histBadge-thread">0</span>
+                  <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <button class="hist-clear-btn" type="button" data-hist-clear="thread">Clear</button>
+              </div>
               <div class="history-list" id="histList-thread" role="list"></div>
             </div>
           </form>
@@ -1386,12 +1420,12 @@
             <div class="field-grid two">
               <div class="field">
                 <label id="mowPitchLabel" for="mowPitchInput">Pitch input</label>
-                <input id="mowPitchInput" type="number" step="0.0001" />
+                <input id="mowPitchInput" type="number" inputmode="decimal" step="0.0001" />
                 <div class="hint" id="mowPitchHint"></div>
               </div>
               <div class="field">
                 <label for="mowWire">Wire diameter (W)</label>
-                <input id="mowWire" type="number" step="0.0001" placeholder="Wire size in selected units" />
+                <input id="mowWire" type="number" inputmode="decimal" step="0.0001" placeholder="Wire size in selected units" />
                 <div class="hint">Theoretical best wire: W = P / sqrt(3).</div>
               </div>
             </div>
@@ -1399,11 +1433,11 @@
             <div class="field-grid two">
               <div class="field" id="mowFieldE">
                 <label for="mowE">Pitch diameter (E)</label>
-                <input id="mowE" type="number" step="0.0001" placeholder="Enter E to compute M" />
+                <input id="mowE" type="number" inputmode="decimal" step="0.0001" placeholder="Enter E to compute M" />
               </div>
               <div class="field" id="mowFieldM">
                 <label for="mowM">Measurement over wires (M)</label>
-                <input id="mowM" type="number" step="0.0001" placeholder="Computed M appears here" />
+                <input id="mowM" type="number" inputmode="decimal" step="0.0001" placeholder="Computed M appears here" />
               </div>
             </div>
 
@@ -1430,11 +1464,14 @@
               <div class="result-details" id="mowDetails"></div>
             </div>
             <div class="history-section" id="histSection-mow" style="display:none">
-              <button class="history-toggle-btn" type="button" id="histToggle-mow">
-                <span>Recent</span>
-                <span class="history-badge" id="histBadge-mow">0</span>
-                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
-              </button>
+              <div class="history-hdr">
+                <button class="history-toggle-btn" type="button" id="histToggle-mow">
+                  <span>Recent</span>
+                  <span class="history-badge" id="histBadge-mow">0</span>
+                  <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <button class="hist-clear-btn" type="button" data-hist-clear="mow">Clear</button>
+              </div>
               <div class="history-list" id="histList-mow" role="list"></div>
             </div>
           </form>
@@ -1461,18 +1498,18 @@
               </div>
               <div class="field">
                 <label for="bcDia">Bolt circle diameter</label>
-                <input id="bcDia" type="number" step="0.0001" placeholder="100" />
+                <input id="bcDia" type="number" inputmode="decimal" step="0.0001" placeholder="100" />
               </div>
               <div class="field">
                 <label for="bcHoles">Number of holes</label>
-                <input id="bcHoles" type="number" step="1" min="1" placeholder="6" />
+                <input id="bcHoles" type="number" inputmode="decimal" step="1" min="1" placeholder="6" />
               </div>
             </div>
 
             <div class="field-grid two">
               <div class="field">
                 <label for="bcStartAngle">Start angle (deg)</label>
-                <input id="bcStartAngle" type="number" step="0.01" value="0" />
+                <input id="bcStartAngle" type="number" inputmode="decimal" step="0.01" value="0" />
               </div>
               <div class="field">
                 <label for="bcClockwise">Direction</label>
@@ -1487,11 +1524,11 @@
             <div class="field-grid two">
               <div class="field">
                 <label for="bcCenterX">Center X offset</label>
-                <input id="bcCenterX" type="number" step="0.0001" value="0" />
+                <input id="bcCenterX" type="number" inputmode="decimal" step="0.0001" value="0" />
               </div>
               <div class="field">
                 <label for="bcCenterY">Center Y offset</label>
-                <input id="bcCenterY" type="number" step="0.0001" value="0" />
+                <input id="bcCenterY" type="number" inputmode="decimal" step="0.0001" value="0" />
               </div>
             </div>
             <div class="row-hint">Offsets shift all coordinates from the origin. Leave at 0 for machine-center output.</div>
@@ -1518,11 +1555,14 @@
               <div class="result-details" id="bcDetails"></div>
             </div>
             <div class="history-section" id="histSection-bolt" style="display:none">
-              <button class="history-toggle-btn" type="button" id="histToggle-bolt">
-                <span>Recent</span>
-                <span class="history-badge" id="histBadge-bolt">0</span>
-                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
-              </button>
+              <div class="history-hdr">
+                <button class="history-toggle-btn" type="button" id="histToggle-bolt">
+                  <span>Recent</span>
+                  <span class="history-badge" id="histBadge-bolt">0</span>
+                  <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <button class="hist-clear-btn" type="button" data-hist-clear="bolt">Clear</button>
+              </div>
               <div class="history-list" id="histList-bolt" role="list"></div>
             </div>
           </form>
@@ -1574,19 +1614,19 @@
             <div class="field-grid two" id="rtFields">
               <div class="field" id="rtFieldRun">
                 <label for="rtRun">Run (X)</label>
-                <input id="rtRun" type="number" step="0.0001" placeholder="Enter run" />
+                <input id="rtRun" type="number" inputmode="decimal" step="0.0001" placeholder="Enter run" />
               </div>
               <div class="field" id="rtFieldRise">
                 <label for="rtRise">Rise (Y)</label>
-                <input id="rtRise" type="number" step="0.0001" placeholder="Enter rise" />
+                <input id="rtRise" type="number" inputmode="decimal" step="0.0001" placeholder="Enter rise" />
               </div>
               <div class="field" id="rtFieldHyp" hidden>
                 <label for="rtHyp">Hypotenuse</label>
-                <input id="rtHyp" type="number" step="0.0001" placeholder="Enter hypotenuse" />
+                <input id="rtHyp" type="number" inputmode="decimal" step="0.0001" placeholder="Enter hypotenuse" />
               </div>
               <div class="field" id="rtFieldAngle" hidden>
                 <label for="rtAngle">Angle (deg)</label>
-                <input id="rtAngle" type="number" step="0.01" placeholder="Enter angle" />
+                <input id="rtAngle" type="number" inputmode="decimal" step="0.01" placeholder="Enter angle" />
               </div>
             </div>
 
@@ -1612,11 +1652,14 @@
               <div class="result-details" id="rtDetails"></div>
             </div>
             <div class="history-section" id="histSection-triangle" style="display:none">
-              <button class="history-toggle-btn" type="button" id="histToggle-triangle">
-                <span>Recent</span>
-                <span class="history-badge" id="histBadge-triangle">0</span>
-                <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
-              </button>
+              <div class="history-hdr">
+                <button class="history-toggle-btn" type="button" id="histToggle-triangle">
+                  <span>Recent</span>
+                  <span class="history-badge" id="histBadge-triangle">0</span>
+                  <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <button class="hist-clear-btn" type="button" data-hist-clear="triangle">Clear</button>
+              </div>
               <div class="history-list" id="histList-triangle" role="list"></div>
             </div>
           </form>
@@ -1685,6 +1728,11 @@
       if (!Number.isFinite(value)) return "—";
       const digits = Math.max(0, Math.min(12, places));
       return Number(value).toFixed(digits).replace(/\.?0+$/, "");
+    }
+    function fmtDual(value, fromUnit, dp){
+      if (!Number.isFinite(value)) return "—";
+      if (fromUnit === "in") return `${fmt(value, dp)} in / ${fmt(value * 25.4, 3)} mm`;
+      return `${fmt(value, dp)} mm / ${fmt(value / 25.4, 4)} in`;
     }
     function degToRad(value){ return value * Math.PI / 180; }
     function radToDeg(value){ return value * 180 / Math.PI; }
@@ -2349,20 +2397,27 @@
         const nearDrillIn = drillsIn.nearest;
         const fracStr = decimalToFractionStr(drill);
         const stdName = lookupUnThread(major, tpi);
+        const bestWireUN = pitch / SQRT3;
+        const toMowBtn = document.getElementById("threadToMow");
+        toMowBtn.dataset.mowUnits = "in";
+        toMowBtn.dataset.mowPitchInput = fmt(tpi, 0);
+        toMowBtn.dataset.mowPitchE = fmt(basicPitchDiameter, 6);
+        toMowBtn.dataset.mowWire = fmt(bestWireUN, 6);
+        document.getElementById("threadToMowRow").hidden = false;
         const threadFormState = captureFormInputs(threadForm);
         setResult("thread", {
           animate: true,
           saveHistory: true,
           formState: threadFormState,
-          primary: `Tap drill: ${fmt(drill, 6)} in${fracStr ? ` = ${fracStr}` : ""}  →  ${nearDrillIn.label}`,
+          primary: `Tap drill: ${fmt(drill, 6)} in / ${fmt(drill * 25.4, 3)} mm  →  ${nearDrillIn.label}`,
           stats: [
             { label: "Thread", value: stdName || label },
-            { label: "Pitch", value: `${fmt(pitch, 6)} in` },
-            { label: "Major", value: `${fmt(major, 6)} in` },
+            { label: "Pitch", value: fmtDual(pitch, "in", 6) },
+            { label: "Major", value: fmtDual(major, "in", 6) },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: `${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)` },
-            { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 6)} in` },
-            { label: "Internal minor", value: `${fmt(basicInternalMinor, 6)} in` }
+            { label: "Pitch dia basic", value: fmtDual(basicPitchDiameter, "in", 6) },
+            { label: "Internal minor", value: fmtDual(basicInternalMinor, "in", 6) }
           ],
           detailsHtml: renderDrillCard(drill, "un") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
@@ -2403,20 +2458,27 @@
         const drillsMm = nearestDrillsMm(drill);
         const nearDrillMm = drillsMm.nearest;
         const stdNameM = lookupMetricThread(major, pitch);
+        const bestWireM = pitch / SQRT3;
+        const toMowBtnM = document.getElementById("threadToMow");
+        toMowBtnM.dataset.mowUnits = "mm";
+        toMowBtnM.dataset.mowPitchInput = fmt(pitch, 3);
+        toMowBtnM.dataset.mowPitchE = fmt(basicPitchDiameter, 3);
+        toMowBtnM.dataset.mowWire = fmt(bestWireM, 4);
+        document.getElementById("threadToMowRow").hidden = false;
         const threadFormStateM = captureFormInputs(threadForm);
         setResult("thread", {
           animate: true,
           saveHistory: true,
           formState: threadFormStateM,
-          primary: `Tap drill: ${fmt(drill, 3)} mm  →  ${nearDrillMm.label}`,
+          primary: `Tap drill: ${fmt(drill, 3)} mm / ${fmt(drill / 25.4, 5)} in  →  ${nearDrillMm.label}`,
           stats: [
             { label: "Thread", value: stdNameM || label },
-            { label: "Pitch", value: `${fmt(pitch, 3)} mm` },
-            { label: "Major", value: `${fmt(major, 3)} mm` },
+            { label: "Pitch", value: fmtDual(pitch, "mm", 3) },
+            { label: "Major", value: fmtDual(major, "mm", 3) },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: nearDrillMm.label },
-            { label: "Pitch dia basic", value: `${fmt(basicPitchDiameter, 3)} mm` },
-            { label: "Internal minor", value: `${fmt(basicInternalMinor, 3)} mm` }
+            { label: "Pitch dia basic", value: fmtDual(basicPitchDiameter, "mm", 3) },
+            { label: "Internal minor", value: fmtDual(basicInternalMinor, "mm", 3) }
           ],
           detailsHtml: renderDrillCard(drill, "metric") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
@@ -2457,6 +2519,7 @@
       threadQuickNote.textContent = "";
       showWarn(threadWarn, "");
       document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("chip-active"));
+      document.getElementById("threadToMowRow").hidden = true;
       setResult("thread", {
         primary: "Tap drill and pitch details will show here.",
         stats: [],
@@ -2540,6 +2603,7 @@
       mowE.value = basicPitchDiameter.toFixed(dp);
       mowM.value = measurement.toFixed(dp);
       mowPresetNote.textContent = `Loaded ${parsed.label} — best wire ${fmt(wire, 4)} ${units}, basic E ${fmt(basicPitchDiameter, dp)} ${units}.`;
+      requestFormSubmit(mowForm);
     }
     mowUnits.addEventListener("change", updateMowHints);
     mowMode.addEventListener("change", updateMowHints);
@@ -2699,10 +2763,10 @@
         formState: boltFormState,
         primary: `${holes} coordinates ready in ${units}`,
         stats: [
-          { label: "BCD", value: `${fmt(diameter, 6)} ${units}` },
-          { label: "Radius", value: `${fmt(radius, 6)} ${units}` },
+          { label: "BCD", value: fmtDual(diameter, units, 6) },
+          { label: "Radius", value: fmtDual(radius, units, 6) },
           { label: "Step angle", value: `${fmt(step, 4)} deg` },
-          { label: "Chord (h-to-h)", value: `${fmt(chord, 6)} ${units}` },
+          { label: "Chord (h-to-h)", value: fmtDual(chord, units, 6) },
           { label: "Direction", value: directionLabel },
           { label: "Center X", value: `${fmt(centerX, 6)} ${units}` },
           { label: "Center Y", value: `${fmt(centerY, 6)} ${units}` }
@@ -2776,9 +2840,11 @@
         result = {
           primary: `Angle = ${fmt(angle, 4)} deg`,
           stats: [
-            { label: "Run", value: `${fmt(run, 6)} ${units}` },
-            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
-            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Run", value: fmtDual(run, units, 6) },
+            { label: "Rise", value: fmtDual(rise, units, 6) },
+            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
+            { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
           ],
           details: [
@@ -2786,7 +2852,7 @@
             "Slope is listed as rise divided by run.",
             "Use this mode when you already know the two offset legs."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "hypAngle"){
         const hyp = num(rtHyp.value);
@@ -2798,9 +2864,11 @@
         result = {
           primary: `Run = ${fmt(run, 6)} ${units}`,
           stats: [
-            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
-            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Run", value: fmtDual(run, units, 6) },
+            { label: "Rise", value: fmtDual(rise, units, 6) },
+            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
           ],
           details: [
@@ -2808,7 +2876,7 @@
             "Angles must stay between 0 and 90 degrees for this right-triangle solver.",
             "The selected unit is carried through the answer cards and copied output."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "runAngle"){
         const run = num(rtRun.value);
@@ -2820,9 +2888,11 @@
         result = {
           primary: `Rise = ${fmt(rise, 6)} ${units}`,
           stats: [
-            { label: "Run", value: `${fmt(run, 6)} ${units}` },
-            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Run", value: fmtDual(run, units, 6) },
+            { label: "Rise", value: fmtDual(rise, units, 6) },
+            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
           ],
           details: [
@@ -2830,7 +2900,7 @@
             "This is useful when the horizontal travel is fixed and you need the vertical offset.",
             "Press Enter after editing any field to solve immediately."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else {
         const rise = num(rtRise.value);
@@ -2842,9 +2912,11 @@
         result = {
           primary: `Run = ${fmt(run, 6)} ${units}`,
           stats: [
-            { label: "Rise", value: `${fmt(rise, 6)} ${units}` },
-            { label: "Hypotenuse", value: `${fmt(hyp, 6)} ${units}` },
+            { label: "Run", value: fmtDual(run, units, 6) },
+            { label: "Rise", value: fmtDual(rise, units, 6) },
+            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
+            { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
           ],
           details: [
@@ -2852,7 +2924,7 @@
             "Use this mode when the vertical offset is fixed and you need the horizontal reach.",
             "The selected unit is preserved in both the visible answer and the copied summary."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       }
       setResult("triangle", { animate: true, saveHistory: true, formState: captureFormInputs(triangleForm), primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
@@ -2880,6 +2952,34 @@
         updateTriangleFields();
         updateTriangleDiagram();
       });
+    });
+
+    // ── Thread → MOW crosslink handler ──
+    document.getElementById("threadToMow").addEventListener("click", () => {
+      const btn = document.getElementById("threadToMow");
+      mowUnits.value = btn.dataset.mowUnits || "mm";
+      mowMode.value = "solveM";
+      syncModeButtons();
+      updateMowHints();
+      mowPitchInput.value = btn.dataset.mowPitchInput || "";
+      mowWire.value = btn.dataset.mowWire || "";
+      mowE.value = btn.dataset.mowPitchE || "";
+      mowM.value = "";
+      mowPreset.value = "";
+      mowPresetNote.textContent = "";
+      showWarn(mowWarn, "");
+      openTool("mow", { scroll: true, animate: true });
+      requestFormSubmit(mowForm);
+    });
+
+    // ── History clear (event delegation) ──
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-hist-clear]");
+      if (!btn) return;
+      e.stopPropagation();
+      const tool = btn.dataset.histClear;
+      localStorage.removeItem("marcos_hist_" + tool);
+      histRender(tool);
     });
 
     // ── Input persistence ──
