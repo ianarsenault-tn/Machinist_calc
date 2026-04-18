@@ -572,7 +572,7 @@
       color: var(--accent-strong);
       border-radius: 999px;
       padding: 8px 12px;
-      min-height: 38px;
+      min-height: 44px;
       font-size: var(--fs-0);
       font-weight: 800;
       cursor: pointer;
@@ -739,6 +739,7 @@
       letter-spacing: 0.05em;
     }
     .stat-card strong{ display: block; margin-top: 5px; font-size: var(--fs-2); line-height: 1.2; }
+    .stat-secondary{ display: block; margin-top: 2px; font-size: var(--fs-0); font-weight: 400; color: var(--muted); }
     .detail-list{ margin: 0; padding-left: 18px; color: var(--muted); font-size: var(--fs-1); }
     .detail-list li + li{ margin-top: 8px; }
     .detail-card{
@@ -873,7 +874,7 @@
       .toggle-btn{ padding: 9px 12px; min-height: 40px; gap: 6px; }
       #themeLabel{ display: none; }
       .hero-panel{ padding: 8px 9px; }
-      .action-row{ display: grid; grid-template-columns: 1fr; }
+      .action-row{ display: grid; grid-template-columns: 1fr auto; }
       .result-head{ flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce){
@@ -952,7 +953,7 @@
       flex: 1 1 auto;
       min-height: 44px;
       padding: 10px 12px;
-      border-radius: var(--radius-sm);
+      border-radius: 999px;
       border: 1px solid var(--border-strong);
       background: var(--panel-muted);
       font: inherit;
@@ -1110,7 +1111,7 @@
     .history-section{ margin-top: 4px; }
     .history-toggle-btn{
       display: flex; align-items: center; gap: 8px; width: 100%;
-      padding: 10px 14px; border-radius: var(--radius-sm);
+      padding: 10px 14px; border-radius: 999px;
       border: 1px solid var(--border); background: transparent;
       font: inherit; font-size: var(--fs-0); font-weight: 800;
       color: var(--muted); cursor: pointer; text-align: left; appearance: none;
@@ -1217,7 +1218,7 @@
       <a class="nav-link active" href="#tool-thread" data-tool-link="thread">Thread &amp; Tap Drill</a>
       <a class="nav-link" href="#tool-mow" data-tool-link="mow">Over Wires</a>
       <a class="nav-link" href="#tool-bolt" data-tool-link="bolt">Bolt Circle</a>
-      <a class="nav-link" href="#tool-triangle" data-tool-link="triangle">Offset Solver</a>
+      <a class="nav-link" href="#tool-triangle" data-tool-link="triangle">Right Triangle</a>
     </div>
   </nav>
 
@@ -1579,7 +1580,7 @@
       <section class="tool-card open" id="tool-triangle" data-tool="triangle">
         <div class="tool-toggle">
           <div class="tool-title">
-            <strong>Right-Triangle / Offset Solver</strong>
+            <strong>Right Triangle</strong>
             <span>Switch modes depending on which side or angle you already know.</span>
           </div>
           <span class="tool-pill">Offsets</span>
@@ -1741,12 +1742,20 @@
       if (fromUnit === "in") return `${fmt(value, dp)} in / ${fmt(value * 25.4, 3)} mm`;
       return `${fmt(value, dp)} mm / ${fmt(value / 25.4, 4)} in`;
     }
+    function fmtDualHtml(value, fromUnit, dp){
+      if (!Number.isFinite(value)) return "—";
+      if (fromUnit === "in") return `${escapeHtml(fmt(value, dp))} in<span class="stat-secondary">/ ${escapeHtml(fmt(value * 25.4, 3))} mm</span>`;
+      return `${escapeHtml(fmt(value, dp))} mm<span class="stat-secondary">/ ${escapeHtml(fmt(value / 25.4, 4))} in</span>`;
+    }
     function degToRad(value){ return value * Math.PI / 180; }
     function radToDeg(value){ return value * 180 / Math.PI; }
     function unitLabel(units){ return units === "in" ? "in" : "mm"; }
     function renderStats(items){
       if (!items || !items.length) return "";
-      return items.map((item) => `<div class="stat-card"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong></div>`).join("");
+      return items.map((item) => {
+        const val = item.valueHtml !== undefined ? item.valueHtml : escapeHtml(item.value || "");
+        return `<div class="stat-card"><span>${escapeHtml(item.label)}</span><strong>${val}</strong></div>`;
+      }).join("");
     }
     function renderList(items){
       return `<ul class="detail-list">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
@@ -2419,12 +2428,12 @@
           primary: `Tap drill: ${fmt(drill, 6)} in / ${fmt(drill * 25.4, 3)} mm  →  ${nearDrillIn.label}`,
           stats: [
             { label: "Thread", value: stdName || label },
-            { label: "Pitch", value: fmtDual(pitch, "in", 6) },
-            { label: "Major", value: fmtDual(major, "in", 6) },
+            { label: "Pitch", valueHtml: fmtDualHtml(pitch, "in", 6) },
+            { label: "Major", valueHtml: fmtDualHtml(major, "in", 6) },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: `${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)` },
-            { label: "Pitch dia basic", value: fmtDual(basicPitchDiameter, "in", 6) },
-            { label: "Internal minor", value: fmtDual(basicInternalMinor, "in", 6) }
+            { label: "Pitch dia basic", valueHtml: fmtDualHtml(basicPitchDiameter, "in", 6) },
+            { label: "Internal minor", valueHtml: fmtDualHtml(basicInternalMinor, "in", 6) }
           ],
           detailsHtml: renderDrillCard(drill, "un") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
@@ -2480,12 +2489,12 @@
           primary: `Tap drill: ${fmt(drill, 3)} mm / ${fmt(drill / 25.4, 5)} in  →  ${nearDrillMm.label}`,
           stats: [
             { label: "Thread", value: stdNameM || label },
-            { label: "Pitch", value: fmtDual(pitch, "mm", 3) },
-            { label: "Major", value: fmtDual(major, "mm", 3) },
+            { label: "Pitch", valueHtml: fmtDualHtml(pitch, "mm", 3) },
+            { label: "Major", valueHtml: fmtDualHtml(major, "mm", 3) },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: nearDrillMm.label },
-            { label: "Pitch dia basic", value: fmtDual(basicPitchDiameter, "mm", 3) },
-            { label: "Internal minor", value: fmtDual(basicInternalMinor, "mm", 3) }
+            { label: "Pitch dia basic", valueHtml: fmtDualHtml(basicPitchDiameter, "mm", 3) },
+            { label: "Internal minor", valueHtml: fmtDualHtml(basicInternalMinor, "mm", 3) }
           ],
           detailsHtml: renderDrillCard(drill, "metric") + renderList([
             `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
@@ -2770,10 +2779,10 @@
         formState: boltFormState,
         primary: `${holes} coordinates ready in ${units}`,
         stats: [
-          { label: "BCD", value: fmtDual(diameter, units, 6) },
-          { label: "Radius", value: fmtDual(radius, units, 6) },
+          { label: "BCD", valueHtml: fmtDualHtml(diameter, units, 6) },
+          { label: "Radius", valueHtml: fmtDualHtml(radius, units, 6) },
           { label: "Step angle", value: `${fmt(step, 4)} deg` },
-          { label: "Chord (h-to-h)", value: fmtDual(chord, units, 6) },
+          { label: "Chord (h-to-h)", valueHtml: fmtDualHtml(chord, units, 6) },
           { label: "Direction", value: directionLabel },
           { label: "Center X", value: `${fmt(centerX, 6)} ${units}` },
           { label: "Center Y", value: `${fmt(centerY, 6)} ${units}` }
@@ -2847,9 +2856,9 @@
         result = {
           primary: `Angle = ${fmt(angle, 4)} deg`,
           stats: [
-            { label: "Run", value: fmtDual(run, units, 6) },
-            { label: "Rise", value: fmtDual(rise, units, 6) },
-            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
+            { label: "Run", valueHtml: fmtDualHtml(run, units, 6) },
+            { label: "Rise", valueHtml: fmtDualHtml(rise, units, 6) },
+            { label: "Hypotenuse", valueHtml: fmtDualHtml(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
             { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
@@ -2859,7 +2868,7 @@
             "Slope is listed as rise divided by run.",
             "Use this mode when you already know the two offset legs."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Right Triangle`, `Mode: Given run and rise`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "hypAngle"){
         const hyp = num(rtHyp.value);
@@ -2871,9 +2880,9 @@
         result = {
           primary: `Run = ${fmt(run, 6)} ${units}`,
           stats: [
-            { label: "Run", value: fmtDual(run, units, 6) },
-            { label: "Rise", value: fmtDual(rise, units, 6) },
-            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
+            { label: "Run", valueHtml: fmtDualHtml(run, units, 6) },
+            { label: "Rise", valueHtml: fmtDualHtml(rise, units, 6) },
+            { label: "Hypotenuse", valueHtml: fmtDualHtml(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
             { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
@@ -2883,7 +2892,7 @@
             "Angles must stay between 0 and 90 degrees for this right-triangle solver.",
             "The selected unit is carried through the answer cards and copied output."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Right Triangle`, `Mode: Given hypotenuse and angle`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Rise: ${fmt(rise, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else if (mode === "runAngle"){
         const run = num(rtRun.value);
@@ -2895,9 +2904,9 @@
         result = {
           primary: `Rise = ${fmt(rise, 6)} ${units}`,
           stats: [
-            { label: "Run", value: fmtDual(run, units, 6) },
-            { label: "Rise", value: fmtDual(rise, units, 6) },
-            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
+            { label: "Run", valueHtml: fmtDualHtml(run, units, 6) },
+            { label: "Rise", valueHtml: fmtDualHtml(rise, units, 6) },
+            { label: "Hypotenuse", valueHtml: fmtDualHtml(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
             { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
@@ -2907,7 +2916,7 @@
             "This is useful when the horizontal travel is fixed and you need the vertical offset.",
             "Press Enter after editing any field to solve immediately."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Right Triangle`, `Mode: Given run and angle`, `Run: ${fmt(run, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Rise: ${fmt(rise, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       } else {
         const rise = num(rtRise.value);
@@ -2919,9 +2928,9 @@
         result = {
           primary: `Run = ${fmt(run, 6)} ${units}`,
           stats: [
-            { label: "Run", value: fmtDual(run, units, 6) },
-            { label: "Rise", value: fmtDual(rise, units, 6) },
-            { label: "Hypotenuse", value: fmtDual(hyp, units, 6) },
+            { label: "Run", valueHtml: fmtDualHtml(run, units, 6) },
+            { label: "Rise", valueHtml: fmtDualHtml(rise, units, 6) },
+            { label: "Hypotenuse", valueHtml: fmtDualHtml(hyp, units, 6) },
             { label: "Angle", value: `${fmt(angle, 4)} deg` },
             { label: "Comp. angle", value: `${fmt(90 - angle, 4)} deg` },
             { label: "Slope", value: fmt(rise / run, 6) }
@@ -2931,7 +2940,7 @@
             "Use this mode when the vertical offset is fixed and you need the horizontal reach.",
             "The selected unit is preserved in both the visible answer and the copied summary."
           ],
-          copyText: [`Marcos's Calculator - Offset Solver`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
+          copyText: [`Marcos's Calculator - Right Triangle`, `Mode: Given rise and angle`, `Rise: ${fmt(rise, 6)} ${units}`, `Angle: ${fmt(angle, 4)} deg`, `Comp. angle: ${fmt(90 - angle, 4)} deg`, `Run: ${fmt(run, 6)} ${units}`, `Hypotenuse: ${fmt(hyp, 6)} ${units}`, `Slope: ${fmt(rise / run, 6)}`].join("\n")
         };
       }
       setResult("triangle", { animate: true, saveHistory: true, formState: captureFormInputs(triangleForm), primary: result.primary, stats: result.stats, detailsHtml: renderList(result.details), copyText: result.copyText });
