@@ -403,12 +403,34 @@
       padding: 22px 24px 20px;
       text-align: left;
       background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+      border: 0;
       border-bottom: 1px solid var(--border);
+      color: inherit;
+      font: inherit;
+      cursor: default;
+      -webkit-tap-highlight-color: transparent;
     }
-    .tool-title strong{
+    .tool-toggle:focus-visible{
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .tool-title h2{
       display: block;
+      margin: 0;
       font-family: var(--font-heading);
       font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.6rem);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .tool-chevron{
+      display: none;
+      flex-shrink: 0;
+      font-size: 1rem;
+      color: var(--muted);
+      transition: transform 180ms ease;
+    }
+    .tool-toggle[aria-expanded="false"] .tool-chevron{
+      transform: rotate(-90deg);
     }
     .tool-title span{
       display: block;
@@ -733,7 +755,11 @@
       .field-grid.two,
       .field-grid.three{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
       .span-2{ grid-column: auto; }
-      .tool-toggle{ padding: 18px 18px 16px; }
+      .tool-toggle{
+        padding: 18px 18px 16px;
+        cursor: pointer;
+      }
+      .tool-chevron{ display: inline-flex; }
       .tool-body{
         padding: 0 18px 18px;
         overflow: hidden;
@@ -1118,14 +1144,15 @@
   <main class="app-shell">
     <div class="desktop-grid">
       <section class="tool-card open" id="tool-thread" data-tool="thread">
-        <div class="tool-toggle">
+        <button class="tool-toggle" type="button" data-tool-toggle="thread" aria-expanded="true" aria-controls="tool-thread-body">
           <div class="tool-title">
-            <strong>Thread Spec Helper + Tap Drill</strong>
+            <h2>Thread Spec Helper + Tap Drill</h2>
             <span>Use a quick thread spec or enter major diameter and pitch details manually.</span>
           </div>
           <span class="tool-pill">Threads</span>
-        </div>
-        <div class="tool-body">
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-thread-body">
           <form class="tool-form" id="threadForm">
             <div class="field-grid two">
               <div class="field span-2">
@@ -1262,14 +1289,15 @@
       </section>
 
       <section class="tool-card open" id="tool-mow" data-tool="mow">
-        <div class="tool-toggle">
+        <button class="tool-toggle" type="button" data-tool-toggle="mow" aria-expanded="true" aria-controls="tool-mow-body">
           <div class="tool-title">
-            <strong>Measurement Over Wires (60&deg; Threads)</strong>
+            <h2>Measurement Over Wires (60&deg; Threads)</h2>
             <span>Swap between solving pitch diameter from a mic reading or the other way around.</span>
           </div>
           <span class="tool-pill">Wires</span>
-        </div>
-        <div class="tool-body">
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-mow-body">
           <form class="tool-form" id="mowForm">
             <div class="field-grid two">
               <div class="field">
@@ -1380,14 +1408,15 @@
       </section>
 
       <section class="tool-card open" id="tool-bolt" data-tool="bolt">
-        <div class="tool-toggle">
+        <button class="tool-toggle" type="button" data-tool-toggle="bolt" aria-expanded="true" aria-controls="tool-bolt-body">
           <div class="tool-title">
-            <strong>Bolt Circle Coordinates</strong>
+            <h2>Bolt Circle Coordinates</h2>
             <span>Generate evenly spaced XY coordinates and copy the full coordinate list in one click.</span>
           </div>
           <span class="tool-pill">Bolt</span>
-        </div>
-        <div class="tool-body">
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-bolt-body">
           <form class="tool-form" id="boltForm">
             <div class="field-grid three">
               <div class="field">
@@ -1471,14 +1500,15 @@
       </section>
 
       <section class="tool-card open" id="tool-triangle" data-tool="triangle">
-        <div class="tool-toggle">
+        <button class="tool-toggle" type="button" data-tool-toggle="triangle" aria-expanded="true" aria-controls="tool-triangle-body">
           <div class="tool-title">
-            <strong>Right Triangle</strong>
+            <h2>Right Triangle</h2>
             <span>Switch modes depending on which side or angle you already know.</span>
           </div>
           <span class="tool-pill">Triangle</span>
-        </div>
-        <div class="tool-body">
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-triangle-body">
           <form class="tool-form" id="triangleForm">
             <div class="field-grid two">
               <div class="field">
@@ -1736,17 +1766,38 @@
       navLinks.forEach((link) => link.classList.toggle("active", link.dataset.toolLink === toolName));
       toolCards.forEach((card) => card.classList.toggle("active-tool", card.dataset.tool === toolName));
     }
+    function isMobileLayout(){
+      return window.matchMedia("(max-width: 820px)").matches;
+    }
     function applyToolState(toolName){
+      const mobile = isMobileLayout();
       toolCards.forEach((card) => {
         const isTarget = card.dataset.tool === toolName;
         const body = card.querySelector(".tool-body");
-        card.hidden = !isTarget;
+        const toggle = card.querySelector(".tool-toggle");
+        if (mobile){
+          card.hidden = false;
+        } else {
+          card.hidden = !isTarget;
+        }
         card.classList.toggle("open", isTarget);
-        body.inert = !isTarget;
-        body.setAttribute("aria-hidden", isTarget ? "false" : "true");
+        const isOpen = card.classList.contains("open");
+        if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
+        body.inert = !isOpen;
+        body.setAttribute("aria-hidden", isOpen ? "false" : "true");
       });
       setActiveNav(toolName);
       try { localStorage.setItem(toolStateKey, toolName); } catch {}
+    }
+    function setCardOpen(card, open){
+      const body = card.querySelector(".tool-body");
+      const toggle = card.querySelector(".tool-toggle");
+      card.classList.toggle("open", open);
+      if (toggle) toggle.setAttribute("aria-expanded", String(open));
+      if (body){
+        body.inert = !open;
+        body.setAttribute("aria-hidden", open ? "false" : "true");
+      }
     }
     function openTool(toolName, options = {}){
       const shouldScroll = Boolean(options.scroll);
@@ -1763,8 +1814,38 @@
         document.getElementById(`tool-${toolName}`).scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
+    function toggleTool(toolName){
+      const card = toolCards.find((c) => c.dataset.tool === toolName);
+      if (!card) return;
+      if (!isMobileLayout()){
+        openTool(toolName, { scroll: true });
+        return;
+      }
+      if (card.classList.contains("open")){
+        // Collapse without switching active tool
+        setCardOpen(card, false);
+      } else {
+        openTool(toolName, { scroll: true });
+      }
+    }
+    document.querySelectorAll("[data-tool-toggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        toggleTool(btn.dataset.toolToggle);
+      });
+    });
+    // Re-apply layout state when crossing the mobile/desktop breakpoint
+    let wasMobile = isMobileLayout();
+    window.addEventListener("resize", () => {
+      const nowMobile = isMobileLayout();
+      if (nowMobile !== wasMobile){
+        wasMobile = nowMobile;
+        const activeCard = toolCards.find((c) => c.classList.contains("active-tool")) || toolCards[0];
+        if (activeCard) applyToolState(activeCard.dataset.tool);
+      }
+    });
     function syncAccordionState(){
-      const savedTool = localStorage.getItem(toolStateKey);
+      let savedTool = null;
+      try { savedTool = localStorage.getItem(toolStateKey); } catch {}
       const fallbackTool = document.querySelector('[data-tool="thread"]').dataset.tool;
       const toolName = toolCards.some((card) => card.dataset.tool === savedTool) ? savedTool : fallbackTool;
       openTool(toolName, { animate: false });
@@ -2285,6 +2366,10 @@
         showWarn(threadWarn, "Enter a positive tap-drill percent.");
         return;
       }
+      if (percentValue < 40 || percentValue > 90){
+        showWarn(threadWarn, "Tap-drill percent is typically between 40% and 90%. Check your value.");
+        return;
+      }
       if (quick){
         parsed = parseThreadSpec(quick);
         if (!parsed){
@@ -2299,6 +2384,8 @@
         const major = num(document.getElementById("unMajorIn").value);
         const tpi = num(document.getElementById("unTPI").value);
         if (!(major > 0) || !(tpi > 0)){ showWarn(threadWarn, "Enter a positive major diameter and TPI."); return; }
+        if (major < 0.01 || major > 6){ showWarn(threadWarn, "Major diameter should be between 0.01 in and 6 in."); return; }
+        if (tpi < 4 || tpi > 80){ showWarn(threadWarn, "TPI should be between 4 and 80."); return; }
         const pitch = 1 / tpi;
         const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
@@ -2363,6 +2450,8 @@
         const major = num(document.getElementById("mMajorMm").value);
         const pitch = num(document.getElementById("mPitchMm").value);
         if (!(major > 0) || !(pitch > 0)){ showWarn(threadWarn, "Enter a positive metric major diameter and pitch."); return; }
+        if (major < 0.5 || major > 150){ showWarn(threadWarn, "Metric major diameter should be between 0.5 mm and 150 mm."); return; }
+        if (pitch < 0.1 || pitch > 6){ showWarn(threadWarn, "Metric pitch should be between 0.1 mm and 6 mm."); return; }
         const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
@@ -3017,21 +3106,42 @@
       } catch { return null; }
     }
 
-    // Share button click — copy URL to clipboard
+    // Share button click — use Web Share API when available, else clipboard
+    const TOOL_SHARE_TITLES = {
+      thread: "Thread & Tap Drill",
+      mow: "Measurement Over Wires",
+      bolt: "Bolt Circle Coordinates",
+      triangle: "Right Triangle"
+    };
     document.querySelectorAll("[data-share-tool]").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const toolName = btn.dataset.shareTool;
         const form = document.getElementById(toolName + "Form");
         if (!form) return;
         const url = buildShareUrl(toolName, captureFormInputs(form));
+        const title = "Marcos's Calculator — " + (TOOL_SHARE_TITLES[toolName] || "Result");
         const origText = btn.textContent;
-        writeClipboard(url)
-          .then(() => {
-            btn.textContent = "Copied!";
-            btn.classList.add("shared");
-            window.setTimeout(() => { btn.textContent = origText; btn.classList.remove("shared"); }, 1600);
-          })
-          .catch(() => showToast("Could not copy link to clipboard."));
+        const flashCopied = () => {
+          btn.textContent = "Copied!";
+          btn.classList.add("shared");
+          window.setTimeout(() => { btn.textContent = origText; btn.classList.remove("shared"); }, 1600);
+        };
+        // Prefer native share on mobile / supporting browsers
+        if (navigator.share){
+          try {
+            await navigator.share({ title, url });
+            return;
+          } catch (err) {
+            // User cancelled or share failed; fall back to clipboard silently unless cancelled
+            if (err && err.name === "AbortError") return;
+          }
+        }
+        try {
+          await writeClipboard(url);
+          flashCopied();
+        } catch {
+          showToast("Could not copy link to clipboard.");
+        }
       });
     });
 
@@ -3084,6 +3194,37 @@
       if (shared.tool === "mow"){ syncModeButtons(); updateMowHints(); }
       if (shared.tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
       requestFormSubmit(form);
+    })();
+
+    // ── Keyboard shortcuts ──
+    // 1–4: switch tools. Ctrl/Cmd+K: focus quick thread spec.
+    (function initKeyboardShortcuts(){
+      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle" };
+      document.addEventListener("keydown", (event) => {
+        if (event.defaultPrevented) return;
+        const target = event.target;
+        const tag = target && target.tagName ? target.tagName.toUpperCase() : "";
+        const isEditable = tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || (target && target.isContentEditable);
+        // Ctrl/Cmd+K: focus quick-spec input (works even in fields)
+        if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && (event.key === "k" || event.key === "K")){
+          const quick = document.getElementById("threadQuickSpec");
+          if (quick){
+            event.preventDefault();
+            openTool("thread", { scroll: true });
+            quick.focus();
+            if (typeof quick.select === "function") quick.select();
+          }
+          return;
+        }
+        // Don't hijack digits while typing in a form control
+        if (isEditable) return;
+        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+        const toolName = TOOL_KEYS[event.key];
+        if (toolName){
+          event.preventDefault();
+          openTool(toolName, { scroll: true });
+        }
+      });
     })();
 
     // ── PWA service worker ──
