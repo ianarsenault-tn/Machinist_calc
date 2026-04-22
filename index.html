@@ -241,6 +241,57 @@
     }
     .toolbar-note{ font-size: var(--fs-0); color: var(--header-text-muted); }
 
+    /* View mode + Live toggle in header */
+    .view-toggle-btn .view-toggle-icon{
+      display: inline-block; font-size: 1.05em; line-height: 1;
+    }
+    .view-toggle-btn[aria-pressed="true"]{
+      background: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 72%, #fff);
+      color: #fff;
+    }
+    .live-toggle{
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 14px; min-height: 46px; border-radius: 999px;
+      background: color-mix(in srgb, var(--brand-2) 65%, rgba(255,255,255,0.08));
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,0.18));
+      color: #fff; font-weight: 700; font-size: var(--fs-1);
+      cursor: pointer; user-select: none;
+      transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+    }
+    .live-toggle:hover{ transform: translateY(-1px); }
+    .live-toggle input{ position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+    .live-toggle-dot{
+      position: relative; display: inline-block;
+      width: 32px; height: 18px; border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      transition: background var(--transition-fast);
+    }
+    .live-toggle-dot::after{
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #fff;
+      transition: transform var(--transition-fast);
+    }
+    .live-toggle input:checked ~ .live-toggle-dot{
+      background: var(--accent);
+    }
+    .live-toggle input:checked ~ .live-toggle-dot::after{
+      transform: translateX(14px);
+    }
+    .live-toggle input:focus-visible ~ .live-toggle-dot{
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+    .live-toggle-label{ letter-spacing: 0.02em; }
+    @media (max-width: 560px){
+      .live-toggle-label{ display: none; }
+      .live-toggle{ padding: 9px 10px; }
+    }
+    @media (max-width: 520px){
+      .view-toggle-btn #viewModeLabel{ display: none; }
+      .view-toggle-btn{ padding: 11px 12px; }
+    }
+
     .toggle-btn,
     .nav-link,
     .action-btn,
@@ -393,6 +444,7 @@
     .tool-card[data-tool="mow"]{ grid-column: span 6; }
     .tool-card[data-tool="bolt"]{ grid-column: span 7; }
     .tool-card[data-tool="triangle"]{ grid-column: span 5; }
+    .tool-card[data-tool="feeds"]{ grid-column: span 12; }
 
     .tool-toggle{
       width: 100%;
@@ -717,6 +769,29 @@
     }
     .detail-card code{ font-family: var(--font-mono); font-size: 0.9em; }
     .field-inline-note{ font-size: var(--fs-0); color: var(--accent-strong); min-height: 1.3em; }
+    .field-inline-hdr{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .inline-check{
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel-strong) 60%, transparent);
+      font-size: var(--fs-1); font-weight: 700; color: var(--muted);
+      cursor: pointer; user-select: none; min-height: 38px;
+    }
+    .inline-check input{ accent-color: var(--accent); width: 16px; height: 16px; }
+    .inline-check.is-checked{
+      color: var(--accent-strong);
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+      background: var(--accent-soft);
+    }
+    @supports selector(:has(*)){
+      .inline-check:has(input:checked){
+        color: var(--accent-strong);
+        border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+        background: var(--accent-soft);
+      }
+    }
+    .gcode-fields[hidden]{ display: none !important; }
 
     .field-computed input{
       background: color-mix(in srgb, var(--panel-muted) 88%, var(--bg-accent));
@@ -742,11 +817,13 @@
       .tool-card[data-tool="thread"],
       .tool-card[data-tool="mow"],
       .tool-card[data-tool="bolt"],
-      .tool-card[data-tool="triangle"]{ grid-column: span 12; }
+      .tool-card[data-tool="triangle"],
+      .tool-card[data-tool="feeds"]{ grid-column: span 12; }
     }
     @media (max-width: 860px){
       .header-wrap{ flex-direction: row; align-items: center; }
       .toolbar{ justify-content: flex-end; flex-shrink: 0; }
+      .view-toggle-btn{ display: none; }
       .brand-row{ align-items: center; }
       .brand-mark{
         width: 78px;
@@ -1127,6 +1204,12 @@
         </div>
       </div>
       <div class="toolbar">
+        <button class="toggle-btn view-toggle-btn" id="viewModeToggle" type="button" aria-pressed="false" title="Switch between single-panel focus view and multi-panel grid"><span class="view-toggle-icon" aria-hidden="true">▦</span> <span id="viewModeLabel">Multi-panel</span></button>
+        <label class="live-toggle" title="Recalculate automatically as you type">
+          <input type="checkbox" id="liveCalcToggle" />
+          <span class="live-toggle-dot" aria-hidden="true"></span>
+          <span class="live-toggle-label">Live</span>
+        </label>
         <button class="toggle-btn" id="themeToggle" type="button" aria-label="Toggle theme"><span id="themeIcon" aria-hidden="true">☾</span> <span id="themeLabel">Switch to Light</span></button>
       </div>
     </div>
@@ -1138,6 +1221,7 @@
       <a class="nav-link" href="#tool-mow" data-tool-link="mow">Over Wires</a>
       <a class="nav-link" href="#tool-bolt" data-tool-link="bolt">Bolt Circle</a>
       <a class="nav-link" href="#tool-triangle" data-tool-link="triangle">Right Triangle</a>
+      <a class="nav-link" href="#tool-feeds" data-tool-link="feeds">Speeds &amp; Feeds</a>
     </div>
   </nav>
 
@@ -1463,6 +1547,50 @@
             </div>
             <div class="row-hint">Offsets shift all coordinates from the origin. Leave at 0 for machine-center output.</div>
 
+            <div class="field-group gcode-group">
+              <div class="field-inline-hdr">
+                <label class="inline-check">
+                  <input type="checkbox" id="bcGcode" />
+                  <span>Also output G-code block</span>
+                </label>
+              </div>
+              <div class="gcode-fields field-grid three" id="bcGcodeFields" hidden>
+                <div class="field">
+                  <label for="bcGcodeMode">Mode</label>
+                  <select id="bcGcodeMode">
+                    <option value="positions" selected>Positions only (G0 rapid to each hole)</option>
+                    <option value="drill">Drill cycle (G81)</option>
+                    <option value="peck">Peck drill (G83)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="bcGcodeZ">Depth Z</label>
+                  <input id="bcGcodeZ" type="number" inputmode="decimal" step="0.001" value="-5" />
+                </div>
+                <div class="field">
+                  <label for="bcGcodeR">Retract R</label>
+                  <input id="bcGcodeR" type="number" inputmode="decimal" step="0.001" value="2" />
+                </div>
+                <div class="field">
+                  <label for="bcGcodeFeed">Feed F</label>
+                  <input id="bcGcodeFeed" type="number" inputmode="decimal" step="0.1" value="150" />
+                </div>
+                <div class="field">
+                  <label for="bcGcodePeck">Peck Q</label>
+                  <input id="bcGcodePeck" type="number" inputmode="decimal" step="0.001" value="1" />
+                </div>
+                <div class="field">
+                  <label for="bcGcodeUnits">Program units</label>
+                  <select id="bcGcodeUnits">
+                    <option value="auto" selected>Match input units</option>
+                    <option value="g20">G20 (inches)</option>
+                    <option value="g21">G21 (mm)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row-hint" id="bcGcodeHint" hidden>Preview shows a generic Fanuc-style block. Review depths, feeds, and work-offsets before running on a machine.</div>
+            </div>
+
             <div class="action-row">
               <button class="action-btn primary" type="submit">Generate coordinates</button>
               <button class="action-btn secondary" id="btnBcClear" type="button">Clear</button>
@@ -1596,6 +1724,129 @@
           </form>
         </div>
       </section>
+
+      <section class="tool-card open" id="tool-feeds" data-tool="feeds">
+        <button class="tool-toggle" type="button" data-tool-toggle="feeds" aria-expanded="true" aria-controls="tool-feeds-body">
+          <div class="tool-title">
+            <h2>Speeds &amp; Feeds</h2>
+            <span>Pick a material and tool to get spindle RPM, feed rate, and material-removal rate.</span>
+          </div>
+          <span class="tool-pill">Feeds</span>
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-feeds-body">
+          <form class="tool-form" id="feedsForm">
+            <div class="field-grid three">
+              <div class="field">
+                <label for="sfUnits">Units</label>
+                <select id="sfUnits">
+                  <option value="in">Inches (SFM / IPM)</option>
+                  <option value="mm" selected>Millimeters (SMM / mm/min)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sfTool">Tool type</label>
+                <select id="sfTool">
+                  <option value="hss">HSS end mill / drill</option>
+                  <option value="carbide" selected>Carbide end mill / drill</option>
+                  <option value="coated">Coated carbide (TiAlN)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sfMaterial">Material</label>
+                <select id="sfMaterial">
+                  <option value="aluminum">Aluminum (6061)</option>
+                  <option value="brass">Brass / Bronze</option>
+                  <option value="mildSteel" selected>Mild steel (1018)</option>
+                  <option value="alloySteel">Alloy steel (4140)</option>
+                  <option value="stainless">Stainless (304/316)</option>
+                  <option value="toolSteel">Tool steel (hardened)</option>
+                  <option value="castIron">Cast iron</option>
+                  <option value="titanium">Titanium</option>
+                  <option value="plastic">Plastic (acetal/nylon)</option>
+                  <option value="custom">Custom (override below)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-grid three">
+              <div class="field">
+                <label for="sfDiameter">Tool diameter</label>
+                <input id="sfDiameter" type="number" inputmode="decimal" step="0.0001" placeholder="6" />
+              </div>
+              <div class="field">
+                <label for="sfFlutes">Number of flutes</label>
+                <input id="sfFlutes" type="number" inputmode="decimal" step="1" min="1" value="2" />
+              </div>
+              <div class="field">
+                <label for="sfSpeed"><span id="sfSpeedLabel">Surface speed (SMM)</span></label>
+                <input id="sfSpeed" type="number" inputmode="decimal" step="0.1" placeholder="auto from material" />
+              </div>
+            </div>
+
+            <div class="field-grid three">
+              <div class="field">
+                <label for="sfChipLoad">Chip load per tooth</label>
+                <input id="sfChipLoad" type="number" inputmode="decimal" step="0.0001" placeholder="auto from material" />
+              </div>
+              <div class="field">
+                <label for="sfWoc">Width of cut (optional)</label>
+                <input id="sfWoc" type="number" inputmode="decimal" step="0.001" placeholder="for MRR" />
+              </div>
+              <div class="field">
+                <label for="sfDoc">Depth of cut (optional)</label>
+                <input id="sfDoc" type="number" inputmode="decimal" step="0.001" placeholder="for MRR" />
+              </div>
+            </div>
+            <div class="row-hint">Leave surface speed and chip load blank to use the material/tool-type defaults. Enter WOC and DOC to estimate material removal rate.</div>
+
+            <div class="quick-pick-group" aria-label="Common operation presets">
+              <div class="quick-pick-stack">
+                <span>Operation presets</span>
+                <div class="chip-row">
+                  <button class="chip-btn" type="button" data-feed-preset="slot">Slotting (full width)</button>
+                  <button class="chip-btn" type="button" data-feed-preset="profile">Profiling (30% radial)</button>
+                  <button class="chip-btn" type="button" data-feed-preset="finish">Finishing (10% radial)</button>
+                  <button class="chip-btn" type="button" data-feed-preset="drill">Drilling (peck)</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Calculate speeds &amp; feeds</button>
+              <button class="action-btn secondary" id="btnSfClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="sfWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="sfPrimary">Spindle RPM and feed rate will show here.</div>
+                </div>
+                <div class="result-actions">
+                  <button class="copy-btn" id="sfCopy" type="button" hidden>Copy result</button>
+                  <button class="share-btn" id="sfShare" type="button" data-share-tool="feeds" hidden>Share</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
+              </div>
+              <div class="result-stats" id="sfStats"></div>
+              <div class="result-details" id="sfDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-feeds" style="display:none">
+              <div class="history-hdr">
+                <button class="history-toggle-btn" type="button" id="histToggle-feeds">
+                  <span>Recent</span>
+                  <span class="history-badge" id="histBadge-feeds">0</span>
+                  <span class="history-toggle-chevron" aria-hidden="true">&#9662;</span>
+                </button>
+                <button class="hist-clear-btn" type="button" data-hist-clear="feeds">Clear</button>
+              </div>
+              <div class="history-list" id="histList-feeds" role="list"></div>
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -1642,7 +1893,8 @@
       thread: { shell: document.querySelector("#tool-thread .result-shell"), primary: document.getElementById("threadPrimary"), stats: document.getElementById("threadStats"), details: document.getElementById("threadDetails"), copy: document.getElementById("threadCopy") },
       mow: { shell: document.querySelector("#tool-mow .result-shell"), primary: document.getElementById("mowPrimary"), stats: document.getElementById("mowStats"), details: document.getElementById("mowDetails"), copy: document.getElementById("mowCopy") },
       bolt: { shell: document.querySelector("#tool-bolt .result-shell"), primary: document.getElementById("bcPrimary"), stats: document.getElementById("bcStats"), details: document.getElementById("bcDetails"), copy: document.getElementById("bcCopy") },
-      triangle: { shell: document.querySelector("#tool-triangle .result-shell"), primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") }
+      triangle: { shell: document.querySelector("#tool-triangle .result-shell"), primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") },
+      feeds: { shell: document.querySelector("#tool-feeds .result-shell"), primary: document.getElementById("sfPrimary"), stats: document.getElementById("sfStats"), details: document.getElementById("sfDetails"), copy: document.getElementById("sfCopy") }
     };
     toolCards.forEach((card, index) => card.style.setProperty("--tool-index", index));
 
@@ -1650,6 +1902,14 @@
       return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
     }
     function showWarn(element, message){
+      if (!element) return;
+      // In live auto-calc mode, suppress transient warnings while typing so the
+      // last good result stays visible. Still honor explicit clears.
+      if (message && document.documentElement.classList.contains("live-on")){
+        element.textContent = "";
+        element.classList.remove("show");
+        return;
+      }
       element.textContent = message || "";
       element.classList.toggle("show", Boolean(message));
     }
@@ -1769,22 +2029,44 @@
     function isMobileLayout(){
       return window.matchMedia("(max-width: 820px)").matches;
     }
+    const VIEW_MODE_KEY = "marcos_view_mode"; // "focus" | "multi"
+    function getViewMode(){
+      let saved = null;
+      try { saved = localStorage.getItem(VIEW_MODE_KEY); } catch {}
+      return saved === "multi" ? "multi" : "focus";
+    }
+    function setViewMode(mode, { reapply = true } = {}){
+      const val = mode === "multi" ? "multi" : "focus";
+      try { localStorage.setItem(VIEW_MODE_KEY, val); } catch {}
+      desktopGrid.classList.toggle("single-panel", val === "focus");
+      const btn = document.getElementById("viewModeToggle");
+      const label = document.getElementById("viewModeLabel");
+      if (btn) btn.setAttribute("aria-pressed", val === "multi" ? "true" : "false");
+      if (label) label.textContent = val === "multi" ? "Focus" : "Multi-panel";
+      if (reapply){
+        const activeCard = toolCards.find((c) => c.classList.contains("active-tool")) || toolCards[0];
+        if (activeCard) applyToolState(activeCard.dataset.tool);
+      }
+    }
     function applyToolState(toolName){
       const mobile = isMobileLayout();
+      const viewMode = getViewMode();
+      const multiDesktop = !mobile && viewMode === "multi";
       toolCards.forEach((card) => {
         const isTarget = card.dataset.tool === toolName;
         const body = card.querySelector(".tool-body");
         const toggle = card.querySelector(".tool-toggle");
-        if (mobile){
+        if (mobile || multiDesktop){
           card.hidden = false;
         } else {
           card.hidden = !isTarget;
         }
-        card.classList.toggle("open", isTarget);
-        const isOpen = card.classList.contains("open");
-        if (toggle) toggle.setAttribute("aria-expanded", String(isOpen));
-        body.inert = !isOpen;
-        body.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        // In multi-panel desktop mode, all visible cards are open; in other modes only the active is open.
+        const shouldBeOpen = multiDesktop ? true : isTarget;
+        card.classList.toggle("open", shouldBeOpen);
+        if (toggle) toggle.setAttribute("aria-expanded", String(shouldBeOpen));
+        body.inert = !shouldBeOpen;
+        body.setAttribute("aria-hidden", shouldBeOpen ? "false" : "true");
       });
       setActiveNav(toolName);
       try { localStorage.setItem(toolStateKey, toolName); } catch {}
@@ -1857,7 +2139,14 @@
         openTool(toolName, { scroll: true });
       });
     });
-    desktopGrid.classList.add("single-panel");
+    // Initialize desktop view mode (focus vs multi-panel). Don't reapply yet — syncAccordionState will.
+    setViewMode(getViewMode(), { reapply: false });
+    const viewModeBtn = document.getElementById("viewModeToggle");
+    if (viewModeBtn){
+      viewModeBtn.addEventListener("click", () => {
+        setViewMode(getViewMode() === "multi" ? "focus" : "multi");
+      });
+    }
     window.addEventListener("resize", updateStickyMetrics);
     updateStickyMetrics();
     syncAccordionState();
@@ -2085,13 +2374,23 @@
     function captureFormInputs(form){
       const state = {};
       for (const el of form.elements){
-        if ((el.tagName === "INPUT" || el.tagName === "SELECT") && el.id) state[el.id] = el.value;
+        if (!el.id) continue;
+        if (el.tagName === "INPUT" && el.type === "checkbox"){
+          state[el.id] = el.checked ? "1" : "0";
+        } else if (el.tagName === "INPUT" || el.tagName === "SELECT"){
+          state[el.id] = el.value;
+        }
       }
       return state;
     }
     function restoreFormInputs(form, state){
       for (const el of form.elements){
-        if ((el.tagName === "INPUT" || el.tagName === "SELECT") && el.id && state[el.id] !== undefined) el.value = state[el.id];
+        if (!el.id || state[el.id] === undefined) continue;
+        if (el.tagName === "INPUT" && el.type === "checkbox"){
+          el.checked = state[el.id] === "1" || state[el.id] === true || state[el.id] === "true";
+        } else if (el.tagName === "INPUT" || el.tagName === "SELECT"){
+          el.value = state[el.id];
+        }
       }
     }
 
@@ -2730,6 +3029,61 @@
     const bcStartAngle = document.getElementById("bcStartAngle");
     const bcClockwise = document.getElementById("bcClockwise");
     const bcWarn = document.getElementById("bcWarn");
+    // Show/hide G-code field group when the toggle changes
+    const bcGcodeCheck = document.getElementById("bcGcode");
+    const bcGcodeFieldsEl = document.getElementById("bcGcodeFields");
+    const bcGcodeHintEl = document.getElementById("bcGcodeHint");
+    const bcGcodeModeEl = document.getElementById("bcGcodeMode");
+    const bcGcodePeckField = document.getElementById("bcGcodePeck") && document.getElementById("bcGcodePeck").closest(".field");
+    function syncGcodeVisibility(){
+      const on = bcGcodeCheck && bcGcodeCheck.checked;
+      if (bcGcodeFieldsEl) bcGcodeFieldsEl.hidden = !on;
+      if (bcGcodeHintEl) bcGcodeHintEl.hidden = !on;
+      if (bcGcodePeckField){
+        const mode = bcGcodeModeEl ? bcGcodeModeEl.value : "positions";
+        bcGcodePeckField.hidden = !(on && mode === "peck");
+      }
+      // Visual state fallback for browsers without :has()
+      const wrap = bcGcodeCheck && bcGcodeCheck.closest(".inline-check");
+      if (wrap) wrap.classList.toggle("is-checked", Boolean(on));
+    }
+    if (bcGcodeCheck) bcGcodeCheck.addEventListener("change", syncGcodeVisibility);
+    if (bcGcodeModeEl) bcGcodeModeEl.addEventListener("change", syncGcodeVisibility);
+    syncGcodeVisibility();
+
+    function buildBoltGcode(holes, coords, inputUnits){
+      const mode = bcGcodeModeEl ? bcGcodeModeEl.value : "positions";
+      const z = num(document.getElementById("bcGcodeZ").value);
+      const r = num(document.getElementById("bcGcodeR").value);
+      const feed = num(document.getElementById("bcGcodeFeed").value);
+      const peck = num(document.getElementById("bcGcodePeck").value);
+      const unitSel = document.getElementById("bcGcodeUnits").value;
+      const unitHeader = unitSel === "auto" ? (inputUnits === "in" ? "G20" : "G21") : unitSel.toUpperCase();
+      const dp = inputUnits === "in" ? 4 : 3;
+      const out = [];
+      out.push(`(Bolt circle: ${holes} hole${holes === 1 ? "" : "s"})`);
+      out.push(`${unitHeader} G90 G17 (absolute, XY plane)`);
+      if (mode === "positions"){
+        coords.forEach((c, i) => {
+          out.push(`(Hole ${i + 1})`);
+          out.push(`G0 X${fmt(c.x, dp)} Y${fmt(c.y, dp)}`);
+        });
+      } else {
+        const cycleCmd = mode === "peck" ? "G83" : "G81";
+        const first = coords[0];
+        out.push(`G0 X${fmt(first.x, dp)} Y${fmt(first.y, dp)}`);
+        out.push(`G0 Z${fmt(r, dp)}`);
+        const peckPart = mode === "peck" && Number.isFinite(peck) ? ` Q${fmt(peck, dp)}` : "";
+        out.push(`${cycleCmd} X${fmt(first.x, dp)} Y${fmt(first.y, dp)} Z${fmt(z, dp)} R${fmt(r, dp)}${peckPart} F${fmt(feed, 2)}`);
+        for (let i = 1; i < coords.length; i += 1){
+          out.push(`X${fmt(coords[i].x, dp)} Y${fmt(coords[i].y, dp)}`);
+        }
+        out.push("G80");
+      }
+      out.push("M30");
+      return out.join("\n");
+    }
+
     boltForm.addEventListener("submit", (event) => {
       event.preventDefault();
       showWarn(bcWarn, "");
@@ -2738,7 +3092,8 @@
       const startAngle = num(bcStartAngle.value);
       const centerX = num(document.getElementById("bcCenterX").value) || 0;
       const centerY = num(document.getElementById("bcCenterY").value) || 0;
-      const units = unitLabel(document.getElementById("bcUnits").value);
+      const inputUnits = document.getElementById("bcUnits").value;
+      const units = unitLabel(inputUnits);
       if (!(diameter > 0)) { showWarn(bcWarn, "Bolt circle diameter must be positive."); return; }
       if (!(holes >= 1 && Number.isInteger(holes))) { showWarn(bcWarn, "Number of holes must be an integer 1 or greater."); return; }
       if (!Number.isFinite(startAngle)) { showWarn(bcWarn, "Start angle must be a valid number."); return; }
@@ -2749,15 +3104,23 @@
       const hasOffset = centerX !== 0 || centerY !== 0;
       const chord = diameter * Math.sin(Math.PI / holes);
       const lines = ["Index, Angle (deg), X, Y"];
+      const coords = [];
       for (let index = 0; index < holes; index += 1){
         const angleDeg = startAngle + direction * (index * step);
         const angleRad = degToRad(angleDeg);
         const x = centerX + radius * Math.cos(angleRad);
         const y = centerY + radius * Math.sin(angleRad);
+        coords.push({ x, y, angleDeg });
         lines.push(`${index + 1}, ${fmt(angleDeg, 4)}, ${fmt(x, 6)}, ${fmt(y, 6)}`);
       }
       const centerNote = hasOffset ? `Center offset: (${fmt(centerX, 6)}, ${fmt(centerY, 6)}) ${units}` : "Centered at origin (0, 0)";
       const boltFormState = captureFormInputs(boltForm);
+
+      const wantGcode = bcGcodeCheck && bcGcodeCheck.checked;
+      const gcodeText = wantGcode ? buildBoltGcode(holes, coords, inputUnits) : "";
+      const detailsExtras = wantGcode ? renderCodeCard("G-code", gcodeText) : "";
+      const copyExtras = wantGcode ? ["", "— G-code —", gcodeText] : [];
+
       setResult("bolt", {
         animate: true,
         saveHistory: true,
@@ -2776,9 +3139,10 @@
           centerNote,
           `Chord (hole-to-hole): ${fmt(chord, 6)} ${units} — straight-line distance between adjacent holes.`,
           "Angles are measured from the +X axis; use 90 degrees to start on +Y.",
-          "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet."
-        ]) + renderCodeCard("Coordinate list", lines.join("\n")),
-        copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Chord (hole-to-hole): ${fmt(chord, 6)} ${units}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, centerNote, "", ...lines].join("\n")
+          "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet.",
+          ...(wantGcode ? ["G-code is a generic template — review work-offsets, depths, and feeds before running."] : [])
+        ]) + renderCodeCard("Coordinate list", lines.join("\n")) + detailsExtras,
+        copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Chord (hole-to-hole): ${fmt(chord, 6)} ${units}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, centerNote, "", ...lines, ...copyExtras].join("\n")
       });
     });
     document.getElementById("btnBcClear").addEventListener("click", () => {
@@ -2973,6 +3337,251 @@
       requestFormSubmit(mowForm);
     });
 
+    // ── Speeds & Feeds calculator ──
+    // SFM defaults (surface feet per minute) keyed by [material][toolType]
+    // Values are conservative shop starting points — user overrides any time.
+    const SF_DEFAULTS = {
+      aluminum:   { hss: { sfm: 250, chipIn: 0.003 }, carbide: { sfm: 800, chipIn: 0.004 }, coated:  { sfm: 1000, chipIn: 0.005 } },
+      brass:      { hss: { sfm: 200, chipIn: 0.003 }, carbide: { sfm: 500, chipIn: 0.003 }, coated:  { sfm: 600,  chipIn: 0.003 } },
+      mildSteel:  { hss: { sfm: 90,  chipIn: 0.002 }, carbide: { sfm: 350, chipIn: 0.003 }, coated:  { sfm: 450,  chipIn: 0.003 } },
+      alloySteel: { hss: { sfm: 70,  chipIn: 0.0015 }, carbide: { sfm: 280, chipIn: 0.0025 }, coated: { sfm: 380, chipIn: 0.003 } },
+      stainless:  { hss: { sfm: 50,  chipIn: 0.0015 }, carbide: { sfm: 180, chipIn: 0.002 }, coated:  { sfm: 250, chipIn: 0.0025 } },
+      toolSteel:  { hss: { sfm: 40,  chipIn: 0.001 }, carbide: { sfm: 150, chipIn: 0.0015 }, coated:  { sfm: 220, chipIn: 0.002 } },
+      castIron:   { hss: { sfm: 80,  chipIn: 0.002 }, carbide: { sfm: 300, chipIn: 0.003 }, coated:  { sfm: 380, chipIn: 0.003 } },
+      titanium:   { hss: { sfm: 40,  chipIn: 0.0015 }, carbide: { sfm: 150, chipIn: 0.002 }, coated: { sfm: 220, chipIn: 0.0025 } },
+      plastic:    { hss: { sfm: 300, chipIn: 0.004 }, carbide: { sfm: 600, chipIn: 0.005 }, coated:  { sfm: 700, chipIn: 0.005 } }
+    };
+    const MATERIAL_LABELS = {
+      aluminum: "Aluminum (6061)", brass: "Brass / Bronze", mildSteel: "Mild steel (1018)",
+      alloySteel: "Alloy steel (4140)", stainless: "Stainless (304/316)", toolSteel: "Tool steel (hardened)",
+      castIron: "Cast iron", titanium: "Titanium", plastic: "Plastic", custom: "Custom"
+    };
+    const TOOL_LABELS = { hss: "HSS", carbide: "Carbide", coated: "Coated carbide" };
+
+    const feedsForm = document.getElementById("feedsForm");
+    const sfUnits = document.getElementById("sfUnits");
+    const sfTool = document.getElementById("sfTool");
+    const sfMaterial = document.getElementById("sfMaterial");
+    const sfDiameter = document.getElementById("sfDiameter");
+    const sfFlutes = document.getElementById("sfFlutes");
+    const sfSpeed = document.getElementById("sfSpeed");
+    const sfChipLoad = document.getElementById("sfChipLoad");
+    const sfWoc = document.getElementById("sfWoc");
+    const sfDoc = document.getElementById("sfDoc");
+    const sfWarn = document.getElementById("sfWarn");
+    const sfSpeedLabel = document.getElementById("sfSpeedLabel");
+
+    function sfSyncUnitLabels(){
+      const isIn = sfUnits.value === "in";
+      sfSpeedLabel.textContent = isIn ? "Surface speed (SFM)" : "Surface speed (SMM)";
+      // Update chip load + diameter placeholders (hint only)
+      sfDiameter.placeholder = isIn ? "0.375" : "6";
+      const defaults = getSfDefaults();
+      if (defaults){
+        const chip = isIn ? defaults.chipIn : defaults.chipIn * 25.4;
+        sfChipLoad.placeholder = isIn ? chip.toFixed(4) : chip.toFixed(3);
+        const speed = isIn ? defaults.sfm : defaults.sfm * 0.3048;
+        sfSpeed.placeholder = isIn ? String(Math.round(defaults.sfm)) : speed.toFixed(1);
+      }
+    }
+    function getSfDefaults(){
+      const mat = sfMaterial.value;
+      const tool = sfTool.value;
+      if (mat === "custom" || !SF_DEFAULTS[mat]) return null;
+      return SF_DEFAULTS[mat][tool] || null;
+    }
+    sfUnits.addEventListener("change", sfSyncUnitLabels);
+    sfMaterial.addEventListener("change", sfSyncUnitLabels);
+    sfTool.addEventListener("change", sfSyncUnitLabels);
+    sfSyncUnitLabels();
+
+    // Operation presets tweak WOC/DOC expectations
+    document.querySelectorAll("[data-feed-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const preset = btn.dataset.feedPreset;
+        const dia = num(sfDiameter.value);
+        const isIn = sfUnits.value === "in";
+        const defaultDia = dia > 0 ? dia : (isIn ? 0.375 : 6);
+        switch (preset){
+          case "slot":
+            sfWoc.value = fmt(defaultDia, isIn ? 4 : 3);
+            sfDoc.value = fmt(defaultDia * 0.5, isIn ? 4 : 3);
+            break;
+          case "profile":
+            sfWoc.value = fmt(defaultDia * 0.30, isIn ? 4 : 3);
+            sfDoc.value = fmt(defaultDia * 1.0, isIn ? 4 : 3);
+            break;
+          case "finish":
+            sfWoc.value = fmt(defaultDia * 0.10, isIn ? 4 : 3);
+            sfDoc.value = fmt(defaultDia * 0.5, isIn ? 4 : 3);
+            break;
+          case "drill":
+            sfWoc.value = fmt(defaultDia, isIn ? 4 : 3);
+            sfDoc.value = "";
+            // Drilling typically uses ~60% of milling chip load as feed/rev per flute
+            if (!sfChipLoad.value){
+              const d = getSfDefaults();
+              if (d){
+                const chip = (isIn ? d.chipIn : d.chipIn * 25.4) * 0.6;
+                sfChipLoad.value = isIn ? chip.toFixed(4) : chip.toFixed(3);
+              }
+            }
+            break;
+        }
+        requestFormSubmit(feedsForm);
+      });
+    });
+
+    feedsForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showWarn(sfWarn, "");
+      const isIn = sfUnits.value === "in";
+      const tool = sfTool.value;
+      const material = sfMaterial.value;
+      const dia = num(sfDiameter.value);
+      const flutes = num(sfFlutes.value);
+      if (!(dia > 0)){ showWarn(sfWarn, "Tool diameter must be positive."); return; }
+      if (!(flutes >= 1 && Number.isInteger(flutes))){ showWarn(sfWarn, "Flutes must be an integer of 1 or more."); return; }
+      // Bounds — avoid nonsense
+      if (isIn){
+        if (dia < 0.01 || dia > 4){ showWarn(sfWarn, "Tool diameter should be between 0.01 in and 4 in."); return; }
+      } else {
+        if (dia < 0.25 || dia > 100){ showWarn(sfWarn, "Tool diameter should be between 0.25 mm and 100 mm."); return; }
+      }
+      if (flutes > 12){ showWarn(sfWarn, "Flute count over 12 is unusual — double check."); return; }
+
+      const defaults = getSfDefaults();
+      let surfaceSpeedUserIn = num(sfSpeed.value);
+      let chipLoadUser = num(sfChipLoad.value);
+      let sfm; // always carry SFM internally, convert for display
+      let chipIn; // chip load per tooth in inches
+      let sourceNotes = [];
+      if (surfaceSpeedUserIn > 0){
+        sfm = isIn ? surfaceSpeedUserIn : surfaceSpeedUserIn / 0.3048;
+        sourceNotes.push("Surface speed: user override.");
+      } else if (defaults){
+        sfm = defaults.sfm;
+        sourceNotes.push(`Surface speed: ${MATERIAL_LABELS[material]} + ${TOOL_LABELS[tool]} default.`);
+      } else {
+        showWarn(sfWarn, "Enter a surface speed (custom material has no default).");
+        return;
+      }
+      if (chipLoadUser > 0){
+        chipIn = isIn ? chipLoadUser : chipLoadUser / 25.4;
+        sourceNotes.push("Chip load: user override.");
+      } else if (defaults){
+        chipIn = defaults.chipIn;
+        sourceNotes.push(`Chip load: ${MATERIAL_LABELS[material]} + ${TOOL_LABELS[tool]} default.`);
+      } else {
+        showWarn(sfWarn, "Enter a chip load per tooth (custom material has no default).");
+        return;
+      }
+      // Scale chip load by diameter: small endmills need much smaller chipload
+      // Common rule: actual chip load ≈ default × (D / baseline), baseline ~3/8 in
+      const dInches = isIn ? dia : dia / 25.4;
+      const chipScale = Math.max(0.25, Math.min(1.5, dInches / 0.375));
+      const chipInAdj = chipIn * chipScale;
+      const scaleNote = `Chip load scaled ×${fmt(chipScale, 2)} for tool diameter ${fmt(dInches, 3)} in vs. 0.375 in reference.`;
+
+      // RPM
+      const rpm = isIn
+        ? (sfm * 12) / (Math.PI * dia)
+        : (sfm * 0.3048 * 1000) / (Math.PI * dia);
+      // Feed rate
+      const feedIPM = rpm * flutes * chipInAdj;
+      const feed = isIn ? feedIPM : feedIPM * 25.4;
+      const feedLabel = isIn ? "IPM" : "mm/min";
+
+      // Optional MRR
+      const wocVal = num(sfWoc.value);
+      const docVal = num(sfDoc.value);
+      let mrrLine = null;
+      let mrrValue = null;
+      if (wocVal > 0 && docVal > 0){
+        // MRR = WOC × DOC × feed (consistent units)
+        const mrr = wocVal * docVal * feed;
+        mrrValue = mrr;
+        const mrrLabel = isIn ? "in³/min" : "mm³/min";
+        mrrLine = `Material removal rate: ${fmt(mrr, isIn ? 4 : 2)} ${mrrLabel} (WOC ${fmt(wocVal, isIn ? 4 : 3)} × DOC ${fmt(docVal, isIn ? 4 : 3)} × feed).`;
+      }
+
+      const matLabel = MATERIAL_LABELS[material] || material;
+      const toolLbl = TOOL_LABELS[tool] || tool;
+      const unitSpeed = isIn ? "SFM" : "SMM";
+      const surfaceDisplay = isIn ? fmt(sfm, 0) : fmt(sfm * 0.3048, 1);
+      const chipDisplay = isIn ? fmt(chipInAdj, 5) : fmt(chipInAdj * 25.4, 4);
+      const diaDisplay = `${fmt(dia, isIn ? 4 : 3)} ${isIn ? "in" : "mm"}`;
+
+      const formState = captureFormInputs(feedsForm);
+      const stats = [
+        { label: "Spindle RPM", value: fmt(rpm, 0) },
+        { label: `Feed rate (${feedLabel})`, value: fmt(feed, isIn ? 1 : 0) },
+        { label: "Surface speed", value: `${surfaceDisplay} ${unitSpeed}` },
+        { label: "Chip load / tooth", value: `${chipDisplay} ${isIn ? "in" : "mm"}` },
+        { label: "Flutes", value: String(flutes) },
+        { label: "Tool diameter", value: diaDisplay }
+      ];
+      if (mrrValue !== null){
+        stats.push({ label: "MRR", value: `${fmt(mrrValue, isIn ? 4 : 2)} ${isIn ? "in³/min" : "mm³/min"}` });
+      }
+      const detailsItems = [
+        `Material: ${matLabel}. Tool: ${toolLbl}.`,
+        ...sourceNotes,
+        scaleNote,
+        isIn
+          ? `RPM = (SFM × 12) ÷ (π × D) = (${fmt(sfm, 0)} × 12) ÷ (π × ${fmt(dia, 4)}) = ${fmt(rpm, 0)}`
+          : `RPM = (SMM × 1000) ÷ (π × D) = (${fmt(sfm * 0.3048, 1)} × 1000) ÷ (π × ${fmt(dia, 3)}) = ${fmt(rpm, 0)}`,
+        `Feed = RPM × flutes × chip load = ${fmt(rpm, 0)} × ${flutes} × ${chipDisplay} = ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
+        ...(mrrLine ? [mrrLine] : []),
+        "Start conservative; ramp up once you see stable chips and good surface finish. These numbers are shop starting points, not guarantees."
+      ];
+      const copyText = [
+        `Marcos's Calculator - Speeds & Feeds`,
+        `Material: ${matLabel}`,
+        `Tool: ${toolLbl}, ${diaDisplay}, ${flutes} flutes`,
+        `Surface speed: ${surfaceDisplay} ${unitSpeed}`,
+        `Chip load per tooth: ${chipDisplay} ${isIn ? "in" : "mm"}`,
+        `Spindle RPM: ${fmt(rpm, 0)}`,
+        `Feed rate: ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
+        ...(mrrValue !== null ? [`MRR: ${fmt(mrrValue, isIn ? 4 : 2)} ${isIn ? "in³/min" : "mm³/min"}`] : [])
+      ].join("\n");
+
+      setResult("feeds", {
+        animate: true,
+        saveHistory: true,
+        formState,
+        primary: `${fmt(rpm, 0)} RPM  •  ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
+        stats,
+        detailsHtml: renderList(detailsItems),
+        copyText
+      });
+    });
+
+    document.getElementById("btnSfClear").addEventListener("click", () => {
+      const saved = captureFormInputs(feedsForm);
+      feedsForm.reset();
+      sfUnits.value = "mm";
+      sfTool.value = "carbide";
+      sfMaterial.value = "mildSteel";
+      sfFlutes.value = "2";
+      sfSyncUnitLabels();
+      showWarn(sfWarn, "");
+      setResult("feeds", {
+        primary: "Spindle RPM and feed rate will show here.",
+        stats: [],
+        detailsHtml: renderList([
+          "Defaults are conservative shop starting points — always sanity-check against tool-maker data.",
+          "Leave surface speed and chip load blank to use the material + tool-type defaults.",
+          "Enter width of cut (WOC) and depth of cut (DOC) to estimate material removal rate."
+        ]),
+        copyText: ""
+      });
+      showToast("Speeds & feeds form cleared.", () => {
+        restoreFormInputs(feedsForm, saved);
+        sfSyncUnitLabels();
+      });
+    });
+
     // ── History clear (event delegation) ──
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-hist-clear]");
@@ -2985,7 +3594,7 @@
 
     // ── Input persistence ──
     (function initPersistence(){
-      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm"];
+      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm"];
       function saveAll(){
         FORMS.forEach(id => {
           const form = document.getElementById(id);
@@ -3024,6 +3633,8 @@
       updateMowHints();
       updateTriangleFields();
       updateTriangleDiagram();
+      sfSyncUnitLabels();
+      syncGcodeVisibility();
     })();
 
     // ── History system ──
@@ -3053,7 +3664,7 @@
     }
 
     // History toggle buttons
-    ["thread","mow","bolt","triangle"].forEach(tool => {
+    ["thread","mow","bolt","triangle","feeds"].forEach(tool => {
       const toggleBtn = document.getElementById("histToggle-" + tool);
       const sectionEl = document.getElementById("histSection-" + tool);
       if (toggleBtn && sectionEl){
@@ -3078,11 +3689,12 @@
       if (tool === "thread"){ syncPctButtons(); updateThreadFields(); updateThreadReferenceOptions(entry.formState.threadClassRef || "basic"); updateThreadPreview(); }
       if (tool === "mow"){ syncModeButtons(); updateMowHints(); }
       if (tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
+      if (tool === "feeds"){ sfSyncUnitLabels(); }
       requestFormSubmit(form);
     });
 
     // Initialise history panels on load
-    ["thread","mow","bolt","triangle"].forEach(histRender);
+    ["thread","mow","bolt","triangle","feeds"].forEach(histRender);
 
     // ── Share URL ──
     function buildShareUrl(toolName, formState){
@@ -3099,7 +3711,7 @@
       try {
         const params = new URLSearchParams(hash);
         const tool = params.get("tool");
-        if (!["thread","mow","bolt","triangle"].includes(tool)) return null;
+        if (!["thread","mow","bolt","triangle","feeds"].includes(tool)) return null;
         const formState = {};
         for (const [k, v] of params.entries()){ if (k !== "tool") formState[k] = v; }
         return { tool, formState };
@@ -3111,7 +3723,8 @@
       thread: "Thread & Tap Drill",
       mow: "Measurement Over Wires",
       bolt: "Bolt Circle Coordinates",
-      triangle: "Right Triangle"
+      triangle: "Right Triangle",
+      feeds: "Speeds & Feeds"
     };
     document.querySelectorAll("[data-share-tool]").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -3181,6 +3794,16 @@
       ]),
       copyText: ""
     });
+    setResult("feeds", {
+      primary: "Spindle RPM and feed rate will show here.",
+      stats: [],
+      detailsHtml: renderList([
+        "Defaults are conservative shop starting points — always sanity-check against tool-maker data.",
+        "Leave surface speed and chip load blank to use the material + tool-type defaults.",
+        "Enter width of cut (WOC) and depth of cut (DOC) to estimate material removal rate."
+      ]),
+      copyText: ""
+    });
 
     // Parse hash on load — runs after defaults so result isn't overwritten
     (function initShareUrl(){
@@ -3193,13 +3816,76 @@
       if (shared.tool === "thread"){ syncPctButtons(); updateThreadFields(); updateThreadReferenceOptions(shared.formState.threadClassRef || "basic"); updateThreadPreview(); }
       if (shared.tool === "mow"){ syncModeButtons(); updateMowHints(); }
       if (shared.tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
+      if (shared.tool === "feeds"){ sfSyncUnitLabels(); }
       requestFormSubmit(form);
     })();
 
     // ── Keyboard shortcuts ──
     // 1–4: switch tools. Ctrl/Cmd+K: focus quick thread spec.
+    // ── Auto-calculate live mode ──
+    (function initLiveCalc(){
+      const LIVE_KEY = "marcos_live_calc";
+      const LIVE_FORM_IDS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm"];
+      let liveController = null;
+      let liveDebounce = null;
+
+      function read(){
+        try { return localStorage.getItem(LIVE_KEY) === "1"; } catch { return false; }
+      }
+      function write(on){
+        try { localStorage.setItem(LIVE_KEY, on ? "1" : "0"); } catch {}
+      }
+      function detach(){
+        if (liveController){ liveController.abort(); liveController = null; }
+        if (liveDebounce){ clearTimeout(liveDebounce); liveDebounce = null; }
+      }
+      function attach(){
+        liveController = new AbortController();
+        const { signal } = liveController;
+        LIVE_FORM_IDS.forEach((id) => {
+          const form = document.getElementById(id);
+          if (!form) return;
+          const onInput = (event) => {
+            if (!event.isTrusted) return;
+            const t = event.target;
+            if (!t || t.closest("[data-no-live]")) return;
+            if (liveDebounce) clearTimeout(liveDebounce);
+            liveDebounce = setTimeout(() => {
+              liveDebounce = null;
+              requestFormSubmit(form);
+            }, 250);
+          };
+          form.addEventListener("input", onInput, { signal });
+          form.addEventListener("change", onInput, { signal });
+        });
+      }
+      function apply(on){
+        document.documentElement.classList.toggle("live-on", on);
+        detach();
+        if (on) attach();
+      }
+
+      const toggle = document.getElementById("liveCalcToggle");
+      if (toggle){
+        toggle.checked = read();
+        apply(toggle.checked);
+        toggle.addEventListener("change", () => {
+          write(toggle.checked);
+          apply(toggle.checked);
+          if (toggle.checked){
+            // Kick an immediate calc on the active tool so the result reflects current inputs
+            const activeCard = toolCards.find((c) => c.classList.contains("active-tool")) || toolCards[0];
+            if (activeCard){
+              const form = document.getElementById(activeCard.dataset.tool + "Form");
+              if (form) requestFormSubmit(form);
+            }
+          }
+        });
+      }
+    })();
+
     (function initKeyboardShortcuts(){
-      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle" };
+      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle", "5": "feeds" };
       document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) return;
         const target = event.target;

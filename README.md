@@ -1,6 +1,6 @@
 # Marcos's Calculator
 
-A responsive browser-based machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math.
+A responsive browser-based machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, right-triangle setup math, and speeds & feeds.
 
 ## Overview
 
@@ -10,23 +10,27 @@ The app includes tools for:
 
 - Thread spec parsing, tap drill estimates, and reverse thread identification
 - Measurement over wires for 60 degree threads
-- Bolt circle coordinate generation with hole-to-hole chord distance
+- Bolt circle coordinate generation with hole-to-hole chord distance and optional G-code output
 - Right-triangle and offset solving
+- Speeds & feeds calculation with material and tool-type presets
 
 ## Highlights
 
 - Single-file app with no build step
 - Installable as a PWA — works offline after first load
 - Responsive layout for desktop and mobile
-- Dark and light themes
+- Dark and light themes (auto-matches system preference on first visit)
 - Sticky top navigation on larger screens
-- Accordion-style sections on smaller screens
-- Keyboard-friendly forms with Enter-to-calculate behavior
+- Accordion-style sections on smaller screens with per-tool expand/collapse
+- Focus mode or Multi-panel layout toggle on desktop — see one tool at a time or all of them side by side
+- Live auto-calculate mode — recompute on every input change
+- Keyboard shortcuts: `1`–`5` switch tools; `Ctrl`/`Cmd`+`K` focuses the thread quick-spec input; Enter calculates
 - Copy buttons for key outputs
-- Share button encodes the current calculation into a URL for handoffs
+- Share button uses the Web Share API on mobile (native share sheet) and falls back to clipboard on desktop
 - Calculation history remembers the last five results per tool
 - Natural thread input like `1/4-20`, `M8x1.25`, and `#10-32`
 - Nearest stock drill suggestions (inch and metric)
+- G-code output for bolt-circle patterns (positions, G81 drill, or G83 peck)
 - Print button on every result panel
 
 ## Included Calculators
@@ -86,6 +90,7 @@ Use this tool to:
 - Choose clockwise or counter-clockwise layout
 - Apply a center X/Y offset from the origin
 - Copy the full coordinate list for setup sheets or CNC notes
+- Optionally emit a generic Fanuc-style G-code block for one-click paste into a controller
 
 Results include:
 
@@ -93,7 +98,15 @@ Results include:
 - **Chord (hole-to-hole)** — straight-line distance between adjacent holes, useful for verifying a pattern with a caliper or setting up a dividing head
 - A visual SVG preview of the bolt pattern
 
-### Right-Triangle / Offset Solver
+**G-code output** — tick **Also output G-code block** to reveal depth, retract, feed, and peck-increment fields. Three modes are available:
+
+- **Positions only** — `G0` rapid to each hole
+- **Drill cycle (G81)** — standard peck-free drilling canned cycle
+- **Peck drill (G83)** — pecking canned cycle with `Q` increment
+
+Program units can be set to `G20` (inches), `G21` (mm), or matched to the input units automatically. Output is intended as a generic template — review work offsets, depths, and feeds before running on a machine.
+
+### Right Triangle
 
 Use this tool to solve setup geometry from:
 
@@ -110,6 +123,69 @@ Outputs include:
 - Angle
 - Slope
 
+### Speeds & Feeds
+
+Use this tool to get starting-point spindle RPM, feed rate, and material removal rate for milling and drilling operations.
+
+Inputs:
+
+- Units (inches with SFM / IPM, or millimeters with SMM / mm/min)
+- Tool type — HSS, Carbide, or Coated carbide (TiAlN)
+- Material — Aluminum (6061), Brass / Bronze, Mild steel (1018), Alloy steel (4140), Stainless (304/316), Tool steel (hardened), Cast iron, Titanium, Plastic, or Custom
+- Tool diameter and flute count
+- Optional surface speed override (SFM or SMM)
+- Optional chip load per tooth override
+- Optional width of cut (WOC) and depth of cut (DOC) for material removal rate
+
+Outputs:
+
+- Spindle RPM
+- Feed rate in IPM or mm/min
+- Surface speed used (after any override)
+- Chip load per tooth used (auto-scaled by tool diameter)
+- Material removal rate (MRR) when WOC and DOC are both supplied
+- A formula snapshot and note lines describing which defaults or overrides were applied
+
+**Operation presets** — quick chips populate WOC and DOC for common cuts:
+
+- **Slotting** — full-width slot at 50% of diameter depth
+- **Profiling** — 30% radial engagement at full diameter depth
+- **Finishing** — 10% radial engagement at 50% of diameter depth
+- **Drilling (peck)** — full-diameter engagement and a reduced chip-load override
+
+Notes:
+
+- Material and tool-type defaults are conservative shop starting points, not tool-maker data
+- Chip load is scaled by tool diameter against a 3/8 in reference (clamped between 0.25× and 1.5×) so small-diameter cutters get sensibly smaller per-tooth loads
+- Custom material requires explicit surface speed and chip load
+
+## Desktop View Modes
+
+The header includes a **Multi-panel / Focus** toggle on larger screens:
+
+- **Focus mode** (default) — shows one tool at a time with smooth view transitions between tools. Best for phones, tablets, and narrow windows.
+- **Multi-panel mode** — shows every tool card at once in a 12-column grid, using the full width of wide monitors. Ideal for a shop workstation where you want threads, bolt circles, and feeds visible together.
+
+The choice is saved in `localStorage` and re-applied on every visit. On mobile widths the toggle is hidden automatically since all cards are already stacked vertically with per-card expand and collapse.
+
+## Auto-Calculate (Live) Mode
+
+Turn on the **Live** switch in the header to recalculate every tool automatically as you type. A short debounce (~250 ms) keeps the UI responsive while still updating results almost immediately. Validation warnings are suppressed in live mode so the last good result stays visible while you finish typing an incomplete value.
+
+The preference is saved in `localStorage` and persists across reloads.
+
+## Keyboard Shortcuts
+
+- `1` — Thread Spec Helper + Tap Drill
+- `2` — Measurement Over Wires
+- `3` — Bolt Circle Coordinates
+- `4` — Right Triangle
+- `5` — Speeds & Feeds
+- `Ctrl` / `Cmd` + `K` — Jump to Thread tool and focus the quick-spec input
+- `Enter` — Calculate (from any input field)
+
+Number shortcuts are ignored while typing in form controls so they never fight with normal text entry.
+
 ## Calculation History
 
 Every tool keeps a rolling list of the last five results. After any calculation, a collapsible **Recent** panel appears below the result. Clicking any entry restores the form values and recalculates immediately — useful when running the same thread spec or bolt pattern several times in a session.
@@ -118,7 +194,7 @@ History is stored in the browser using `localStorage` and persists across page r
 
 ## Shareable URLs
 
-After any calculation, a **Share** button appears next to the Copy button. Clicking it encodes the active tool and all current form values into the page URL hash and copies the link to the clipboard. Opening that URL on any device restores the tool, fills in all the values, and runs the calculation automatically.
+After any calculation, a **Share** button appears next to the Copy button. Clicking it encodes the active tool and all current form values into the page URL hash. On mobile and any browser that supports the Web Share API, this opens the native share sheet so you can send the link via Messages, email, Slack, or any installed app. On desktop browsers without Web Share, the link is copied to the clipboard instead. Opening the URL on any device restores the tool, fills in all the values, and runs the calculation automatically.
 
 This is useful for:
 
@@ -359,12 +435,15 @@ Typical deployment flow:
 
 ## Usage Tips
 
-- Use the top navigation on desktop to jump between tools quickly
-- On mobile, open one calculator section at a time to reduce scrolling
-- Tap any chip button (including machine screw sizes) to load and calculate in one tap
+- Use the top navigation, number keys `1`–`5`, or `Ctrl`/`Cmd`+`K` to jump between tools quickly
+- On a wide monitor, flip the view toggle to **Multi-panel** to see every calculator at once
+- Turn on **Live** mode to see results update in real time as you tune a value
+- On mobile, tap a tool header to expand or collapse that section
+- Tap any chip button (including machine screw sizes and operation presets) to load values and calculate in one tap
 - Use the **Recent** panel to rerun a previous setup without re-entering values
-- Use the **Share** button to copy a link for shift handoffs or setup documentation
+- Use the **Share** button to send a link for shift handoffs or setup documentation — on mobile this opens the native share sheet
 - Use the copy buttons to move values into setup sheets, notes, or programs
+- For the bolt circle, tick **Also output G-code block** to copy a ready-to-paste canned-cycle template
 - Install the app to your home screen for instant one-tap access offline
 - Switch between dark and light mode depending on your work environment
 
@@ -372,13 +451,15 @@ Typical deployment flow:
 
 The application is built with:
 
-- Semantic HTML forms
-- Responsive CSS with custom property theming
+- Semantic HTML forms with accessible tool headings and ARIA expand/collapse attributes
+- Responsive CSS with custom property theming and CSS `:has()` progressive enhancement
 - Vanilla JavaScript calculator logic
+- Web Share API with clipboard fallback
+- View Transitions API for smooth tool-switch animations when supported
 - Clipboard copy support with fallback for older browsers
 - Progressive Web App manifest and service worker for install and offline use
 - URL hash encoding for shareable calculation links
-- `localStorage` for theme preference, form persistence, and calculation history
+- `localStorage` for theme preference, view-mode preference, live-calc preference, form persistence, and calculation history — all writes are wrapped in `try`/`catch` for Safari private-mode safety
 - Favicon and social preview metadata
 
 No frameworks, package managers, or external dependencies are required.
@@ -400,6 +481,8 @@ This project aims to be:
 - Tap drill and pitch diameter outputs are estimates where noted
 - Measurement over wires logic is currently aimed at 60 degree threads
 - Reverse thread lookup matches against a fixed table of common standard sizes; non-standard or obscure pitches may not be identified
+- Speeds & feeds defaults are conservative shop starting points and should always be sanity-checked against tool-maker data
+- Bolt-circle G-code output is a generic template — review work offsets, depths, and feeds before running on a real machine
 - PWA install and offline features require the app to be served over HTTPS or `localhost`
 
 ## Customization
@@ -422,6 +505,7 @@ The main parts to edit are:
 - CSS theme tokens and layout rules
 - JavaScript calculator logic and result formatting
 - `MACHINE_SCREW_DIAMETERS`, `UN_THREAD_TABLE`, and `METRIC_THREAD_TABLE` constants for thread lookup data
+- `SF_DEFAULTS`, `MATERIAL_LABELS`, and `TOOL_LABELS` constants for speeds & feeds defaults and labels
 
 ## Contributing
 
