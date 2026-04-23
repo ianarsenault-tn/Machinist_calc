@@ -23,15 +23,23 @@ The app includes tools for:
 - Sticky top navigation on larger screens
 - Accordion-style sections on smaller screens with per-tool expand/collapse
 - Focus mode or Multi-panel layout toggle on desktop — see one tool at a time or all of them side by side
+- Multi-panel scroll-spy — the active nav item follows whichever card is under your gaze
 - Live auto-calculate mode — recompute on every input change
-- Keyboard shortcuts: `1`–`5` switch tools; `Ctrl`/`Cmd`+`K` focuses the thread quick-spec input; Enter calculates
+- Keyboard shortcuts: `1`–`7` switch tools; `Ctrl`/`Cmd`+`K` focuses the thread quick-spec input; Enter calculates
 - Copy buttons for key outputs
 - Share button uses the Web Share API on mobile (native share sheet) and falls back to clipboard on desktop
 - Calculation history remembers the last five results per tool
-- Natural thread input like `1/4-20`, `M8x1.25`, and `#10-32`
-- Nearest stock drill suggestions (inch and metric)
-- G-code output for bolt-circle patterns (positions, G81 drill, or G83 peck)
+- Lenient thread input — `1/4-20`, `1/4-20 UNC`, `M8x1.25`, `#10-32`, `10-32`, and `M10` (default coarse pitch) all parse
+- Nearest stock drill suggestions plus **ANSI B94.11M and ISO 2306 standard tap-drill tables** when the size is recognized
+- ASME B1.1 2A/2B/3A/3B tolerance envelope estimate for identified Unified threads
+- Radial chip-thinning compensation in Speeds & Feeds for light radial engagements
+- Measurement Over Wires supports external bolt threads and internal plug-gauge (between-wires) readings
+- G-code output for bolt-circle patterns (positions, G81 drill, or G83 peck), plus **CSV and DXF export**
+- PWA update toast with a reload button when a new deploy is detected
+- App shortcuts: long-press / right-click the installed icon to jump straight into Feeds, Bolt Circle, Thread, or Right Triangle
+- Global unit default — on first visit every card seeds to your locale's preferred system (en-US → inches, everywhere else → millimeters)
 - Print button on every result panel
+- In-page test harness at `tests.html` with ~35 assertions covering the core math
 
 ## Included Calculators
 
@@ -181,6 +189,8 @@ The preference is saved in `localStorage` and persists across reloads.
 - `3` — Bolt Circle Coordinates
 - `4` — Right Triangle
 - `5` — Speeds & Feeds
+- `6` — Chamfer / Countersink Depth
+- `7` — Circle Through 3 Points
 - `Ctrl` / `Cmd` + `K` — Jump to Thread tool and focus the quick-spec input
 - `Enter` — Calculate (from any input field)
 

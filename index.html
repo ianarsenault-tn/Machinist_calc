@@ -292,6 +292,55 @@
       .view-toggle-btn{ padding: 11px 12px; }
     }
 
+    /* PWA update toast — fixed corner card with Reload + dismiss */
+    .pwa-toast{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+      z-index: 1000;
+      max-width: calc(100% - 24px);
+      animation: pwaToastIn 0.24s ease-out;
+    }
+    @keyframes pwaToastIn {
+      from { opacity: 0; transform: translate(-50%, 12px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .pwa-toast-text{ font-size: 0.92rem; }
+    .pwa-toast-reload{
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .pwa-toast-reload:hover{ filter: brightness(1.12); }
+    .pwa-toast-dismiss{
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+    }
+    .pwa-toast-dismiss:hover{ color: var(--text); }
+    @media (prefers-reduced-motion: reduce){
+      .pwa-toast{ animation: none; }
+    }
+
     .toggle-btn,
     .nav-link,
     .action-btn,
@@ -445,6 +494,8 @@
     .tool-card[data-tool="bolt"]{ grid-column: span 7; }
     .tool-card[data-tool="triangle"]{ grid-column: span 5; }
     .tool-card[data-tool="feeds"]{ grid-column: span 12; }
+    .tool-card[data-tool="chamfer"]{ grid-column: span 6; }
+    .tool-card[data-tool="circle3"]{ grid-column: span 6; }
 
     .tool-toggle{
       width: 100%;
@@ -818,7 +869,9 @@
       .tool-card[data-tool="mow"],
       .tool-card[data-tool="bolt"],
       .tool-card[data-tool="triangle"],
-      .tool-card[data-tool="feeds"]{ grid-column: span 12; }
+      .tool-card[data-tool="feeds"],
+      .tool-card[data-tool="chamfer"],
+      .tool-card[data-tool="circle3"]{ grid-column: span 12; }
     }
     @media (max-width: 860px){
       .header-wrap{ flex-direction: row; align-items: center; }
@@ -1222,6 +1275,8 @@
       <a class="nav-link" href="#tool-bolt" data-tool-link="bolt">Bolt Circle</a>
       <a class="nav-link" href="#tool-triangle" data-tool-link="triangle">Right Triangle</a>
       <a class="nav-link" href="#tool-feeds" data-tool-link="feeds">Speeds &amp; Feeds</a>
+      <a class="nav-link" href="#tool-chamfer" data-tool-link="chamfer">Chamfer</a>
+      <a class="nav-link" href="#tool-circle3" data-tool-link="circle3">Circle 3&#8209;Pt</a>
     </div>
   </nav>
 
@@ -1401,6 +1456,16 @@
                   <option value="solveM" selected>Solve M from E</option>
                   <option value="solveE">Solve E from M</option>
                 </select>
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="mowType">Thread type</label>
+                <select id="mowType">
+                  <option value="external" selected>External (bolt) — measurement over wires</option>
+                  <option value="internal">Internal (nut) — measurement between wires</option>
+                </select>
+                <div class="hint" id="mowTypeHint">External uses 3-wire OD over two-above + one-below. Internal uses between-wires plug-gauge geometry.</div>
               </div>
             </div>
             <div class="field-grid two">
@@ -1605,6 +1670,8 @@
                 </div>
                 <div class="result-actions">
                   <button class="copy-btn" id="bcCopy" type="button" hidden>Copy coordinates</button>
+                  <button class="action-btn secondary" id="bcExportCsv" type="button" hidden>Export CSV</button>
+                  <button class="action-btn secondary" id="bcExportDxf" type="button" hidden>Export DXF</button>
                   <button class="share-btn" id="bcShare" type="button" data-share-tool="bolt" hidden>Share</button>
                   <button class="print-btn" type="button" data-print>&#128438; Print</button>
                 </div>
@@ -1847,6 +1914,140 @@
           </form>
         </div>
       </section>
+
+      <section class="tool-card open" id="tool-chamfer" data-tool="chamfer">
+        <button class="tool-toggle" type="button" data-tool-toggle="chamfer" aria-expanded="true" aria-controls="tool-chamfer-body">
+          <div class="tool-title">
+            <h2>Chamfer &amp; Countersink Depth</h2>
+            <span>Z-depth from hole diameter, head diameter, and included angle — good for countersinks and flat-bottom chamfer tools.</span>
+          </div>
+          <span class="tool-pill">Chamfer</span>
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-chamfer-body">
+          <form class="tool-form" id="chamferForm">
+            <div class="field-grid two">
+              <div class="field">
+                <label for="chUnits">Units</label>
+                <select id="chUnits">
+                  <option value="in">Inches</option>
+                  <option value="mm" selected>Millimeters</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="chAngle">Included angle (deg)</label>
+                <input id="chAngle" type="number" inputmode="decimal" step="0.1" value="82" />
+                <div class="hint">82° = flat-head machine screws, 90° = general chamfer, 100°/120° = other heads.</div>
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="chSmall">Hole diameter (D1)</label>
+                <input id="chSmall" type="number" inputmode="decimal" step="0.001" placeholder="Small/pilot diameter" />
+              </div>
+              <div class="field">
+                <label for="chLarge">Top diameter (D2)</label>
+                <input id="chLarge" type="number" inputmode="decimal" step="0.001" placeholder="Head or chamfer OD" />
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Calculate depth</button>
+              <button class="action-btn secondary" id="btnChClear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="chWarn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="chPrimary">Depth will appear here.</div>
+                </div>
+                <div class="result-actions">
+                  <button class="copy-btn" id="chCopy" type="button" hidden>Copy result</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
+              </div>
+              <div class="result-stats" id="chStats"></div>
+              <div class="result-details" id="chDetails"></div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="tool-card open" id="tool-circle3" data-tool="circle3">
+        <button class="tool-toggle" type="button" data-tool-toggle="circle3" aria-expanded="true" aria-controls="tool-circle3-body">
+          <div class="tool-title">
+            <h2>Circle Through 3 Points</h2>
+            <span>Probe three points on a bore or arc — get center (Xc, Yc) and diameter back.</span>
+          </div>
+          <span class="tool-pill">Circle</span>
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-circle3-body">
+          <form class="tool-form" id="circle3Form">
+            <div class="field-grid two">
+              <div class="field">
+                <label for="c3Units">Units</label>
+                <select id="c3Units">
+                  <option value="in">Inches</option>
+                  <option value="mm" selected>Millimeters</option>
+                </select>
+              </div>
+              <div class="field"><div class="hint">All three points must be distinct and non-collinear.</div></div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="c3x1">Point 1 X</label>
+                <input id="c3x1" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+              <div class="field">
+                <label for="c3y1">Point 1 Y</label>
+                <input id="c3y1" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="c3x2">Point 2 X</label>
+                <input id="c3x2" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+              <div class="field">
+                <label for="c3y2">Point 2 Y</label>
+                <input id="c3y2" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="c3x3">Point 3 X</label>
+                <input id="c3x3" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+              <div class="field">
+                <label for="c3y3">Point 3 Y</label>
+                <input id="c3y3" type="number" inputmode="decimal" step="0.0001" />
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="action-btn primary" type="submit">Solve circle</button>
+              <button class="action-btn secondary" id="btnC3Clear" type="button">Clear</button>
+            </div>
+            <div class="warning" id="c3Warn" aria-live="polite"></div>
+
+            <div class="result-shell">
+              <div class="result-head">
+                <div>
+                  <div class="result-label">Primary answer</div>
+                  <div class="result-primary" id="c3Primary">Center and diameter will appear here.</div>
+                </div>
+                <div class="result-actions">
+                  <button class="copy-btn" id="c3Copy" type="button" hidden>Copy result</button>
+                  <button class="print-btn" type="button" data-print>&#128438; Print</button>
+                </div>
+              </div>
+              <div class="result-stats" id="c3Stats"></div>
+              <div class="result-details" id="c3Details"></div>
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -1894,7 +2095,9 @@
       mow: { shell: document.querySelector("#tool-mow .result-shell"), primary: document.getElementById("mowPrimary"), stats: document.getElementById("mowStats"), details: document.getElementById("mowDetails"), copy: document.getElementById("mowCopy") },
       bolt: { shell: document.querySelector("#tool-bolt .result-shell"), primary: document.getElementById("bcPrimary"), stats: document.getElementById("bcStats"), details: document.getElementById("bcDetails"), copy: document.getElementById("bcCopy") },
       triangle: { shell: document.querySelector("#tool-triangle .result-shell"), primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") },
-      feeds: { shell: document.querySelector("#tool-feeds .result-shell"), primary: document.getElementById("sfPrimary"), stats: document.getElementById("sfStats"), details: document.getElementById("sfDetails"), copy: document.getElementById("sfCopy") }
+      feeds: { shell: document.querySelector("#tool-feeds .result-shell"), primary: document.getElementById("sfPrimary"), stats: document.getElementById("sfStats"), details: document.getElementById("sfDetails"), copy: document.getElementById("sfCopy") },
+      chamfer: { shell: document.querySelector("#tool-chamfer .result-shell"), primary: document.getElementById("chPrimary"), stats: document.getElementById("chStats"), details: document.getElementById("chDetails"), copy: document.getElementById("chCopy") },
+      circle3: { shell: document.querySelector("#tool-circle3 .result-shell"), primary: document.getElementById("c3Primary"), stats: document.getElementById("c3Stats"), details: document.getElementById("c3Details"), copy: document.getElementById("c3Copy") }
     };
     toolCards.forEach((card, index) => card.style.setProperty("--tool-index", index));
 
@@ -2151,6 +2354,67 @@
     updateStickyMetrics();
     syncAccordionState();
 
+    // ── Scroll-spy (multi-panel desktop only) ──
+    // Highlights the nav link whose tool card is closest to the viewport center.
+    // Only meaningful when every card is on-screen at once; in Focus/mobile it's a no-op.
+    (function initScrollSpy(){
+      if (typeof IntersectionObserver !== "function") return;
+      let observer = null;
+      let scrollSpyEnabled = false;
+      let clickLock = 0; // suppress spy updates right after a nav-click scroll
+      // Track intersection ratios so we can pick the "most visible" card on each tick.
+      const ratios = new Map();
+      function onObserve(entries){
+        if (!scrollSpyEnabled) return;
+        entries.forEach(e => ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0));
+        if (performance.now() < clickLock) return;
+        let best = null, bestRatio = 0;
+        ratios.forEach((r, el) => {
+          if (r > bestRatio){ bestRatio = r; best = el; }
+        });
+        if (best && bestRatio > 0){
+          const toolName = best.dataset.tool;
+          if (toolName){
+            setActiveNav(toolName);
+            try { localStorage.setItem(toolStateKey, toolName); } catch {}
+          }
+        }
+      }
+      function enable(){
+        if (scrollSpyEnabled) return;
+        scrollSpyEnabled = true;
+        observer = new IntersectionObserver(onObserve, {
+          // Band focused around the viewport middle so scroll-spy picks the
+          // card the user is actually reading, not whatever is off-frame.
+          rootMargin: "-35% 0px -45% 0px",
+          threshold: [0, 0.25, 0.5, 0.75, 1]
+        });
+        toolCards.forEach(card => observer.observe(card));
+      }
+      function disable(){
+        if (!scrollSpyEnabled) return;
+        scrollSpyEnabled = false;
+        if (observer){ observer.disconnect(); observer = null; }
+        ratios.clear();
+      }
+      function sync(){
+        const multiDesktop = !isMobileLayout() && getViewMode() === "multi";
+        if (multiDesktop) enable(); else disable();
+      }
+      sync();
+      window.addEventListener("resize", sync);
+      // Hook the view-mode and nav-click flows so scroll-spy follows state changes
+      const vmBtn = document.getElementById("viewModeToggle");
+      if (vmBtn) vmBtn.addEventListener("click", () => { setTimeout(sync, 0); });
+      navLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          // When the user clicks a nav link we do a smooth scroll; lock out the
+          // spy for ~700ms so it doesn't yank the active state mid-animation.
+          clickLock = performance.now() + 700;
+        });
+      });
+    })();
+
     const WIRE_SET_INCH = [0.010,0.012,0.014,0.016,0.018,0.020,0.022,0.024,0.025,0.026,0.028,0.030,0.032,0.035,0.040,0.045,0.050,0.055,0.060,0.063,0.070,0.080,0.090,0.100];
     const WIRE_SET_MM = [0.25,0.30,0.35,0.40,0.45,0.50,0.60,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,2.00];
 
@@ -2198,6 +2462,189 @@
       [56.0,5.5,"M56x5.5"],[56.0,4.0,"M56x4 (fine)"],[60.0,5.5,"M60x5.5"],[60.0,4.0,"M60x4 (fine)"],
       [64.0,6.0,"M64x6"],[64.0,4.0,"M64x4 (fine)"]
     ];
+
+    // Standard tap-drill lookup tables (ANSI B94.11M for UN, ISO 2306 for metric).
+    // Values are the commonly recommended stock drills for ~75% thread engagement.
+    // Format: map keyed by "major_in|tpi" (UN) or "major_mm|pitch_mm" (metric).
+    // Value is [drill_size_in_inches, drill_label, percent_engagement].
+    const TAP_DRILL_UN_TABLE = {
+      "0.0600|80":  [0.0469, '3/64"',    73],  // #0-80
+      "0.0730|64":  [0.0595, "#53",      72],  // #1-64
+      "0.0730|72":  [0.0595, "#53",      79],  // #1-72
+      "0.0860|56":  [0.0700, "#50",      74],  // #2-56
+      "0.0860|64":  [0.0700, "#50",      79],  // #2-64
+      "0.0990|48":  [0.0785, "#47",      77],  // #3-48
+      "0.0990|56":  [0.0810, "#46",      78],  // #3-56
+      "0.1120|40":  [0.0890, "#43",      79],  // #4-40
+      "0.1120|48":  [0.0935, "#42",      76],  // #4-48
+      "0.1250|40":  [0.1015, "#38",      79],  // #5-40
+      "0.1250|44":  [0.1040, "#37",      79],  // #5-44
+      "0.1380|32":  [0.1065, "#36",      78],  // #6-32
+      "0.1380|40":  [0.1130, "#33",      77],  // #6-40
+      "0.1640|32":  [0.1360, "#29",      75],  // #8-32
+      "0.1640|36":  [0.1360, "#29",      83],  // #8-36
+      "0.1900|24":  [0.1495, "#25",      79],  // #10-24
+      "0.1900|32":  [0.1590, "#21",      83],  // #10-32
+      "0.2160|24":  [0.1770, "#16",      77],  // #12-24
+      "0.2160|28":  [0.1820, "#14",      80],  // #12-28
+      "0.2500|20":  [0.2010, "#7",       75],  // 1/4-20
+      "0.2500|28":  [0.2130, "#3",       78],  // 1/4-28
+      "0.3125|18":  [0.2570, "F",        75],  // 5/16-18
+      "0.3125|24":  [0.2720, "I",        79],  // 5/16-24
+      "0.3750|16":  [0.3125, '5/16"',    77],  // 3/8-16
+      "0.3750|24":  [0.3320, "Q",        79],  // 3/8-24
+      "0.4375|14":  [0.3680, "U",        75],  // 7/16-14
+      "0.4375|20":  [0.3906, '25/64"',   79],  // 7/16-20
+      "0.5000|13":  [0.4219, '27/64"',   78],  // 1/2-13
+      "0.5000|20":  [0.4531, '29/64"',   72],  // 1/2-20
+      "0.5625|12":  [0.4844, '31/64"',   76],  // 9/16-12
+      "0.5625|18":  [0.5156, '33/64"',   72],  // 9/16-18
+      "0.6250|11":  [0.5313, '17/32"',   76],  // 5/8-11
+      "0.6250|18":  [0.5781, '37/64"',   72],  // 5/8-18
+      "0.7500|10":  [0.6563, '21/32"',   72],  // 3/4-10
+      "0.7500|16":  [0.6875, '11/16"',   77],  // 3/4-16
+      "0.8750|9":   [0.7656, '49/64"',   74],  // 7/8-9
+      "0.8750|14":  [0.8125, '13/16"',   74],  // 7/8-14
+      "1.0000|8":   [0.8750, '7/8"',     77],  // 1-8
+      "1.0000|12":  [0.9219, '59/64"',   75],  // 1-12
+      "1.0000|14":  [0.9375, '15/16"',   74],  // 1-14
+      "1.1250|7":   [0.9844, '63/64"',   75],  // 1-1/8-7
+      "1.1250|12":  [1.0469, '1-3/64"',  75],  // 1-1/8-12
+      "1.2500|7":   [1.1094, '1-7/64"',  75],  // 1-1/4-7
+      "1.2500|12":  [1.1719, '1-11/64"', 75],  // 1-1/4-12
+      "1.3750|6":   [1.2188, '1-7/32"',  77],  // 1-3/8-6
+      "1.3750|12":  [1.2969, '1-19/64"', 75],  // 1-3/8-12
+      "1.5000|6":   [1.3438, '1-11/32"', 77],  // 1-1/2-6
+      "1.5000|12":  [1.4219, '1-27/64"', 75]   // 1-1/2-12
+    };
+
+    // Metric tap-drill recommendations (ISO 2306 / DIN 336 commonly listed values)
+    // Format: "major_mm|pitch_mm" -> [drill_mm, drill_label_mm, percent]
+    const TAP_DRILL_METRIC_TABLE = {
+      "1.0|0.25":   [0.75,  "0.75 mm", 74],
+      "1.2|0.25":   [0.95,  "0.95 mm", 76],
+      "1.4|0.30":   [1.10,  "1.10 mm", 74],
+      "1.6|0.35":   [1.25,  "1.25 mm", 73],
+      "1.8|0.35":   [1.45,  "1.45 mm", 73],
+      "2.0|0.40":   [1.60,  "1.60 mm", 74],
+      "2.5|0.45":   [2.05,  "2.05 mm", 75],
+      "3.0|0.50":   [2.50,  "2.50 mm", 77],
+      "3.5|0.60":   [2.90,  "2.90 mm", 77],
+      "4.0|0.70":   [3.30,  "3.30 mm", 77],
+      "5.0|0.80":   [4.20,  "4.20 mm", 77],
+      "6.0|1.00":   [5.00,  "5.00 mm", 77],
+      "7.0|1.00":   [6.00,  "6.00 mm", 77],
+      "8.0|1.25":   [6.80,  "6.80 mm", 74],
+      "8.0|1.00":   [7.00,  "7.00 mm", 77],
+      "10.0|1.50":  [8.50,  "8.50 mm", 77],
+      "10.0|1.25":  [8.80,  "8.80 mm", 74],
+      "10.0|1.00":  [9.00,  "9.00 mm", 77],
+      "12.0|1.75":  [10.20, "10.20 mm", 79],
+      "12.0|1.25":  [10.80, "10.80 mm", 74],
+      "14.0|2.00":  [12.00, "12.00 mm", 77],
+      "14.0|1.50":  [12.50, "12.50 mm", 77],
+      "16.0|2.00":  [14.00, "14.00 mm", 77],
+      "16.0|1.50":  [14.50, "14.50 mm", 77],
+      "18.0|2.50":  [15.50, "15.50 mm", 77],
+      "18.0|1.50":  [16.50, "16.50 mm", 77],
+      "20.0|2.50":  [17.50, "17.50 mm", 77],
+      "20.0|1.50":  [18.50, "18.50 mm", 77],
+      "22.0|2.50":  [19.50, "19.50 mm", 77],
+      "22.0|1.50":  [20.50, "20.50 mm", 77],
+      "24.0|3.00":  [21.00, "21.00 mm", 77],
+      "24.0|2.00":  [22.00, "22.00 mm", 77],
+      "27.0|3.00":  [24.00, "24.00 mm", 77],
+      "27.0|2.00":  [25.00, "25.00 mm", 77],
+      "30.0|3.50":  [26.50, "26.50 mm", 77],
+      "30.0|2.00":  [28.00, "28.00 mm", 77],
+      "33.0|3.50":  [29.50, "29.50 mm", 77],
+      "33.0|2.00":  [31.00, "31.00 mm", 77],
+      "36.0|4.00":  [32.00, "32.00 mm", 77],
+      "36.0|3.00":  [33.00, "33.00 mm", 77],
+      "39.0|4.00":  [35.00, "35.00 mm", 77],
+      "39.0|3.00":  [36.00, "36.00 mm", 77],
+      "42.0|4.50":  [37.50, "37.50 mm", 77],
+      "42.0|3.00":  [39.00, "39.00 mm", 77],
+      "45.0|4.50":  [40.50, "40.50 mm", 77],
+      "45.0|3.00":  [42.00, "42.00 mm", 77],
+      "48.0|5.00":  [43.00, "43.00 mm", 77],
+      "48.0|3.00":  [45.00, "45.00 mm", 77],
+      "52.0|5.00":  [47.00, "47.00 mm", 77],
+      "52.0|4.00":  [48.00, "48.00 mm", 77],
+      "56.0|5.50":  [50.50, "50.50 mm", 77],
+      "56.0|4.00":  [52.00, "52.00 mm", 77],
+      "60.0|5.50":  [54.50, "54.50 mm", 77],
+      "60.0|4.00":  [56.00, "56.00 mm", 77],
+      "64.0|6.00":  [58.00, "58.00 mm", 77],
+      "64.0|4.00":  [60.00, "60.00 mm", 77]
+    };
+
+    // ASME B1.1 pitch-diameter tolerance formulas for Unified inch threads.
+    // These are a simplified calculator estimate — for acceptance work always
+    // confirm against the published B1.1 tables for the specific size.
+    //   L  = length of thread engagement (default 9P, clamped to 5P..25P per standard)
+    //   P  = pitch (1 / TPI)
+    //   D  = basic major diameter
+    // TD2 (class 2A PD tolerance) = 0.0015·D^(1/3) + 0.0015·L^(1/2) + 0.015·P^(2/3)
+    // Class 3A PD tol   ≈ 0.75  × TD2(2A)
+    // Class 2B PD tol   ≈ 1.30  × TD2(2A)
+    // Class 3B PD tol   ≈ 0.975 × TD2(2A)
+    // Allowance es (class 2A only) ≈ 0.300 × TD2(2A)
+    // Major dia tolerance (external) ≈ 0.060 × P^(2/3) for 2A, 0.040 × P^(2/3) for 3A
+    function computeUnToleranceEnvelope({ major, tpi, pitch, basicPitchDiameter, basicInternalMinor }){
+      const L = 9 * pitch; // standard assumed engagement length
+      const TD2_2A = 0.0015 * Math.cbrt(major) + 0.0015 * Math.sqrt(L) + 0.015 * Math.pow(pitch, 2/3);
+      const TD2_3A = 0.75 * TD2_2A;
+      const TD2_2B = 1.30 * TD2_2A;
+      const TD2_3B = 0.975 * TD2_2A;
+      const allowance = 0.300 * TD2_2A; // applied to class 2A external only
+      const majorTol2A = 0.060 * Math.pow(pitch, 2/3);
+      const majorTol3A = 0.040 * Math.pow(pitch, 2/3);
+      // External (2A/3A): max PD = basic − allowance (2A) or basic (3A); min PD = max − TD2
+      // Internal (2B/3B): min PD = basic; max PD = basic + TD2
+      return {
+        "2A": {
+          pdMax: basicPitchDiameter - allowance,
+          pdMin: basicPitchDiameter - allowance - TD2_2A,
+          majorMax: major - allowance,
+          majorMin: major - allowance - majorTol2A,
+          tol: TD2_2A
+        },
+        "3A": {
+          pdMax: basicPitchDiameter,
+          pdMin: basicPitchDiameter - TD2_3A,
+          majorMax: major,
+          majorMin: major - majorTol3A,
+          tol: TD2_3A
+        },
+        "2B": {
+          pdMin: basicPitchDiameter,
+          pdMax: basicPitchDiameter + TD2_2B,
+          minorMin: basicInternalMinor,
+          minorMax: basicInternalMinor + 0.25 * pitch, // approximate
+          tol: TD2_2B
+        },
+        "3B": {
+          pdMin: basicPitchDiameter,
+          pdMax: basicPitchDiameter + TD2_3B,
+          minorMin: basicInternalMinor,
+          minorMax: basicInternalMinor + 0.2 * pitch,
+          tol: TD2_3B
+        }
+      };
+    }
+
+    function lookupTapDrillUN(majorIn, tpi){
+      // Round major to 4dp, tpi to integer for key
+      const key = `${majorIn.toFixed(4)}|${tpi|0}`;
+      const row = TAP_DRILL_UN_TABLE[key];
+      return row ? { size: row[0], label: row[1], percent: row[2] } : null;
+    }
+    function lookupTapDrillMetric(majorMm, pitchMm){
+      const key = `${majorMm.toFixed(1)}|${pitchMm.toFixed(2)}`;
+      const row = TAP_DRILL_METRIC_TABLE[key];
+      return row ? { size: row[0], label: row[1], percent: row[2] } : null;
+    }
 
     // Drill charts: [size_in_inches, label] sorted ascending
     const DRILL_CHART_INCH = [
@@ -2450,23 +2897,48 @@
       }
       return Number(trimmed);
     }
+    // Default coarse pitches for bare "M<size>" specs (ISO 261 coarse series).
+    const METRIC_DEFAULT_PITCH = {
+      1: 0.25, 1.2: 0.25, 1.4: 0.3, 1.6: 0.35, 1.8: 0.35, 2: 0.4, 2.5: 0.45,
+      3: 0.5, 3.5: 0.6, 4: 0.7, 5: 0.8, 6: 1.0, 7: 1.0, 8: 1.25, 10: 1.5,
+      12: 1.75, 14: 2.0, 16: 2.0, 18: 2.5, 20: 2.5, 22: 2.5, 24: 3.0, 27: 3.0,
+      30: 3.5, 33: 3.5, 36: 4.0, 39: 4.0, 42: 4.5, 45: 4.5, 48: 5.0, 52: 5.0,
+      56: 5.5, 60: 5.5, 64: 6.0
+    };
     function parseThreadSpec(input){
-      const normalized = input.trim().toLowerCase().replace(/×/g, "x").replace(/\s+/g, "");
+      // Strip designators like UNC/UNF/UNEF/UN (case-insensitive) and leading/trailing space.
+      let normalized = input.trim().toLowerCase().replace(/×/g, "x");
+      // Strip a trailing thread designator with optional leading space: "1/4-20 unc" → "1/4-20"
+      normalized = normalized.replace(/\s+(un[cef]{1,2}|un)\s*$/i, "");
+      normalized = normalized.replace(/\s+/g, "");
       if (!normalized) return null;
-      // Machine screw format: #4-40, #10-32, etc.
-      const machineScrewMatch = normalized.match(/^#(\d+)-(\d+)$/);
+
+      // Machine screw format with optional #: #4-40, 4-40, #10-32, 10-32
+      const machineScrewMatch = normalized.match(/^#?(\d{1,2})-(\d+(?:\.\d+)?)$/);
       if (machineScrewMatch){
         const screwNum = Number(machineScrewMatch[1]);
         const tpi = Number(machineScrewMatch[2]);
         const major = MACHINE_SCREW_DIAMETERS[screwNum];
+        // Only treat as machine-screw when the number is a known gauge.
         if (major && tpi > 0){
           return { system: "un", major, tpi, label: `#${screwNum}-${tpi}` };
         }
       }
+      // Metric with pitch: M8x1.25, M8-1.25, m10x1.5
       const metricMatch = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
       if (metricMatch){
         return { system: "metric", major: Number(metricMatch[1]), pitch: Number(metricMatch[2]), label: `M${metricMatch[1]}x${metricMatch[2]}` };
       }
+      // Metric without pitch: M10 → default coarse pitch from table
+      const metricBareMatch = normalized.match(/^m(\d+(?:\.\d+)?)$/i);
+      if (metricBareMatch){
+        const majorM = Number(metricBareMatch[1]);
+        const defaultPitch = METRIC_DEFAULT_PITCH[majorM];
+        if (defaultPitch){
+          return { system: "metric", major: majorM, pitch: defaultPitch, label: `M${majorM}x${defaultPitch}` };
+        }
+      }
+      // Unified fractional/decimal: 1/4-20, 0.25-20, 1-8, 1/2-13
       const unifiedMatch = normalized.match(/^([0-9.]+\/[0-9.]+|[0-9]+(?:\.[0-9]+)?)[-x]([0-9]+(?:\.[0-9]+)?)$/);
       if (unifiedMatch){
         const major = parseFraction(unifiedMatch[1]);
@@ -2686,7 +3158,12 @@
         if (major < 0.01 || major > 6){ showWarn(threadWarn, "Major diameter should be between 0.01 in and 6 in."); return; }
         if (tpi < 4 || tpi > 80){ showWarn(threadWarn, "TPI should be between 4 and 80."); return; }
         const pitch = 1 / tpi;
-        const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        const computedDrill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        // Prefer an ANSI B94.11M standard tap-drill value if one exists and the
+        // user hasn't dialed in a custom percent that disagrees with the standard.
+        const stdTap = lookupTapDrillUN(major, tpi);
+        const usingStdTap = !!stdTap && Math.abs(percentValue - 75) <= 5; // honor user overrides outside ~70-80%
+        const drill = usingStdTap ? stdTap.size : computedDrill;
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `${fmt(major, 4)}-${fmt(tpi, 0)}`;
@@ -2695,6 +3172,10 @@
         const fracStr = decimalToFractionStr(drill);
         const stdName = lookupUnThread(major, tpi);
         const bestWireUN = pitch / SQRT3;
+        // Thread-class tolerance envelopes — shown when we identified a standard size.
+        const toleranceEnvelope = stdName ? computeUnToleranceEnvelope({
+          major, tpi, pitch, basicPitchDiameter, basicInternalMinor
+        }) : null;
         const toMowBtn = document.getElementById("threadToMow");
         toMowBtn.dataset.mowUnits = "in";
         toMowBtn.dataset.mowPitchInput = fmt(tpi, 0);
@@ -2717,14 +3198,31 @@
             { label: "Internal minor", valueHtml: fmtDualHtml(basicInternalMinor, "in", 6) }
           ],
           detailsHtml: renderDrillCard(drill, "un") + renderList([
-            `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+            usingStdTap
+              ? `Tap drill from ANSI B94.11M standard table: ${stdTap.label} (${fmt(stdTap.size, 4)} in, ~${stdTap.percent}% thread).`
+              : `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
             ...(stdName ? [`Standard thread identified: ${stdName}.`] : []),
             ...(fracStr ? [`Nearest fractional inch: ${fracStr}.`] : []),
             "Use a standard drill near the computed size for a practical shop selection.",
             "Pitch diameter and internal minor diameter are both shown so the inside-thread size is not confused with pitch diameter.",
             "The basic internal minor diameter is the theoretical thread-root size, while the tap drill is typically larger because it depends on percent thread.",
             "Basic diameter values shown here do not include class-of-fit tolerances."
-          ]) + renderTextCard("Fit reference", [
+          ]) + (toleranceEnvelope ? renderCodeCard("Class tolerance envelopes (ASME B1.1 estimate)",
+            [
+              "External threads (bolt):",
+              `  Class 2A  — PD: ${fmt(toleranceEnvelope["2A"].pdMin, 5)} … ${fmt(toleranceEnvelope["2A"].pdMax, 5)} in` +
+                           `  |  Major: ${fmt(toleranceEnvelope["2A"].majorMin, 5)} … ${fmt(toleranceEnvelope["2A"].majorMax, 5)} in`,
+              `  Class 3A  — PD: ${fmt(toleranceEnvelope["3A"].pdMin, 5)} … ${fmt(toleranceEnvelope["3A"].pdMax, 5)} in` +
+                           `  |  Major: ${fmt(toleranceEnvelope["3A"].majorMin, 5)} … ${fmt(toleranceEnvelope["3A"].majorMax, 5)} in`,
+              "Internal threads (nut):",
+              `  Class 2B  — PD: ${fmt(toleranceEnvelope["2B"].pdMin, 5)} … ${fmt(toleranceEnvelope["2B"].pdMax, 5)} in` +
+                           `  |  Minor: ${fmt(toleranceEnvelope["2B"].minorMin, 5)} … ${fmt(toleranceEnvelope["2B"].minorMax, 5)} in`,
+              `  Class 3B  — PD: ${fmt(toleranceEnvelope["3B"].pdMin, 5)} … ${fmt(toleranceEnvelope["3B"].pdMax, 5)} in` +
+                           `  |  Minor: ${fmt(toleranceEnvelope["3B"].minorMin, 5)} … ${fmt(toleranceEnvelope["3B"].minorMax, 5)} in`,
+              "",
+              "Simplified estimate from the B1.1 formulas with 9P engagement length.",
+              "For acceptance work, verify against the published B1.1 limits table."
+            ].join("\n")) : "") + renderTextCard("Fit reference", [
             `${fitReference.title}: ${fitReference.body}`,
             fitReference.hint
           ]) + renderCodeCard("Formula snapshot", [
@@ -2751,7 +3249,12 @@
         if (!(major > 0) || !(pitch > 0)){ showWarn(threadWarn, "Enter a positive metric major diameter and pitch."); return; }
         if (major < 0.5 || major > 150){ showWarn(threadWarn, "Metric major diameter should be between 0.5 mm and 150 mm."); return; }
         if (pitch < 0.1 || pitch > 6){ showWarn(threadWarn, "Metric pitch should be between 0.1 mm and 6 mm."); return; }
-        const drill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        const computedDrillM = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
+        // Prefer ISO 2306 recommended tap-drill value when the user's percent is in
+        // the standard band; otherwise fall through to the percent-of-thread heuristic.
+        const stdTapM = lookupTapDrillMetric(major, pitch);
+        const usingStdTapM = !!stdTapM && Math.abs(percentValue - 75) <= 5;
+        const drill = usingStdTapM ? stdTapM.size : computedDrillM;
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
         const label = parsed ? parsed.label : `M${fmt(major, 3)}x${fmt(pitch, 3)}`;
@@ -2781,7 +3284,9 @@
             { label: "Internal minor", valueHtml: fmtDualHtml(basicInternalMinor, "mm", 3) }
           ],
           detailsHtml: renderDrillCard(drill, "metric") + renderList([
-            `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+            usingStdTapM
+              ? `Tap drill from ISO 2306 recommended table: ${stdTapM.label} (~${stdTapM.percent}% thread).`
+              : `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
             ...(stdNameM ? [`Standard thread identified: ${stdNameM}.`] : []),
             "This is a practical tap-drill estimate for a 60 degree thread, not a tolerance-class lookup.",
             "Pitch diameter and internal minor diameter are both shown to avoid misreading the inside-thread size.",
@@ -2948,40 +3453,62 @@
       if (!(pitch > 0)) { showWarn(mowWarn, "Pitch must be positive. Use TPI in inch mode or pitch in millimeters in metric mode."); return; }
       if (!(wire > 0)) { showWarn(mowWarn, "Wire diameter W must be positive."); return; }
       const bestWire = pitch / SQRT3;
+      const threadTypeEl = document.getElementById("mowType");
+      const isInternal = threadTypeEl && threadTypeEl.value === "internal";
+      // 60° thread MOW formulas:
+      //   External (over wires):    M = E + 3·W − (√3/2)·P
+      //                             E = M − 3·W + (√3/2)·P
+      //   Internal (between wires): M = E − 3·W + (√3/2)·P   (between-wires of a plug gauge)
+      //                             E = M + 3·W − (√3/2)·P
+      const typeLabel = isInternal ? "Internal (between wires)" : "External (over wires)";
       if (mowMode.value === "solveM"){
         const pitchDiameter = num(mowE.value);
         if (!(pitchDiameter > 0)) { showWarn(mowWarn, "Enter a positive pitch diameter E to compute M."); return; }
-        const measurement = pitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+        const measurement = isInternal
+          ? pitchDiameter - 3 * wire + (SQRT3_OVER_2 * pitch)
+          : pitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
         mowM.value = measurement.toFixed(6);
+        const formulaLine = isInternal
+          ? `M = E - 3W + (sqrt(3)/2)P  (internal)`
+          : `M = E + 3W - (sqrt(3)/2)P  (external)`;
         setResult("mow", {
           animate: true,
           saveHistory: true,
           formState: captureFormInputs(mowForm),
           primary: `M = ${fmt(measurement, 6)} ${units}`,
           stats: [
+            { label: "Type", value: typeLabel },
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
             { label: "Wire W", value: `${fmt(wire, 6)} ${units}` },
             { label: "Input E", value: `${fmt(pitchDiameter, 6)} ${units}` },
             { label: "Best wire", value: `${fmt(bestWire, 6)} ${units}` }
           ],
           detailsHtml: renderList([
-            "Solved micrometer reading across the three wires from the pitch diameter target.",
+            isInternal
+              ? "Solved the between-wires reading on a plug-gauge style internal thread from the target pitch diameter."
+              : "Solved micrometer reading across the three wires from the pitch diameter target.",
             "Replace E with your actual chart or gage target before recalculating when needed.",
             "The best-wire value is shown for comparison even if you use a different actual wire size."
-          ]) + renderCodeCard("Formula snapshot", [`M = E + 3W - (sqrt(3)/2)P`, `M = ${fmt(measurement, 6)} ${units}`].join("\n")),
-          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Mode: Solve M from E`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`, `Measurement over wires M: ${fmt(measurement, 6)} ${units}`].join("\n")
+          ]) + renderCodeCard("Formula snapshot", [formulaLine, `M = ${fmt(measurement, 6)} ${units}`].join("\n")),
+          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Type: ${typeLabel}`, `Mode: Solve M from E`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`, `Measurement over wires M: ${fmt(measurement, 6)} ${units}`].join("\n")
         });
       } else {
         const measurement = num(mowM.value);
         if (!(measurement > 0)) { showWarn(mowWarn, "Enter a positive measurement M to compute E."); return; }
-        const pitchDiameter = measurement - 3 * wire + (SQRT3_OVER_2 * pitch);
+        const pitchDiameter = isInternal
+          ? measurement + 3 * wire - (SQRT3_OVER_2 * pitch)
+          : measurement - 3 * wire + (SQRT3_OVER_2 * pitch);
         mowE.value = pitchDiameter.toFixed(6);
+        const formulaLine = isInternal
+          ? `E = M + 3W - (sqrt(3)/2)P  (internal)`
+          : `E = M - 3W + (sqrt(3)/2)P  (external)`;
         setResult("mow", {
           animate: true,
           saveHistory: true,
           formState: captureFormInputs(mowForm),
           primary: `E = ${fmt(pitchDiameter, 6)} ${units}`,
           stats: [
+            { label: "Type", value: typeLabel },
             { label: "Pitch P", value: `${fmt(pitch, 6)} ${units}` },
             { label: "Wire W", value: `${fmt(wire, 6)} ${units}` },
             { label: "Input M", value: `${fmt(measurement, 6)} ${units}` },
@@ -2991,8 +3518,8 @@
             "Solved pitch diameter from the mic reading and wire size.",
             "If your wire differs from the best-wire recommendation, the result still uses the actual W you entered.",
             "Keep the units consistent all the way through the calculation."
-          ]) + renderCodeCard("Formula snapshot", [`E = M - 3W + (sqrt(3)/2)P`, `E = ${fmt(pitchDiameter, 6)} ${units}`].join("\n")),
-          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Mode: Solve E from M`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Measurement M: ${fmt(measurement, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`].join("\n")
+          ]) + renderCodeCard("Formula snapshot", [formulaLine, `E = ${fmt(pitchDiameter, 6)} ${units}`].join("\n")),
+          copyText: [`Marcos's Calculator - Measurement Over Wires`, `Type: ${typeLabel}`, `Mode: Solve E from M`, `Pitch P: ${fmt(pitch, 6)} ${units}`, `Wire W: ${fmt(wire, 6)} ${units}`, `Measurement M: ${fmt(measurement, 6)} ${units}`, `Pitch diameter E: ${fmt(pitchDiameter, 6)} ${units}`].join("\n")
         });
       }
     });
@@ -3084,6 +3611,63 @@
       return out.join("\n");
     }
 
+    // Build a CSV of the bolt-circle coordinates. Header + one row per hole.
+    function buildBoltCsv(coords, units){
+      const u = unitLabel(units);
+      const rows = [`Index,Angle_deg,X_${u},Y_${u}`];
+      coords.forEach((c, i) => {
+        rows.push(`${i + 1},${fmt(c.angleDeg, 6)},${fmt(c.x, 6)},${fmt(c.y, 6)}`);
+      });
+      return rows.join("\n") + "\n";
+    }
+    // Build a minimal AutoCAD R12 DXF with a POINT entity per hole on layer BOLT_CIRCLE.
+    // This is the classic "paired code/value" ASCII DXF — no libraries needed.
+    function buildBoltDxf(coords, diameter){
+      const out = [];
+      const add = (code, value) => { out.push(String(code), String(value)); };
+      // HEADER section (minimal)
+      add(0, "SECTION"); add(2, "HEADER");
+      add(9, "$ACADVER"); add(1, "AC1009");
+      add(0, "ENDSEC");
+      // TABLES — declare a layer so the points land somewhere sensible.
+      add(0, "SECTION"); add(2, "TABLES");
+      add(0, "TABLE"); add(2, "LAYER"); add(70, 1);
+      add(0, "LAYER"); add(2, "BOLT_CIRCLE"); add(70, 0); add(62, 1); add(6, "CONTINUOUS");
+      add(0, "ENDTAB");
+      add(0, "ENDSEC");
+      // ENTITIES — the bolt circle itself plus one POINT per hole.
+      add(0, "SECTION"); add(2, "ENTITIES");
+      // Reference circle outline (visual aid; uncomment-equivalent is always nice to include).
+      add(0, "CIRCLE"); add(8, "BOLT_CIRCLE");
+      add(10, fmt(coords._cx || 0, 6));
+      add(20, fmt(coords._cy || 0, 6));
+      add(30, "0");
+      add(40, fmt((diameter || 0) / 2, 6));
+      coords.forEach((c) => {
+        add(0, "POINT"); add(8, "BOLT_CIRCLE");
+        add(10, fmt(c.x, 6)); add(20, fmt(c.y, 6)); add(30, "0");
+      });
+      add(0, "ENDSEC");
+      add(0, "EOF");
+      return out.join("\n") + "\n";
+    }
+    function triggerDownload(filename, text, mime){
+      try {
+        const blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 0);
+      } catch (err) {
+        showToast("Download failed — check browser permissions.");
+      }
+    }
     boltForm.addEventListener("submit", (event) => {
       event.preventDefault();
       showWarn(bcWarn, "");
@@ -3121,6 +3705,16 @@
       const detailsExtras = wantGcode ? renderCodeCard("G-code", gcodeText) : "";
       const copyExtras = wantGcode ? ["", "— G-code —", gcodeText] : [];
 
+      // Stash export payloads on the buttons so the click handlers don't need
+      // to re-run the geometry math.
+      coords._cx = centerX; coords._cy = centerY;
+      const csvText = buildBoltCsv(coords, inputUnits);
+      const dxfText = buildBoltDxf(coords, diameter);
+      const csvBtn = document.getElementById("bcExportCsv");
+      const dxfBtn = document.getElementById("bcExportDxf");
+      if (csvBtn){ csvBtn.hidden = false; csvBtn.dataset.payload = csvText; }
+      if (dxfBtn){ dxfBtn.hidden = false; dxfBtn.dataset.payload = dxfText; }
+
       setResult("bolt", {
         animate: true,
         saveHistory: true,
@@ -3145,6 +3739,25 @@
         copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Chord (hole-to-hole): ${fmt(chord, 6)} ${units}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, centerNote, "", ...lines, ...copyExtras].join("\n")
       });
     });
+    // CSV / DXF export wiring. Payload is stamped onto the button on each submit.
+    (function wireBoltExports(){
+      const csvBtn = document.getElementById("bcExportCsv");
+      const dxfBtn = document.getElementById("bcExportDxf");
+      if (csvBtn){
+        csvBtn.addEventListener("click", () => {
+          const payload = csvBtn.dataset.payload || "";
+          if (!payload) return;
+          triggerDownload("bolt-circle.csv", payload, "text/csv;charset=utf-8");
+        });
+      }
+      if (dxfBtn){
+        dxfBtn.addEventListener("click", () => {
+          const payload = dxfBtn.dataset.payload || "";
+          if (!payload) return;
+          triggerDownload("bolt-circle.dxf", payload, "application/dxf");
+        });
+      }
+    })();
     document.getElementById("btnBcClear").addEventListener("click", () => {
       const saved = captureFormInputs(boltForm);
       boltForm.reset();
@@ -3154,6 +3767,11 @@
       document.getElementById("bcCenterX").value = "0";
       document.getElementById("bcCenterY").value = "0";
       showWarn(bcWarn, "");
+      // Hide CSV/DXF export buttons until the next successful generation.
+      const csvBtn = document.getElementById("bcExportCsv");
+      const dxfBtn = document.getElementById("bcExportDxf");
+      if (csvBtn){ csvBtn.hidden = true; csvBtn.dataset.payload = ""; }
+      if (dxfBtn){ dxfBtn.hidden = true; dxfBtn.dataset.payload = ""; }
       setResult("bolt", {
         primary: "Coordinates will appear here when you generate them.",
         stats: [],
@@ -3480,21 +4098,37 @@
       // Common rule: actual chip load ≈ default × (D / baseline), baseline ~3/8 in
       const dInches = isIn ? dia : dia / 25.4;
       const chipScale = Math.max(0.25, Math.min(1.5, dInches / 0.375));
-      const chipInAdj = chipIn * chipScale;
+      const chipInBase = chipIn * chipScale;
       const scaleNote = `Chip load scaled ×${fmt(chipScale, 2)} for tool diameter ${fmt(dInches, 3)} in vs. 0.375 in reference.`;
+
+      // Radial chip-thinning compensation for WOC < D/2.
+      // Effective chipload = programmed chipload × (D / (2 × √(WOC × (D − WOC))))
+      // which equals fz × √(D / (4·WOC·(D−WOC))). Only applies when WOC is given
+      // and less than 50% of the cutter diameter (a light radial engagement).
+      const wocVal = num(sfWoc.value);
+      const docVal = num(sfDoc.value);
+      let thinningFactor = 1;
+      let thinningNote = null;
+      if (wocVal > 0 && wocVal < dia / 2){
+        const ratio = dia / (4 * wocVal * (dia - wocVal));
+        thinningFactor = Math.sqrt(ratio);
+        // Clamp to sane range (extremely light cuts can blow up the factor).
+        thinningFactor = Math.max(1, Math.min(thinningFactor, 2.5));
+        const wocPct = (wocVal / dia) * 100;
+        thinningNote = `Chip-thinning compensation applied: WOC is ${fmt(wocPct, 1)}% of D, boosting programmed chip load by ×${fmt(thinningFactor, 2)} so the actual chip matches book value.`;
+      }
+      const chipInAdj = chipInBase * thinningFactor;
 
       // RPM
       const rpm = isIn
         ? (sfm * 12) / (Math.PI * dia)
         : (sfm * 0.3048 * 1000) / (Math.PI * dia);
-      // Feed rate
+      // Feed rate — uses the compensated chipload so the actual chip matches target
       const feedIPM = rpm * flutes * chipInAdj;
       const feed = isIn ? feedIPM : feedIPM * 25.4;
       const feedLabel = isIn ? "IPM" : "mm/min";
 
       // Optional MRR
-      const wocVal = num(sfWoc.value);
-      const docVal = num(sfDoc.value);
       let mrrLine = null;
       let mrrValue = null;
       if (wocVal > 0 && docVal > 0){
@@ -3528,6 +4162,7 @@
         `Material: ${matLabel}. Tool: ${toolLbl}.`,
         ...sourceNotes,
         scaleNote,
+        ...(thinningNote ? [thinningNote] : []),
         isIn
           ? `RPM = (SFM × 12) ÷ (π × D) = (${fmt(sfm, 0)} × 12) ÷ (π × ${fmt(dia, 4)}) = ${fmt(rpm, 0)}`
           : `RPM = (SMM × 1000) ÷ (π × D) = (${fmt(sfm * 0.3048, 1)} × 1000) ÷ (π × ${fmt(dia, 3)}) = ${fmt(rpm, 0)}`,
@@ -3582,6 +4217,170 @@
       });
     });
 
+    // ── Chamfer / Countersink depth ──
+    // Z-depth = (D2 − D1) / (2 · tan(angle/2))
+    // Works for countersinks (D2 = head diameter, angle = included), 82° flat-head
+    // machine screws, and generic chamfer tools.
+    (function initChamfer(){
+      const form = document.getElementById("chamferForm");
+      if (!form) return;
+      const chUnits = document.getElementById("chUnits");
+      const chAngle = document.getElementById("chAngle");
+      const chSmall = document.getElementById("chSmall");
+      const chLarge = document.getElementById("chLarge");
+      const chWarn = document.getElementById("chWarn");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showWarn(chWarn, "");
+        const units = unitLabel(chUnits.value);
+        const angleDeg = num(chAngle.value);
+        const d1 = num(chSmall.value);
+        const d2 = num(chLarge.value);
+        if (!(angleDeg > 0 && angleDeg < 180)){
+          showWarn(chWarn, "Included angle must be between 0 and 180 degrees."); return;
+        }
+        if (!(d1 >= 0)) { showWarn(chWarn, "Hole diameter (D1) must be zero or positive."); return; }
+        if (!(d2 > 0)) { showWarn(chWarn, "Top diameter (D2) must be positive."); return; }
+        if (d2 <= d1){ showWarn(chWarn, "Top diameter (D2) must be larger than hole diameter (D1)."); return; }
+        const halfAngleRad = degToRad(angleDeg / 2);
+        const depth = (d2 - d1) / (2 * Math.tan(halfAngleRad));
+        const widthChamfer = (d2 - d1) / 2; // radial face width
+        const dp = chUnits.value === "in" ? 4 : 3;
+        const formState = captureFormInputs(form);
+        setResult("chamfer", {
+          animate: true,
+          saveHistory: true,
+          formState,
+          primary: `Z depth = ${fmt(depth, dp)} ${units}`,
+          stats: [
+            { label: "Included angle", value: `${fmt(angleDeg, 2)}°` },
+            { label: "Hole D1", valueHtml: fmtDualHtml(d1, chUnits.value, dp) },
+            { label: "Top D2", valueHtml: fmtDualHtml(d2, chUnits.value, dp) },
+            { label: "Radial width", valueHtml: fmtDualHtml(widthChamfer, chUnits.value, dp) },
+            { label: "Z depth", valueHtml: fmtDualHtml(depth, chUnits.value, dp) }
+          ],
+          detailsHtml: renderList([
+            "Depth is measured along the tool axis from the D2 edge down to where the tool reaches D1.",
+            "For countersinks, use the fastener-head diameter for D2 and the clearance-hole diameter for D1.",
+            "Common angles: 82° flat-head machine screws, 90° DIN/ISO countersunk screws, 100° aerospace flush heads, 120° general chamfer."
+          ]) + renderCodeCard("Formula snapshot", [
+            `Z depth = (D2 - D1) / (2 × tan(angle/2))`,
+            `       = (${fmt(d2, dp)} - ${fmt(d1, dp)}) / (2 × tan(${fmt(angleDeg/2, 2)}°))`,
+            `       = ${fmt(depth, dp)} ${units}`
+          ].join("\n")),
+          copyText: [
+            "Marcos's Calculator - Chamfer/Countersink Depth",
+            `Included angle: ${fmt(angleDeg, 2)}°`,
+            `Hole diameter D1: ${fmt(d1, dp)} ${units}`,
+            `Top diameter D2: ${fmt(d2, dp)} ${units}`,
+            `Z depth: ${fmt(depth, dp)} ${units}`
+          ].join("\n")
+        });
+      });
+      const clearBtn = document.getElementById("btnChClear");
+      if (clearBtn){
+        clearBtn.addEventListener("click", () => {
+          const saved = captureFormInputs(form);
+          form.reset();
+          chAngle.value = "82";
+          showWarn(chWarn, "");
+          setResult("chamfer", {
+            primary: "Depth will appear here.", stats: [], detailsHtml: "", copyText: ""
+          });
+          showToast("Chamfer form cleared.", () => restoreFormInputs(form, saved));
+        });
+      }
+    })();
+
+    // ── Circle through 3 points ──
+    // Find circumcenter from perpendicular bisectors; diameter = 2·r.
+    // Given 3 points (x1,y1), (x2,y2), (x3,y3):
+    //   Using determinant form:
+    //   D = 2 · ((x1)(y2 − y3) + (x2)(y3 − y1) + (x3)(y1 − y2))
+    //   Ux = ((x1²+y1²)(y2 − y3) + (x2²+y2²)(y3 − y1) + (x3²+y3²)(y1 − y2)) / D
+    //   Uy = ((x1²+y1²)(x3 − x2) + (x2²+y2²)(x1 − x3) + (x3²+y3²)(x2 − x1)) / D
+    //   If D ≈ 0 the points are collinear (no unique circle).
+    (function initCircle3(){
+      const form = document.getElementById("circle3Form");
+      if (!form) return;
+      const c3Units = document.getElementById("c3Units");
+      const c3Warn = document.getElementById("c3Warn");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showWarn(c3Warn, "");
+        const units = unitLabel(c3Units.value);
+        const pts = [
+          [num(document.getElementById("c3x1").value), num(document.getElementById("c3y1").value)],
+          [num(document.getElementById("c3x2").value), num(document.getElementById("c3y2").value)],
+          [num(document.getElementById("c3x3").value), num(document.getElementById("c3y3").value)]
+        ];
+        for (const [x, y] of pts){
+          if (!Number.isFinite(x) || !Number.isFinite(y)){
+            showWarn(c3Warn, "All six coordinates must be valid numbers."); return;
+          }
+        }
+        const [[x1, y1], [x2, y2], [x3, y3]] = pts;
+        const D = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
+        if (Math.abs(D) < 1e-9){
+          showWarn(c3Warn, "The three points look collinear — no unique circle passes through them.");
+          return;
+        }
+        const a = x1 * x1 + y1 * y1;
+        const b = x2 * x2 + y2 * y2;
+        const c = x3 * x3 + y3 * y3;
+        const ux = (a * (y2 - y3) + b * (y3 - y1) + c * (y1 - y2)) / D;
+        const uy = (a * (x3 - x2) + b * (x1 - x3) + c * (x2 - x1)) / D;
+        const r = Math.hypot(x1 - ux, y1 - uy);
+        const dia = 2 * r;
+        const dp = c3Units.value === "in" ? 4 : 3;
+        const formState = captureFormInputs(form);
+        setResult("circle3", {
+          animate: true,
+          saveHistory: true,
+          formState,
+          primary: `Center (${fmt(ux, dp)}, ${fmt(uy, dp)}) ${units}  •  Ø ${fmt(dia, dp)} ${units}`,
+          stats: [
+            { label: "Center X", valueHtml: fmtDualHtml(ux, c3Units.value, dp) },
+            { label: "Center Y", valueHtml: fmtDualHtml(uy, c3Units.value, dp) },
+            { label: "Radius", valueHtml: fmtDualHtml(r, c3Units.value, dp) },
+            { label: "Diameter", valueHtml: fmtDualHtml(dia, c3Units.value, dp) }
+          ],
+          detailsHtml: renderList([
+            "Useful for back-computing a bore center from three probe touches on the inside of an arc.",
+            "If the probed points are close to a straight line the answer gets noisy — spread them out around the arc for best accuracy.",
+            "Coordinates use the same system as your input (machine XY, part XY — whatever you typed in)."
+          ]) + renderCodeCard("Formula snapshot", [
+            `D  = 2·(x1(y2−y3) + x2(y3−y1) + x3(y1−y2)) = ${fmt(D, 6)}`,
+            `Xc = ${fmt(ux, dp)} ${units}`,
+            `Yc = ${fmt(uy, dp)} ${units}`,
+            `R  = √((x1−Xc)² + (y1−Yc)²) = ${fmt(r, dp)} ${units}`,
+            `Ø  = ${fmt(dia, dp)} ${units}`
+          ].join("\n")),
+          copyText: [
+            "Marcos's Calculator - Circle Through 3 Points",
+            `P1: (${fmt(x1, dp)}, ${fmt(y1, dp)}) ${units}`,
+            `P2: (${fmt(x2, dp)}, ${fmt(y2, dp)}) ${units}`,
+            `P3: (${fmt(x3, dp)}, ${fmt(y3, dp)}) ${units}`,
+            `Center: (${fmt(ux, dp)}, ${fmt(uy, dp)}) ${units}`,
+            `Radius: ${fmt(r, dp)} ${units}`,
+            `Diameter: ${fmt(dia, dp)} ${units}`
+          ].join("\n")
+        });
+      });
+      const clearBtn = document.getElementById("btnC3Clear");
+      if (clearBtn){
+        clearBtn.addEventListener("click", () => {
+          const saved = captureFormInputs(form);
+          form.reset();
+          showWarn(c3Warn, "");
+          setResult("circle3", {
+            primary: "Center and diameter will appear here.", stats: [], detailsHtml: "", copyText: ""
+          });
+          showToast("Circle form cleared.", () => restoreFormInputs(form, saved));
+        });
+      }
+    })();
+
     // ── History clear (event delegation) ──
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-hist-clear]");
@@ -3594,7 +4393,56 @@
 
     // ── Input persistence ──
     (function initPersistence(){
-      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm"];
+      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form"];
+
+      // ── Global unit preference ──
+      // On first-ever load we seed every unit-bearing select to match the user's
+      // locale (US → in, everyone else → mm). Users can still override per-card;
+      // their per-form persistence (saved below) wins on every subsequent load.
+      function detectDefaultUnit(){
+        try {
+          const stored = localStorage.getItem("marcos_unit_default");
+          if (stored === "in" || stored === "mm") return stored;
+        } catch {}
+        // Fallback to locale sniff. Imperial regions: US, Liberia, Myanmar.
+        let unit = "mm";
+        try {
+          const loc = (navigator.language || "en-US").toLowerCase();
+          if (/-(us|lr|mm)$|^en-us$/.test(loc)) unit = "in";
+        } catch {}
+        try { localStorage.setItem("marcos_unit_default", unit); } catch {}
+        return unit;
+      }
+      function seedUnitDefaults(){
+        const unit = detectDefaultUnit();
+        // Only seed selects whose form has no persistence yet. That way users
+        // who have already been using the app keep their prior choices.
+        const seedMap = {
+          mowUnits: "mowForm", bcUnits: "boltForm",
+          rtUnits: "triangleForm", sfUnits: "feedsForm",
+          chUnits: "chamferForm", c3Units: "circle3Form"
+        };
+        // threadSystem: "un" for in, "metric" for mm.
+        let threadSystemPersisted = false;
+        try { threadSystemPersisted = !!localStorage.getItem("marcos_persist_threadForm"); } catch {}
+        if (!threadSystemPersisted){
+          const threadSystemEl = document.getElementById("threadSystem");
+          if (threadSystemEl) threadSystemEl.value = unit === "in" ? "un" : "metric";
+        }
+        Object.entries(seedMap).forEach(([selectId, formId]) => {
+          let hasPersist = false;
+          try { hasPersist = !!localStorage.getItem("marcos_persist_" + formId); } catch {}
+          if (hasPersist) return;
+          const el = document.getElementById(selectId);
+          if (el && (el.value === "" || el.value !== unit)){
+            // Only set if the option exists on the select.
+            const hasOption = Array.from(el.options).some(o => o.value === unit);
+            if (hasOption) el.value = unit;
+          }
+        });
+      }
+      seedUnitDefaults();
+
       function saveAll(){
         FORMS.forEach(id => {
           const form = document.getElementById(id);
@@ -3664,7 +4512,7 @@
     }
 
     // History toggle buttons
-    ["thread","mow","bolt","triangle","feeds"].forEach(tool => {
+    ["thread","mow","bolt","triangle","feeds","chamfer","circle3"].forEach(tool => {
       const toggleBtn = document.getElementById("histToggle-" + tool);
       const sectionEl = document.getElementById("histSection-" + tool);
       if (toggleBtn && sectionEl){
@@ -3694,7 +4542,7 @@
     });
 
     // Initialise history panels on load
-    ["thread","mow","bolt","triangle","feeds"].forEach(histRender);
+    ["thread","mow","bolt","triangle","feeds","chamfer","circle3"].forEach(histRender);
 
     // ── Share URL ──
     function buildShareUrl(toolName, formState){
@@ -3711,7 +4559,7 @@
       try {
         const params = new URLSearchParams(hash);
         const tool = params.get("tool");
-        if (!["thread","mow","bolt","triangle","feeds"].includes(tool)) return null;
+        if (!["thread","mow","bolt","triangle","feeds","chamfer","circle3"].includes(tool)) return null;
         const formState = {};
         for (const [k, v] of params.entries()){ if (k !== "tool") formState[k] = v; }
         return { tool, formState };
@@ -3724,7 +4572,9 @@
       mow: "Measurement Over Wires",
       bolt: "Bolt Circle Coordinates",
       triangle: "Right Triangle",
-      feeds: "Speeds & Feeds"
+      feeds: "Speeds & Feeds",
+      chamfer: "Chamfer & Countersink Depth",
+      circle3: "Circle Through 3 Points"
     };
     document.querySelectorAll("[data-share-tool]").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -3821,11 +4671,11 @@
     })();
 
     // ── Keyboard shortcuts ──
-    // 1–4: switch tools. Ctrl/Cmd+K: focus quick thread spec.
+    // 1–7: switch tools (thread/mow/bolt/triangle/feeds/chamfer/circle3). Ctrl/Cmd+K: focus quick thread spec.
     // ── Auto-calculate live mode ──
     (function initLiveCalc(){
       const LIVE_KEY = "marcos_live_calc";
-      const LIVE_FORM_IDS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm"];
+      const LIVE_FORM_IDS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form"];
       let liveController = null;
       let liveDebounce = null;
 
@@ -3885,7 +4735,7 @@
     })();
 
     (function initKeyboardShortcuts(){
-      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle", "5": "feeds" };
+      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle", "5": "feeds", "6": "chamfer", "7": "circle3" };
       document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) return;
         const target = event.target;
@@ -3913,9 +4763,53 @@
       });
     })();
 
-    // ── PWA service worker ──
+    // ── PWA service worker with update toast ──
     if ("serviceWorker" in navigator){
-      navigator.serviceWorker.register("./sw.js").catch(() => {});
+      function showUpdateToast(waitingWorker){
+        // Avoid stacking toasts if one is already visible.
+        if (document.getElementById("pwaUpdateToast")) return;
+        const toast = document.createElement("div");
+        toast.id = "pwaUpdateToast";
+        toast.className = "pwa-toast";
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
+        toast.innerHTML = `
+          <span class="pwa-toast-text">New version available.</span>
+          <button type="button" class="pwa-toast-reload">Reload</button>
+          <button type="button" class="pwa-toast-dismiss" aria-label="Dismiss">×</button>
+        `;
+        document.body.appendChild(toast);
+        toast.querySelector(".pwa-toast-reload").addEventListener("click", () => {
+          if (waitingWorker) waitingWorker.postMessage({ type: "SKIP_WAITING" });
+          // Reload will happen on controllerchange below.
+        });
+        toast.querySelector(".pwa-toast-dismiss").addEventListener("click", () => {
+          toast.remove();
+        });
+      }
+      navigator.serviceWorker.register("./sw.js").then((registration) => {
+        // Case 1: a waiting worker already exists on load.
+        if (registration.waiting && navigator.serviceWorker.controller){
+          showUpdateToast(registration.waiting);
+        }
+        // Case 2: a new worker starts installing while the page is open.
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller){
+              showUpdateToast(newWorker);
+            }
+          });
+        });
+      }).catch(() => {});
+      // Reload once the new SW takes control.
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloading) return;
+        reloading = true;
+        window.location.reload();
+      });
     }
   </script>
 </body>

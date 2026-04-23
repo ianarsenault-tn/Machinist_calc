@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Marcos's Calculator — Tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #0b1120;
+      color: #e5f0ff;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    h1 { color: #80c8ff; }
+    .summary {
+      display: flex;
+      gap: 18px;
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      background: #10223d;
+      border-radius: 8px;
+      margin: 14px 0 24px;
+    }
+    .summary .pass { color: #6fdc8c; }
+    .summary .fail { color: #ff6b7a; }
+    .suite { margin: 18px 0; border-left: 3px solid #2a3f60; padding-left: 12px; }
+    .suite h2 { margin: 6px 0; font-size: 1rem; color: #a7c4e4; }
+    .test { margin: 2px 0; }
+    .pass { color: #6fdc8c; }
+    .fail { color: #ff6b7a; font-weight: 600; }
+    .detail { color: #9aa9c2; margin-left: 18px; font-size: 0.88rem; }
+    code { background: #182a48; padding: 1px 5px; border-radius: 4px; }
+    a { color: #80c8ff; }
+  </style>
+</head>
+<body>
+  <h1>Marcos's Calculator — Test Harness</h1>
+  <p>Pure-function unit tests. Open this page in a browser. Results render inline below.
+     For interactive testing go back to <a href="./index.html">index.html</a>.</p>
+  <div class="summary" id="summary">Running…</div>
+  <div id="results"></div>
+
+<script>
+// Tiny assertion harness. No framework — just `suite()` and `test()` with
+// the matchers we care about (`equal`, `near`, `ok`).
+(function(){
+  const results = document.getElementById("results");
+  const summary = document.getElementById("summary");
+  let suiteEl = null;
+  let totals = { pass: 0, fail: 0 };
+  window.suite = function(name){
+    suiteEl = document.createElement("div");
+    suiteEl.className = "suite";
+    const h = document.createElement("h2");
+    h.textContent = name;
+    suiteEl.appendChild(h);
+    results.appendChild(suiteEl);
+  };
+  window.test = function(name, fn){
+    try {
+      fn();
+      const e = document.createElement("div");
+      e.className = "test pass";
+      e.innerHTML = "✓ " + name;
+      suiteEl.appendChild(e);
+      totals.pass += 1;
+    } catch (err){
+      const e = document.createElement("div");
+      e.className = "test fail";
+      e.innerHTML = "✗ " + name;
+      suiteEl.appendChild(e);
+      const d = document.createElement("div");
+      d.className = "detail";
+      d.textContent = err.message;
+      suiteEl.appendChild(d);
+      totals.fail += 1;
+    }
+  };
+  window.equal = function(actual, expected, label){
+    if (actual !== expected){
+      throw new Error(`${label || "equal"}: expected ${expected}, got ${actual}`);
+    }
+  };
+  window.near = function(actual, expected, tol, label){
+    if (Math.abs(actual - expected) > tol){
+      throw new Error(`${label || "near"}: expected ${expected} ±${tol}, got ${actual}`);
+    }
+  };
+  window.ok = function(cond, label){
+    if (!cond) throw new Error(label || "assertion failed");
+  };
+  window.reportTotals = function(){
+    summary.innerHTML = `<span class="pass">✓ ${totals.pass} passed</span><span class="fail">${totals.fail ? "✗ " + totals.fail + " failed" : ""}</span><span>Total ${totals.pass + totals.fail}</span>`;
+  };
+})();
+
+// ───── Calculator functions copied inline for isolated testing ─────
+// These mirror the implementations in index.html. When the main file's
+// formulas change, update these stubs too (or extract to a shared module).
+
+const SQRT3 = Math.sqrt(3);
+const SQRT3_OVER_2 = SQRT3 / 2;
+const BASIC_PITCH_DIAMETER_FACTOR = 0.6495190528;
+const BASIC_INTERNAL_MINOR_FACTOR = 1.0825317547;
+const TAP_DRILL_PERCENT_FACTOR = 76.98;
+
+const MACHINE_SCREW_DIAMETERS = {
+  0: 0.0600, 1: 0.0730, 2: 0.0860, 3: 0.0990,  4: 0.1120,
+  5: 0.1250, 6: 0.1380, 8: 0.1640, 10: 0.1900, 12: 0.2160
+};
+const METRIC_DEFAULT_PITCH = {
+  3: 0.5, 4: 0.7, 5: 0.8, 6: 1.0, 8: 1.25, 10: 1.5, 12: 1.75, 14: 2.0,
+  16: 2.0, 20: 2.5
+};
+
+function parseFraction(s){
+  if (s.includes("/")){ const [a,b] = s.split("/"); return Number(a)/Number(b); }
+  return Number(s);
+}
+function parseThreadSpec(input){
+  let normalized = input.trim().toLowerCase().replace(/×/g, "x");
+  normalized = normalized.replace(/\s+(un[cef]{1,2}|un)\s*$/i, "");
+  normalized = normalized.replace(/\s+/g, "");
+  if (!normalized) return null;
+  const m1 = normalized.match(/^#?(\d{1,2})-(\d+(?:\.\d+)?)$/);
+  if (m1){
+    const n = Number(m1[1]); const tpi = Number(m1[2]);
+    const d = MACHINE_SCREW_DIAMETERS[n];
+    if (d && tpi > 0) return { system: "un", major: d, tpi, label: `#${n}-${tpi}` };
+  }
+  const m2 = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
+  if (m2) return { system: "metric", major: Number(m2[1]), pitch: Number(m2[2]), label: `M${m2[1]}x${m2[2]}` };
+  const m3 = normalized.match(/^m(\d+(?:\.\d+)?)$/i);
+  if (m3){
+    const M = Number(m3[1]); const p = METRIC_DEFAULT_PITCH[M];
+    if (p) return { system: "metric", major: M, pitch: p, label: `M${M}x${p}` };
+  }
+  const m4 = normalized.match(/^([0-9.]+\/[0-9.]+|[0-9]+(?:\.[0-9]+)?)[-x]([0-9]+(?:\.[0-9]+)?)$/);
+  if (m4){
+    const d = parseFraction(m4[1]); const tpi = Number(m4[2]);
+    if (d > 0 && tpi > 0) return { system: "un", major: d, tpi, label: `${m4[1]}-${m4[2]}` };
+  }
+  return null;
+}
+
+// Tap-drill heuristic: Major − ((pct / 76.98) × Pitch)
+function tapDrillUN(majorIn, tpi, pct){
+  const pitch = 1 / tpi;
+  return majorIn - ((pct / TAP_DRILL_PERCENT_FACTOR) * pitch);
+}
+function tapDrillMetric(majorMm, pitchMm, pct){
+  return majorMm - ((pct / TAP_DRILL_PERCENT_FACTOR) * pitchMm);
+}
+
+// MOW — external: M = E + 3W − (√3/2)P
+function mowSolveMExternal(E, W, P){ return E + 3 * W - SQRT3_OVER_2 * P; }
+// MOW — external: E = M − 3W + (√3/2)P
+function mowSolveEExternal(M, W, P){ return M - 3 * W + SQRT3_OVER_2 * P; }
+// MOW — internal: M = E − 3W + (√3/2)P
+function mowSolveMInternal(E, W, P){ return E - 3 * W + SQRT3_OVER_2 * P; }
+function mowSolveEInternal(M, W, P){ return M + 3 * W - SQRT3_OVER_2 * P; }
+
+// Speeds & Feeds — inch
+function rpmFromSfm(sfm, diaIn){ return (sfm * 12) / (Math.PI * diaIn); }
+function feedIPM(rpm, flutes, chipLoad){ return rpm * flutes * chipLoad; }
+// Chip-thinning factor (radial WOC < D/2)
+function chipThinningFactor(D, WOC){
+  if (!(WOC > 0) || WOC >= D/2) return 1;
+  return Math.sqrt(D / (4 * WOC * (D - WOC)));
+}
+
+// Triangle: solve from run + rise
+function triFromRunRise(run, rise){
+  const hyp = Math.hypot(run, rise);
+  const angleRun = Math.atan2(rise, run) * 180 / Math.PI;  // angle opposite rise
+  return { hyp, angle: angleRun };
+}
+
+// Chamfer depth
+function chamferDepth(D1, D2, includedDeg){
+  return (D2 - D1) / (2 * Math.tan(includedDeg/2 * Math.PI / 180));
+}
+
+// Circle through 3 points
+function circleFrom3Points(p1, p2, p3){
+  const [x1,y1] = p1, [x2,y2] = p2, [x3,y3] = p3;
+  const D = 2 * (x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2));
+  if (Math.abs(D) < 1e-9) return null;
+  const a = x1*x1 + y1*y1;
+  const b = x2*x2 + y2*y2;
+  const c = x3*x3 + y3*y3;
+  const ux = (a*(y2-y3) + b*(y3-y1) + c*(y1-y2)) / D;
+  const uy = (a*(x3-x2) + b*(x1-x3) + c*(x2-x1)) / D;
+  const r = Math.hypot(x1 - ux, y1 - uy);
+  return { x: ux, y: uy, r, d: 2*r };
+}
+
+// Bolt circle coordinates
+function boltCircle(dia, holes, startDeg, direction){
+  const r = dia / 2;
+  const step = 360 / holes;
+  const d = direction === "cw" ? -1 : 1;
+  const out = [];
+  for (let i = 0; i < holes; i++){
+    const a = (startDeg + d * i * step) * Math.PI / 180;
+    out.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+  }
+  return out;
+}
+
+// ───── Suites ─────
+
+suite("Thread spec parser — leniency");
+test("#10-32 parses as #10 machine screw", () => {
+  const r = parseThreadSpec("#10-32");
+  equal(r.system, "un"); near(r.major, 0.190, 0.0001); equal(r.tpi, 32);
+});
+test("10-32 (no hash) also parses as #10 machine screw", () => {
+  const r = parseThreadSpec("10-32");
+  equal(r.system, "un"); near(r.major, 0.190, 0.0001); equal(r.tpi, 32);
+});
+test("1/4-20 parses as Unified", () => {
+  const r = parseThreadSpec("1/4-20");
+  equal(r.system, "un"); near(r.major, 0.25, 1e-6); equal(r.tpi, 20);
+});
+test("1/4-20 UNC suffix is accepted", () => {
+  const r = parseThreadSpec("1/4-20 UNC");
+  equal(r.system, "un"); equal(r.tpi, 20);
+});
+test("1/2-13 UNF suffix is accepted", () => {
+  const r = parseThreadSpec("1/2-13 UNF");
+  equal(r.system, "un"); equal(r.tpi, 13);
+});
+test("M8x1.25 parses as metric", () => {
+  const r = parseThreadSpec("M8x1.25");
+  equal(r.system, "metric"); equal(r.major, 8); near(r.pitch, 1.25, 1e-6);
+});
+test("M10 without pitch uses default coarse 1.5", () => {
+  const r = parseThreadSpec("M10");
+  equal(r.system, "metric"); equal(r.major, 10); near(r.pitch, 1.5, 1e-6);
+});
+test("M20 without pitch uses default coarse 2.5", () => {
+  const r = parseThreadSpec("M20");
+  near(r.pitch, 2.5, 1e-6);
+});
+test("Garbage returns null", () => {
+  equal(parseThreadSpec("xyz"), null);
+});
+
+suite("Tap drill — heuristic formula");
+test("1/4-20 @ 75% is about 0.2013", () => {
+  near(tapDrillUN(0.25, 20, 75), 0.2013, 0.0005);
+});
+test("M6x1.0 @ 75% is about 5.026 mm", () => {
+  near(tapDrillMetric(6.0, 1.0, 75), 5.026, 0.005);
+});
+test("#10-32 @ 75% is about 0.1595", () => {
+  near(tapDrillUN(0.19, 32, 75), 0.1596, 0.0005);
+});
+test("Lower percent yields larger drill", () => {
+  const a = tapDrillUN(0.25, 20, 60);
+  const b = tapDrillUN(0.25, 20, 80);
+  ok(a > b, "60% drill should be larger than 80% drill");
+});
+
+suite("Measurement over wires — external");
+test("1/4-20, W=0.03608 best wire → symmetric solve", () => {
+  const P = 1/20, W = P / SQRT3, E = 0.2175; // rough PD for 1/4-20
+  const M = mowSolveMExternal(E, W, P);
+  const Eback = mowSolveEExternal(M, W, P);
+  near(Eback, E, 1e-8);
+});
+test("External M > E when wires stand proud", () => {
+  const P = 1/20, W = P / SQRT3, E = 0.2175;
+  ok(mowSolveMExternal(E, W, P) > E);
+});
+
+suite("Measurement over wires — internal");
+test("Internal solveM/solveE round-trip", () => {
+  const P = 1.5, W = P / SQRT3, E = 9.026;
+  const M = mowSolveMInternal(E, W, P);
+  const Eback = mowSolveEInternal(M, W, P);
+  near(Eback, E, 1e-8);
+});
+test("Internal M < E (between-wires is smaller than PD)", () => {
+  const P = 1.5, W = P / SQRT3, E = 9.026;
+  ok(mowSolveMInternal(E, W, P) < E);
+});
+
+suite("Speeds & Feeds");
+test("RPM for 0.5 in cutter at 400 SFM ≈ 3056", () => {
+  near(rpmFromSfm(400, 0.5), 3055.77, 1.0);
+});
+test("Feed rate = RPM × flutes × chip load", () => {
+  const f = feedIPM(1000, 2, 0.003);
+  near(f, 6.0, 1e-6);
+});
+test("Chip thinning at WOC = D/2 → factor 1", () => {
+  near(chipThinningFactor(0.5, 0.25), 1.0, 1e-6);
+});
+test("Chip thinning at WOC = 0.1·D boosts chip load", () => {
+  const f = chipThinningFactor(0.5, 0.05);
+  ok(f > 1.5, "factor should be well above 1 for light radial cut");
+  ok(f < 2.0, "factor should still be under 2 at 10% engagement");
+});
+test("Chip thinning at WOC ≥ D/2 → 1 (no boost)", () => {
+  equal(chipThinningFactor(0.5, 0.3), 1);
+});
+
+suite("Right triangle");
+test("3-4-5 triangle from run/rise", () => {
+  const r = triFromRunRise(3, 4);
+  near(r.hyp, 5, 1e-9);
+  near(r.angle, 53.13, 0.02);
+});
+test("Run=rise gives 45°", () => {
+  const r = triFromRunRise(1, 1);
+  near(r.angle, 45, 1e-9);
+  near(r.hyp, Math.SQRT2, 1e-9);
+});
+
+suite("Chamfer / countersink");
+test("82° countersink, D1=0.266 D2=0.492 → ≈0.1315 in", () => {
+  near(chamferDepth(0.266, 0.492, 82), 0.1316, 0.002);
+});
+test("90° chamfer, D1=0 D2=0.100 → 0.050 in", () => {
+  near(chamferDepth(0, 0.100, 90), 0.050, 1e-9);
+});
+
+suite("Circle through 3 points");
+test("Known unit circle (1,0),(0,1),(-1,0) → center (0,0), d=2", () => {
+  const c = circleFrom3Points([1,0],[0,1],[-1,0]);
+  near(c.x, 0, 1e-9); near(c.y, 0, 1e-9); near(c.d, 2, 1e-9);
+});
+test("Off-origin circle works", () => {
+  // Circle centered (5, -2) radius 3 — pick three points on it.
+  const cx = 5, cy = -2, r = 3;
+  const p = (t) => [cx + r * Math.cos(t), cy + r * Math.sin(t)];
+  const c = circleFrom3Points(p(0), p(1.2), p(2.5));
+  near(c.x, cx, 1e-6); near(c.y, cy, 1e-6); near(c.d, 2*r, 1e-6);
+});
+test("Collinear points return null", () => {
+  equal(circleFrom3Points([0,0],[1,1],[2,2]), null);
+});
+
+suite("Bolt circle");
+test("4-hole, dia 1.0, start 0°, CCW", () => {
+  const pts = boltCircle(1.0, 4, 0, "ccw");
+  equal(pts.length, 4);
+  near(pts[0].x, 0.5, 1e-9); near(pts[0].y, 0, 1e-9);
+  near(pts[1].x, 0, 1e-9); near(pts[1].y, 0.5, 1e-9);
+  near(pts[2].x, -0.5, 1e-9); near(pts[2].y, 0, 1e-9);
+});
+test("6-hole gives 60° step", () => {
+  const pts = boltCircle(2.0, 6, 0, "ccw");
+  near(pts[1].x, Math.cos(Math.PI/3) * 1.0, 1e-9);
+  near(pts[1].y, Math.sin(Math.PI/3) * 1.0, 1e-9);
+});
+test("CW direction reverses second point", () => {
+  const ccw = boltCircle(1.0, 4, 0, "ccw");
+  const cw  = boltCircle(1.0, 4, 0, "cw");
+  near(cw[1].y, -ccw[1].y, 1e-9);
+});
+
+suite("Basic thread geometry");
+test("Pitch from TPI", () => {
+  near(1/20, 0.05, 1e-9);
+});
+test("Basic PD for 1/4-20", () => {
+  const P = 1/20;
+  const pd = 0.25 - BASIC_PITCH_DIAMETER_FACTOR * P;
+  near(pd, 0.21752, 0.0001);
+});
+test("Basic internal minor for M8x1.25", () => {
+  const minor = 8 - BASIC_INTERNAL_MINOR_FACTOR * 1.25;
+  near(minor, 6.647, 0.005);
+});
+
+reportTotals();
+</script>
+</body>
+</html>

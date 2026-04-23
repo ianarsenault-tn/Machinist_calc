@@ -1,11 +1,13 @@
-const CACHE = "marcos-calc-v1";
+const CACHE = "marcos-calc-v2";
 const PRECACHE = ["./index.html", "./favicon.png", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE).then((c) => c.addAll(PRECACHE))
   );
-  self.skipWaiting();
+  // Do NOT auto skipWaiting. The page offers the user a "Reload" toast that
+  // posts {type: "SKIP_WAITING"} when accepted — this avoids pulling the rug
+  // out from a user mid-calculation when a new version is deployed.
 });
 
 self.addEventListener("activate", (e) => {
@@ -15,6 +17,12 @@ self.addEventListener("activate", (e) => {
     )
   );
   self.clients.claim();
+});
+
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("fetch", (e) => {

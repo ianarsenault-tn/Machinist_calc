@@ -1,7 +1,7 @@
 {
   "name": "Marcos's Calculator",
   "short_name": "Machinist Calc",
-  "description": "Shop math for threads, bolt circles, and setup work.",
+  "description": "Shop math for threads, bolt circles, speeds & feeds, and setup work.",
   "start_url": ".",
   "display": "standalone",
   "orientation": "any",
@@ -19,6 +19,36 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Speeds & Feeds",
+      "short_name": "Feeds",
+      "description": "Compute SFM, RPM, and feed rate for a material and tool.",
+      "url": "./#tool-feeds",
+      "icons": [{ "src": "favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bolt Circle",
+      "short_name": "Bolt Circle",
+      "description": "Lay out evenly spaced holes on a bolt circle with optional G-code.",
+      "url": "./#tool-bolt",
+      "icons": [{ "src": "favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Thread",
+      "short_name": "Thread",
+      "description": "Tap-drill size and basic thread geometry for UN and metric threads.",
+      "url": "./#tool-thread",
+      "icons": [{ "src": "favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Right Triangle",
+      "short_name": "Triangle",
+      "description": "Solve a right triangle from any two knowns.",
+      "url": "./#tool-triangle",
+      "icons": [{ "src": "favicon.png", "sizes": "192x192" }]
     }
   ]
 }
