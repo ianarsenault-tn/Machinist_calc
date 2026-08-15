@@ -23,9 +23,10 @@ The app includes tools for:
 - Shared, testable calculation core in `calc-core.js`
 - Installable as a PWA — works offline after first load
 - Responsive layout for desktop and mobile
+- Self-hosted IBM Plex Sans and Roboto Slab typography for consistent offline rendering
 - Dark and light themes (auto-matches system preference on first visit)
 - Sticky top navigation on larger screens
-- One-tool mobile workflow with a compact calculator picker and collapsible result details
+- One-tool mobile workflow with a compact calculator picker, 44px touch targets, and collapsible result details
 - Focus mode or Multi-panel layout toggle on desktop — see one tool at a time or all of them side by side
 - Multi-panel scroll-spy — the active nav item follows whichever card is under your gaze
 - Live auto-calculate mode — recompute on every input change
@@ -38,12 +39,13 @@ The app includes tools for:
 - ASME B1.1 2A/2B/3A/3B tolerance envelope estimate for identified Unified threads
 - Radial chip-thinning compensation in Speeds & Feeds for light radial engagements
 - Active-machine RPM/feed ceilings with clear requested-versus-limited output
+- Compact Speeds & Feeds workflow with automatic-default summaries, inline units, and optional overrides grouped behind progressive disclosure
 - Explicit tap-drill method selection: standards table or selected percent thread
 - Decimal, simple-fraction, mixed-fraction, and unit-suffixed dimensional inputs where applicable
 - Measurement Over Wires supports external bolt threads and internal plug-gauge (between-wires) readings
 - Controller/work-offset-aware G-code output for bolt-circle patterns, required preflight acknowledgment, unit conversion, safe retracts, plus **CSV and DXF export**
 - Calculation provenance cards distinguish deterministic geometry from shop starting points and machine-use templates
-- Workspace JSON export/import for backup or transfer
+- Tabbed Shop workspace for machine, tool, material, job, and status management, plus JSON export/import for backup or transfer
 - PWA update toast with a reload button when a new deploy is detected
 - App shortcuts: long-press / right-click the installed icon to jump straight into Feeds, Bolt Circle, Thread, or Right Triangle
 - Global unit default — on first visit every card seeds to your locale's preferred system (en-US → inches, everywhere else → millimeters)

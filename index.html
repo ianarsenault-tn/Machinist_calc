@@ -18,10 +18,24 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#081a33" />
   <style>
+    @font-face{
+      font-family: "IBM Plex Sans";
+      src: url("./assets/fonts/ibm-plex-sans-latin.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: "Roboto Slab";
+      src: url("./assets/fonts/roboto-slab-700-latin.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+    }
     :root{
       color-scheme: light dark;
-      --font-body: "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
-      --font-heading: "Rockwell", "Aptos Display", "Segoe UI", serif;
+      --font-body: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-heading: "Roboto Slab", Rockwell, Georgia, serif;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       --fs-0: clamp(0.76rem, 0.72rem + 0.2vw, 0.84rem);
       --fs-1: clamp(0.88rem, 0.84rem + 0.3vw, 0.96rem);
@@ -166,8 +180,14 @@
       background-size: 28px 28px;
       opacity: 0.5;
     }
+    body.dialog-open{ overflow: hidden; }
     a{ color: inherit; }
     button, input, select{ font: inherit; color: inherit; }
+    input,
+    select,
+    .result-primary,
+    .stat-card strong,
+    .history-item-primary{ font-variant-numeric: tabular-nums lining-nums; }
 
     .site-header{
       position: sticky;
@@ -285,7 +305,6 @@
     }
     .live-toggle-label{ letter-spacing: 0.02em; }
     @media (max-width: 560px){
-      .live-toggle-label{ display: none; }
       .live-toggle{ padding: 9px 10px; }
     }
     @media (max-width: 520px){
@@ -363,6 +382,7 @@
       color: #fff;
       font-weight: 700;
       min-height: 46px;
+      min-width: 44px;
     }
     #themeIcon{
       display: inline-block;
@@ -739,9 +759,17 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
+    .unit-token{ white-space: nowrap; }
+    .disclosure-summary-copy{ display: grid; gap: 2px; min-width: 0; }
+    .disclosure-summary-copy small{
+      color: var(--muted);
+      font-size: var(--fs-0);
+      font-weight: 600;
+      line-height: 1.35;
+    }
     .copy-btn{
       flex-shrink: 0;
-      min-height: 42px;
+      min-height: 44px;
       padding: 10px 14px;
       border-radius: 999px;
       border-color: var(--border-strong);
@@ -830,7 +858,7 @@
       border: 1px solid var(--border);
       background: color-mix(in srgb, var(--panel-strong) 60%, transparent);
       font-size: var(--fs-1); font-weight: 700; color: var(--muted);
-      cursor: pointer; user-select: none; min-height: 38px;
+      cursor: pointer; user-select: none; min-height: 44px;
     }
     .inline-check input{ accent-color: var(--accent); width: 16px; height: 16px; }
     .inline-check.is-checked{
@@ -867,6 +895,19 @@
       button{ font-size: 16px; }
     }
 
+    @media (max-width: 1100px){
+      .site-header{ padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: 12px; }
+      .header-wrap{ align-items: center; }
+      .brand-mark{ width: 72px; height: 72px; }
+      .brand-lockup h1{ font-size: clamp(1.7rem, 3vw, 2.1rem); }
+      .brand-lockup p{ max-width: 460px; }
+      .toolbar{ gap: 8px; }
+      .toolbar .status-pill,
+      .view-toggle-btn{ display: none; }
+      #workspaceLabel{ display: none; }
+      .toggle-btn,
+      .live-toggle{ padding-inline: 12px; }
+    }
     @media (max-width: 1060px){
       .tool-card[data-tool="thread"],
       .tool-card[data-tool="mow"],
@@ -925,10 +966,17 @@
       }
       .brand-lockup h1{ font-size: clamp(1.25rem, 5vw, 1.55rem); margin-bottom: 2px; }
       .brand-lockup p{ font-size: var(--fs-0); }
-      .toggle-btn{ padding: 9px 12px; min-height: 40px; gap: 6px; }
+      .toggle-btn{ padding: 9px 11px; min-height: 44px; min-width: 44px; gap: 6px; }
       #themeLabel{ display: none; }
       .action-row{ display: grid; grid-template-columns: 1fr auto; }
       .result-head{ flex-direction: column; }
+    }
+    @media (max-width: 340px){
+      .header-wrap{ flex-direction: column; align-items: stretch; gap: 6px; }
+      .brand-row{ gap: 8px; }
+      .brand-mark{ width: 36px; height: 36px; }
+      .brand-lockup h1{ font-size: 1.08rem; line-height: 1; margin: 0; white-space: nowrap; }
+      .toolbar{ width: 100%; justify-content: flex-end; gap: 6px; }
     }
     @media (prefers-reduced-motion: reduce){
       html{ scroll-behavior: auto; }
@@ -1121,7 +1169,7 @@
     /* ── Print button ── */
     .print-btn{
       appearance: none;
-      min-height: 42px;
+      min-height: 44px;
       padding: 10px 14px;
       border-radius: 999px;
       border: 1px solid var(--border-strong);
@@ -1167,7 +1215,7 @@
       padding: 10px 14px; border-radius: 999px;
       border: 1px solid var(--border); background: transparent;
       font: inherit; font-size: var(--fs-0); font-weight: 800;
-      color: var(--muted); cursor: pointer; text-align: left; appearance: none;
+      color: var(--muted); cursor: pointer; text-align: left; appearance: none; min-height: 44px;
       transition: background var(--transition-fast), border-color var(--transition-fast);
     }
     .history-toggle-btn:hover{ background: var(--panel-muted); }
@@ -1187,7 +1235,7 @@
     .history-section.open .history-list{ max-height: 9999px; }
     .history-item-btn{
       display: grid; grid-template-columns: 1fr auto; gap: 4px 10px;
-      align-items: center; width: 100%; padding: 10px 12px;
+      align-items: center; width: 100%; min-height: 44px; padding: 10px 12px;
       border-radius: var(--radius-sm); border: 1px solid var(--border);
       background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
       font: inherit; font-size: var(--fs-0); text-align: left;
@@ -1201,7 +1249,7 @@
 
     /* ── Share button ── */
     .share-btn{
-      appearance: none; min-height: 42px; padding: 10px 14px;
+      appearance: none; min-height: 44px; padding: 10px 14px;
       border-radius: 999px; border: 1px solid var(--border-strong);
       background: var(--panel-strong); font: inherit; font-size: var(--fs-1);
       font-weight: 800; color: var(--muted); cursor: pointer;
@@ -1215,7 +1263,7 @@
     .crosslink-row{ margin-top: 2px; }
     .crosslink-btn{
       appearance: none; display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 14px; min-height: 38px; border-radius: 999px;
+      padding: 8px 14px; min-height: 44px; border-radius: 999px;
       border: 1px solid var(--border); background: transparent;
       font: inherit; font-size: var(--fs-0); font-weight: 800;
       color: var(--accent-strong); cursor: pointer;
@@ -1229,7 +1277,7 @@
     .history-hdr .history-toggle-btn{ flex: 1; }
     .hist-clear-btn{
       appearance: none; flex-shrink: 0;
-      padding: 6px 12px; min-height: 36px; border-radius: 999px;
+      padding: 6px 12px; min-height: 44px; border-radius: 999px;
       border: 1px solid var(--border); background: transparent;
       font: inherit; font-size: var(--fs-0); font-weight: 800;
       color: var(--muted); cursor: pointer;
@@ -1270,6 +1318,11 @@
     .disclosure-content.field-grid{ display: grid; }
 
     .mobile-tool-picker{ display: none; width: 100%; min-height: 46px; }
+    @media (max-width: 1080px){
+      .section-nav-wrap{ overflow: visible; }
+      .mobile-tool-picker{ display: block; }
+      .section-nav-wrap .nav-link{ display: none; }
+    }
     .status-pill{
       display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 7px 11px;
       border: 1px solid var(--border-strong); border-radius: 999px;
@@ -1281,10 +1334,11 @@
     .install-btn[hidden]{ display: none; }
 
     dialog.workspace-dialog{
-      width: min(980px, calc(100vw - 28px)); max-height: min(88vh, 900px); padding: 0;
+      width: min(980px, calc(100vw - 28px)); height: min(88vh, 900px); max-height: min(88vh, 900px); padding: 0;
       border: 1px solid var(--border-strong); border-radius: var(--radius);
-      background: var(--panel-strong); color: var(--text); box-shadow: 0 32px 90px rgba(0,0,0,0.35);
+      background: var(--panel-strong); color: var(--text); box-shadow: 0 32px 90px rgba(0,0,0,0.35); overflow: hidden;
     }
+    dialog.workspace-dialog[open]{ display: grid; grid-template-rows: auto minmax(0, 1fr); }
     dialog.workspace-dialog::backdrop{ background: rgba(1, 8, 18, 0.68); backdrop-filter: blur(5px); }
     .dialog-head{
       position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -1292,18 +1346,35 @@
     }
     .dialog-head h2{ margin: 0; font-family: var(--font-heading); }
     .dialog-close{ min-width: 44px; min-height: 44px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: inherit; cursor: pointer; font: inherit; }
-    .dialog-body{ display: grid; gap: 18px; padding: 20px; }
-    .workspace-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .dialog-body{ min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .workspace-tabs{
+      position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; overflow-x: auto;
+      padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--panel-strong);
+      scrollbar-width: none;
+    }
+    .workspace-tabs::-webkit-scrollbar{ display: none; }
+    .workspace-tab{
+      appearance: none; min-height: 44px; padding: 9px 14px; white-space: nowrap;
+      border: 1px solid var(--border); border-radius: 999px; background: var(--panel-muted);
+      color: var(--muted); font: inherit; font-size: var(--fs-1); font-weight: 800; cursor: pointer;
+    }
+    .workspace-tab[aria-selected="true"]{
+      border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
+      background: var(--accent-soft); color: var(--accent-strong);
+    }
+    .workspace-tab:focus-visible{ outline: none; box-shadow: var(--focus-ring); }
+    .workspace-grid{ display: grid; grid-template-columns: 1fr; gap: 16px; padding: 20px; }
     .workspace-card{ display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--panel-muted); }
+    .workspace-card[hidden]{ display: none; }
     .workspace-card h3{ margin: 0; font-size: var(--fs-2); }
-    .workspace-card.full{ grid-column: 1 / -1; }
+    .workspace-card.full{ grid-column: auto; }
     .library-list{ display: grid; gap: 8px; max-height: 220px; overflow: auto; }
     .library-item{ display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel-strong); }
     .library-item-copy{ min-width: 0; }
     .library-item-copy strong, .library-item-copy span{ display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .library-item-copy span{ color: var(--muted); font-size: var(--fs-0); }
     .library-actions{ display: flex; gap: 6px; flex-shrink: 0; }
-    .mini-btn{ min-height: 36px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--accent-strong); font: inherit; font-size: var(--fs-0); font-weight: 800; cursor: pointer; }
+    .mini-btn{ min-height: 44px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--accent-strong); font: inherit; font-size: var(--fs-0); font-weight: 800; cursor: pointer; }
     .mini-btn.danger{ color: var(--warning); }
 
     .provenance-card{ display: grid; gap: 6px; padding: 12px 14px; border-left: 4px solid var(--accent); background: var(--panel-muted); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
@@ -1320,7 +1391,7 @@
       .header-wrap{ gap: 8px; }
       .toolbar{ gap: 6px; }
       .toolbar .status-pill{ display: none; }
-      #workspaceLabel, #installLabel, .live-toggle-label{ display: none; }
+      #workspaceLabel, #installLabel{ display: none; }
       .brand-mark{ width: 42px; height: 42px; }
       .site-header{ padding-top: calc(env(safe-area-inset-top, 0px) + 7px); padding-bottom: 7px; }
       .section-nav{ padding-top: 8px; padding-bottom: 8px; }
@@ -1331,8 +1402,8 @@
       .tool-title span{ display: none; }
       .tool-pill{ padding: 6px 9px; }
       .tool-form{ gap: 14px; padding-top: 14px; }
-      .workspace-grid{ grid-template-columns: 1fr; }
-      .workspace-card.full{ grid-column: auto; }
+      .workspace-tabs{ padding-inline: 14px; }
+      .workspace-grid{ padding: 14px; }
       .stack-row{ grid-template-columns: 1fr 1fr; }
       .stack-row .mini-btn{ grid-column: 1 / -1; }
       .result-shell.has-result{
@@ -1345,8 +1416,8 @@
       .result-shell.has-result.expanded .result-stats,
       .result-shell.has-result.expanded .result-details{ display: grid; }
       .result-shell.has-result .result-detail-toggle{
-        display: block; width: 100%; border: 0; background: transparent; color: var(--accent-strong);
-        font: inherit; font-size: 0.78rem; font-weight: 800; text-align: left; cursor: pointer; padding: 0;
+        display: flex; align-items: center; width: 100%; min-height: 44px; border: 0; background: transparent; color: var(--accent-strong);
+        font: inherit; font-size: 0.78rem; font-weight: 800; text-align: left; cursor: pointer; padding: 10px 0;
       }
     }
   </style>
@@ -1369,7 +1440,7 @@
         <button class="toggle-btn" id="workspaceBtn" type="button" aria-label="Open shop workspace"><span aria-hidden="true">⚙</span> <span id="workspaceLabel">Shop setup</span></button>
         <button class="toggle-btn view-toggle-btn" id="viewModeToggle" type="button" aria-pressed="false" title="Switch between single-panel focus view and multi-panel grid"><span class="view-toggle-icon" aria-hidden="true">▦</span> <span id="viewModeLabel">Multi-panel</span></button>
         <label class="live-toggle" title="Recalculate automatically as you type">
-          <input type="checkbox" id="liveCalcToggle" />
+          <input type="checkbox" id="liveCalcToggle" aria-label="Live calculation" />
           <span class="live-toggle-dot" aria-hidden="true"></span>
           <span class="live-toggle-label">Live</span>
         </label>
@@ -2010,50 +2081,61 @@
               </div>
             </div>
 
-            <div class="field-grid three">
+            <div class="field-grid two">
               <div class="field">
-                <label for="sfDiameter">Tool diameter</label>
+                <label for="sfDiameter">Tool diameter (<span class="unit-token" id="sfDiameterUnit">mm</span>)</label>
                 <input id="sfDiameter" type="text" inputmode="decimal" placeholder="6 or 3/8" />
               </div>
               <div class="field">
                 <label for="sfFlutes">Number of flutes</label>
                 <input id="sfFlutes" type="number" inputmode="decimal" step="1" min="1" value="2" />
               </div>
-              <div class="field">
-                <label for="sfSpeed"><span id="sfSpeedLabel">Surface speed (SMM)</span></label>
-                <input id="sfSpeed" type="number" inputmode="decimal" step="0.1" placeholder="auto from material" />
-              </div>
             </div>
 
-            <div class="field-grid three">
-              <div class="field">
-                <label for="sfChipLoad">Chip load per tooth</label>
-                <input id="sfChipLoad" type="text" inputmode="decimal" placeholder="auto from material" />
-              </div>
-              <div class="field">
-                <label for="sfWoc">Width of cut (optional)</label>
-                <input id="sfWoc" type="text" inputmode="decimal" placeholder="for MRR" />
-              </div>
-              <div class="field">
-                <label for="sfDoc">Depth of cut (optional)</label>
-                <input id="sfDoc" type="text" inputmode="decimal" placeholder="for MRR" />
-              </div>
-            </div>
-            <div class="row-hint">Leave surface speed and chip load blank to use the material/tool-type defaults. Enter WOC and DOC to estimate material removal rate.</div>
-
-            <div class="quick-pick-group" aria-label="Common operation presets">
-              <div class="quick-pick-stack">
-                <span>Operation presets</span>
-                <div class="chip-row">
-                  <button class="chip-btn" type="button" data-feed-preset="slot">Slotting (full width)</button>
-                  <button class="chip-btn" type="button" data-feed-preset="profile">Profiling (30% radial)</button>
-                  <button class="chip-btn" type="button" data-feed-preset="finish">Finishing (10% radial)</button>
-                  <button class="chip-btn" type="button" data-feed-preset="drill">Drilling (peck)</button>
+            <details class="progressive-disclosure" id="sfAdvancedOptions">
+              <summary>
+                <span class="disclosure-summary-copy">
+                  <span>Overrides, MRR &amp; operation presets</span>
+                  <small id="sfAutoSummary">Automatic starting values are active.</small>
+                </span>
+              </summary>
+              <div class="disclosure-content">
+                <div class="field-grid two">
+                  <div class="field">
+                    <label for="sfSpeed"><span id="sfSpeedLabel">Surface speed (SMM)</span></label>
+                    <input id="sfSpeed" type="number" inputmode="decimal" step="0.1" placeholder="auto from material" />
+                  </div>
+                  <div class="field">
+                    <label for="sfChipLoad">Chip load per tooth (<span class="unit-token" id="sfChipUnit">mm/tooth</span>)</label>
+                    <input id="sfChipLoad" type="text" inputmode="decimal" placeholder="auto from material" />
+                  </div>
+                </div>
+                <div class="field-grid two">
+                  <div class="field">
+                    <label for="sfWoc">Width of cut (<span class="unit-token" id="sfWocUnit">mm</span>, optional)</label>
+                    <input id="sfWoc" type="text" inputmode="decimal" placeholder="for MRR" />
+                  </div>
+                  <div class="field">
+                    <label for="sfDoc">Depth of cut (<span class="unit-token" id="sfDocUnit">mm</span>, optional)</label>
+                    <input id="sfDoc" type="text" inputmode="decimal" placeholder="for MRR" />
+                  </div>
+                </div>
+                <div class="row-hint">Leave surface speed and chip load blank to use the automatic material/tool starting values. Enter WOC and DOC only when you need material removal rate.</div>
+                <div class="quick-pick-group" aria-label="Common operation presets">
+                  <div class="quick-pick-stack">
+                    <span>Operation presets</span>
+                    <div class="chip-row">
+                      <button class="chip-btn" type="button" data-feed-preset="slot">Slotting (full width)</button>
+                      <button class="chip-btn" type="button" data-feed-preset="profile">Profiling (30% radial)</button>
+                      <button class="chip-btn" type="button" data-feed-preset="finish">Finishing (10% radial)</button>
+                      <button class="chip-btn" type="button" data-feed-preset="drill">Drilling (peck)</button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </details>
 
-            <div class="action-row">
+            <div class="action-row feed-primary-actions">
               <button class="action-btn primary" type="submit">Calculate speeds &amp; feeds</button>
               <button class="action-btn secondary" id="btnSfClear" type="button">Clear</button>
             </div>
@@ -2321,8 +2403,15 @@
   <dialog class="workspace-dialog" id="workspaceDialog" aria-labelledby="workspaceTitle">
     <div class="dialog-head"><div><h2 id="workspaceTitle">Shop workspace</h2><div class="hint">Machine limits, reusable tools/materials, and saved job setups stay on this device.</div></div><button class="dialog-close" id="workspaceClose" type="button" aria-label="Close shop workspace">×</button></div>
     <div class="dialog-body">
+      <div class="workspace-tabs" role="tablist" aria-label="Shop workspace sections">
+        <button class="workspace-tab" id="workspaceTab-machines" type="button" role="tab" aria-selected="true" aria-controls="workspacePanel-machines" data-workspace-tab="machines">Machines</button>
+        <button class="workspace-tab" id="workspaceTab-tools" type="button" role="tab" aria-selected="false" aria-controls="workspacePanel-tools" data-workspace-tab="tools" tabindex="-1">Tools</button>
+        <button class="workspace-tab" id="workspaceTab-materials" type="button" role="tab" aria-selected="false" aria-controls="workspacePanel-materials" data-workspace-tab="materials" tabindex="-1">Materials</button>
+        <button class="workspace-tab" id="workspaceTab-job" type="button" role="tab" aria-selected="false" aria-controls="workspacePanel-job" data-workspace-tab="job" tabindex="-1">Current job</button>
+        <button class="workspace-tab" id="workspaceTab-status" type="button" role="tab" aria-selected="false" aria-controls="workspacePanel-status" data-workspace-tab="status" tabindex="-1">Status &amp; data</button>
+      </div>
       <div class="workspace-grid">
-        <section class="workspace-card">
+        <section class="workspace-card" id="workspacePanel-machines" role="tabpanel" aria-labelledby="workspaceTab-machines" data-workspace-panel="machines">
           <h3>Machine profiles</h3>
           <form id="machineProfileForm" class="field-group">
             <div class="field-grid two"><div class="field"><label for="machineName">Profile name</label><input id="machineName" required placeholder="Haas VF-2" /></div><div class="field"><label for="machineUnits">Preferred units</label><select id="machineUnits"><option value="in">Inches</option><option value="mm">Millimeters</option></select></div></div>
@@ -2333,7 +2422,7 @@
           <div class="library-list" id="machineProfileList"></div>
         </section>
 
-        <section class="workspace-card">
+        <section class="workspace-card" id="workspacePanel-tools" role="tabpanel" aria-labelledby="workspaceTab-tools" data-workspace-panel="tools" hidden>
           <h3>Tool library</h3>
           <form id="toolProfileForm" class="field-group">
             <div class="field-grid two"><div class="field"><label for="toolProfileName">Tool name</label><input id="toolProfileName" required placeholder="1/2 carbide 4-flute" /></div><div class="field"><label for="toolProfileType">Tool type</label><select id="toolProfileType"><option value="hss">HSS</option><option value="carbide" selected>Carbide</option><option value="coated">Coated carbide</option></select></div></div>
@@ -2344,7 +2433,7 @@
           <div class="library-list" id="toolProfileList"></div>
         </section>
 
-        <section class="workspace-card">
+        <section class="workspace-card" id="workspacePanel-materials" role="tabpanel" aria-labelledby="workspaceTab-materials" data-workspace-panel="materials" hidden>
           <h3>Material library</h3>
           <form id="materialProfileForm" class="field-group">
             <div class="field"><label for="materialProfileName">Material name</label><input id="materialProfileName" required placeholder="A36 plate" /></div>
@@ -2354,7 +2443,7 @@
           <div class="library-list" id="materialProfileList"></div>
         </section>
 
-        <section class="workspace-card">
+        <section class="workspace-card" id="workspacePanel-job" role="tabpanel" aria-labelledby="workspaceTab-job" data-workspace-panel="job" hidden>
           <h3>Current job</h3>
           <div class="field-grid two"><div class="field"><label for="jobName">Job / setup name</label><input id="jobName" placeholder="Op 20 bolt pattern" /></div><div class="field"><label for="jobPartNumber">Part number</label><input id="jobPartNumber" placeholder="PN-1042" /></div></div>
           <div class="field"><label for="jobNotes">Notes</label><textarea id="jobNotes" rows="3" placeholder="Datum, stock, setup, inspection notes"></textarea></div>
@@ -2362,7 +2451,7 @@
           <div class="library-list" id="jobSetupList"></div>
         </section>
 
-        <section class="workspace-card full">
+        <section class="workspace-card full" id="workspacePanel-status" role="tabpanel" aria-labelledby="workspaceTab-status" data-workspace-panel="status" hidden>
           <h3>App status and references</h3>
           <div class="field-grid three"><div><div class="result-label">Core version</div><strong id="coreVersionLabel">—</strong></div><div><div class="result-label">Connection</div><strong id="dialogNetworkStatus">—</strong></div><div><div class="result-label">Offline cache</div><strong id="offlineCacheStatus">Checking…</strong></div></div>
           <div class="provenance-card"><strong>Reference boundary</strong><span>Standard tables and built-in cutting values are practical references. Verify acceptance dimensions against the current published standard and cutting data against the tool manufacturer.</span></div>
@@ -2654,9 +2743,46 @@
 
     (function initWorkspaceDialog(){
       const dialog = document.getElementById("workspaceDialog");
-      document.getElementById("workspaceBtn").addEventListener("click", () => { refreshWorkspaceUI(); dialog.showModal(); });
+      const tabs = [...dialog.querySelectorAll("[data-workspace-tab]")];
+      const panels = [...dialog.querySelectorAll("[data-workspace-panel]")];
+      let activeWorkspaceTab = "machines";
+      function setWorkspaceTab(name, { focus = false } = {}){
+        if (!tabs.some((tab) => tab.dataset.workspaceTab === name)) return;
+        activeWorkspaceTab = name;
+        tabs.forEach((tab) => {
+          const active = tab.dataset.workspaceTab === name;
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+          if (active){
+            tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+            if (focus) tab.focus();
+          }
+        });
+        panels.forEach((panel) => { panel.hidden = panel.dataset.workspacePanel !== name; });
+        dialog.querySelector(".dialog-body")?.scrollTo({ top: 0, behavior: "auto" });
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => setWorkspaceTab(tab.dataset.workspaceTab));
+        tab.addEventListener("keydown", (event) => {
+          let nextIndex = null;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+          if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === "Home") nextIndex = 0;
+          if (event.key === "End") nextIndex = tabs.length - 1;
+          if (nextIndex === null) return;
+          event.preventDefault();
+          setWorkspaceTab(tabs[nextIndex].dataset.workspaceTab, { focus: true });
+        });
+      });
+      document.getElementById("workspaceBtn").addEventListener("click", () => {
+        refreshWorkspaceUI();
+        document.body.classList.add("dialog-open");
+        dialog.showModal();
+        setWorkspaceTab(activeWorkspaceTab);
+      });
       document.getElementById("workspaceClose").addEventListener("click", () => dialog.close());
       dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+      dialog.addEventListener("close", () => document.body.classList.remove("dialog-open"));
 
       document.getElementById("machineProfileForm").addEventListener("submit", (event) => {
         event.preventDefault();
@@ -4608,10 +4734,20 @@
     const sfDoc = document.getElementById("sfDoc");
     const sfWarn = document.getElementById("sfWarn");
     const sfSpeedLabel = document.getElementById("sfSpeedLabel");
+    const sfDiameterUnit = document.getElementById("sfDiameterUnit");
+    const sfChipUnit = document.getElementById("sfChipUnit");
+    const sfWocUnit = document.getElementById("sfWocUnit");
+    const sfDocUnit = document.getElementById("sfDocUnit");
+    const sfAutoSummary = document.getElementById("sfAutoSummary");
 
     function sfSyncUnitLabels(){
       const isIn = sfUnits.value === "in";
       sfSpeedLabel.textContent = isIn ? "Surface speed (SFM)" : "Surface speed (SMM)";
+      const dimensionUnit = isIn ? "in" : "mm";
+      sfDiameterUnit.textContent = dimensionUnit;
+      sfChipUnit.textContent = `${dimensionUnit}/tooth`;
+      sfWocUnit.textContent = dimensionUnit;
+      sfDocUnit.textContent = dimensionUnit;
       // Update chip load + diameter placeholders (hint only)
       sfDiameter.placeholder = isIn ? "0.375" : "6";
       const defaults = getSfDefaults();
@@ -4620,6 +4756,15 @@
         sfChipLoad.placeholder = isIn ? chip.toFixed(4) : chip.toFixed(3);
         const speed = isIn ? defaults.sfm : defaults.sfm * 0.3048;
         sfSpeed.placeholder = isIn ? String(Math.round(defaults.sfm)) : speed.toFixed(1);
+        const speedCopy = sfSpeed.value.trim() ? `${sfSpeed.value.trim()} ${isIn ? "SFM" : "SMM"} override` : `Auto ${sfSpeed.placeholder} ${isIn ? "SFM" : "SMM"}`;
+        const chipCopy = sfChipLoad.value.trim() ? `${sfChipLoad.value.trim()} ${dimensionUnit}/tooth override` : `Auto ${sfChipLoad.placeholder} ${dimensionUnit}/tooth`;
+        sfAutoSummary.textContent = `${speedCopy} · ${chipCopy}`;
+      } else {
+        sfSpeed.placeholder = "required for custom material";
+        sfChipLoad.placeholder = "required for custom material";
+        sfAutoSummary.textContent = sfSpeed.value.trim() && sfChipLoad.value.trim()
+          ? "Using custom speed and chip-load overrides."
+          : "Custom material requires speed and chip-load overrides.";
       }
     }
     function getSfDefaults(){
@@ -4639,6 +4784,8 @@
     sfMaterial.addEventListener("change", sfSyncUnitLabels);
     sfTool.addEventListener("change", sfSyncUnitLabels);
     sfOperation.addEventListener("change", sfSyncUnitLabels);
+    sfSpeed.addEventListener("input", sfSyncUnitLabels);
+    sfChipLoad.addEventListener("input", sfSyncUnitLabels);
     sfSyncUnitLabels();
 
     // Operation presets tweak WOC/DOC expectations
@@ -4677,6 +4824,7 @@
             }
             break;
         }
+        sfSyncUnitLabels();
         requestFormSubmit(feedsForm);
       });
     });

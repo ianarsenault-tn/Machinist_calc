@@ -57,6 +57,32 @@ test("service worker precache is complete and repository-relative", async () => 
   assert.ok(precache.includes("./index.html"));
   assert.ok(precache.includes("./calc-core.js"));
   assert.ok(precache.includes("./manifest.json"));
+  assert.ok(precache.includes("./assets/fonts/ibm-plex-sans-latin.woff2"));
+  assert.ok(precache.includes("./assets/fonts/roboto-slab-700-latin.woff2"));
+});
+
+test("responsive UI contracts keep primary mobile workflows discoverable", async () => {
+  const html = await read("index.html");
+
+  assert.match(html, /@font-face[\s\S]*ibm-plex-sans-latin\.woff2/);
+  assert.match(html, /@font-face[\s\S]*roboto-slab-700-latin\.woff2/);
+  assert.match(html, /id="liveCalcToggle" aria-label="Live calculation"/);
+  assert.match(html, /id="sfAdvancedOptions"/);
+  assert.match(html, /id="sfAutoSummary"/);
+  assert.match(html, /role="tablist" aria-label="Shop workspace sections"/);
+  assert.equal((html.match(/data-workspace-tab=/g) || []).length, 5);
+  assert.equal((html.match(/data-workspace-panel=/g) || []).length, 5);
+});
+
+test("application and offline cache versions stay synchronized", async () => {
+  const packageJson = JSON.parse(await read("package.json"));
+  const core = await read("calc-core.js");
+  const serviceWorker = await read("sw.js");
+  const coreVersion = core.match(/CORE_VERSION = "([^"]+)"/)?.[1];
+  const cacheVersion = serviceWorker.match(/APP_VERSION = "([^"]+)"/)?.[1];
+
+  assert.equal(coreVersion, packageJson.version);
+  assert.equal(cacheVersion, packageJson.version);
 });
 
 test("Pages bypasses Jekyll processing", async () => {

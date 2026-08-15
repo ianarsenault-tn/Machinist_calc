@@ -1,6 +1,6 @@
-const APP_VERSION = "3.0.0";
+const APP_VERSION = "3.1.0";
 const CACHE = `marcos-calc-v${APP_VERSION}`;
-const PRECACHE = ["./", "./index.html", "./calc-core.js", "./favicon.png", "./manifest.json", "./tests.html"];
+const PRECACHE = ["./", "./index.html", "./calc-core.js", "./favicon.png", "./manifest.json", "./tests.html", "./assets/fonts/ibm-plex-sans-latin.woff2", "./assets/fonts/roboto-slab-700-latin.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
