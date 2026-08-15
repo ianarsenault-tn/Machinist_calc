@@ -2,6 +2,10 @@
 
 A responsive, offline-capable machinist calculator for threads, inspection, bolt circles, machine-aware speeds and feeds, and advanced setup math.
 
+**Live app:** [ianarsenault-tn.github.io/Machinist_calc](https://ianarsenault-tn.github.io/Machinist_calc/)
+
+**Current release:** 3.1.0
+
 ## Overview
 
 Marcos's Calculator is a lightweight shop utility. It is designed to open fast, work well on desktop and mobile browsers, and make common machining calculations easier to read and faster to enter. The app installs to your phone or desktop as a Progressive Web App and works fully offline after the first load — useful on a shop floor with no WiFi.
@@ -16,6 +20,17 @@ The app includes tools for:
 - Chamfer depth and three-point circle solving
 - Tapping feed, thread milling, reamer allowance, sine bars, tapers, ball-nose scallops, and tolerance stacks
 - Reusable machine, tool, material, and job/setup profiles stored on the device
+
+## What's New in 3.1.0
+
+- Reworked responsive header and calculator navigation for desktop, tablet, and narrow mobile screens down to 320 px
+- Increased interactive controls to a minimum 44 px touch target where practical
+- Kept the **Live** control visible on mobile and improved its accessible labeling
+- Simplified Speeds & Feeds so the primary inputs and Calculate action appear first; overrides, MRR inputs, and operation presets now use progressive disclosure
+- Added explicit inch/millimeter labels and a live summary of automatic speed and chip-load defaults
+- Reorganized Shop setup into keyboard-accessible tabs for machines, tools, materials, the current job, and app status/data
+- Added self-hosted IBM Plex Sans body text and Roboto Slab headings for more consistent screen and offline rendering
+- Preserved the existing light and dark color palettes
 
 ## Highlights
 
@@ -176,6 +191,8 @@ Outputs:
 - **Finishing** — 10% radial engagement at 50% of diameter depth
 - **Drilling (peck)** — full-diameter engagement and drilling-specific speed/chip factors
 
+Surface-speed and chip-load overrides, WOC/DOC inputs, and operation presets are grouped under **Overrides, MRR & operation presets**. The collapsed summary shows the automatic values currently selected from the material, tool, operation, and unit choices.
+
 Notes:
 
 - Material and tool-type defaults are conservative shop starting points, not tool-maker data
@@ -201,7 +218,7 @@ The Advanced picker includes:
 
 ### Shop Workspace
 
-Open **Shop setup** to save machine profiles, reusable tools, custom materials, and current job setups. Machine profiles carry preferred units, maximum RPM/feed, controller, work offset, and safe Z. Job setups snapshot every calculator form, including tolerance-stack rows. Workspace data stays in browser storage and can be exported/imported as JSON.
+Open **Shop setup** to save machine profiles, reusable tools, custom materials, and current job setups. The workspace is divided into **Machines**, **Tools**, **Materials**, **Current job**, and **Status & data** tabs, with arrow-key, Home, and End navigation. Machine profiles carry preferred units, maximum RPM/feed, controller, work offset, and safe Z. Job setups snapshot every calculator form, including tolerance-stack rows. Workspace data stays in browser storage and can be exported/imported as JSON.
 
 ## Desktop View Modes
 
@@ -267,6 +284,11 @@ The service worker uses network-first navigation with an exact-page cache and of
 project-root/
 ├── .github/workflows/quality.yml
 ├── .nojekyll
+├── assets/
+│   └── fonts/
+│       ├── ibm-plex-sans-latin.woff2
+│       ├── roboto-slab-700-latin.woff2
+│       └── font license files
 ├── calc-core.js
 ├── core.test.mjs
 ├── favicon.png
@@ -282,6 +304,8 @@ project-root/
 
 ### File Notes
 
+- `assets/fonts/`
+  - Self-hosted IBM Plex Sans and Roboto Slab webfonts plus their license texts; both fonts are included in the offline precache
 - `favicon.png`
   - Logo asset used for the browser favicon, touch icon, social preview image, and visible header branding
 - `index.html`
@@ -544,8 +568,9 @@ All application assets, module imports, manifest URLs, shortcuts, and service-wo
 
 The application is built with:
 
-- Semantic HTML forms with accessible tool headings and ARIA expand/collapse attributes
-- Responsive CSS with custom property theming and CSS `:has()` progressive enhancement
+- Semantic HTML forms with accessible tool headings, ARIA expand/collapse attributes, and keyboard-operable workspace tabs
+- Responsive CSS with 44 px touch targets, custom property theming, and CSS `:has()` progressive enhancement
+- Self-hosted IBM Plex Sans and Roboto Slab WOFF2 fonts with system fallbacks and tabular numerals for calculated values
 - Vanilla JavaScript browser integration with a shared ES-module calculation core
 - Web Share API with clipboard fallback
 - View Transitions API for smooth tool-switch animations when supported
