@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>Marcos's Calculator — Tests</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="./favicon.png" type="image/png" />
   <style>
     body {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -41,7 +42,8 @@
   <div class="summary" id="summary">Running…</div>
   <div id="results"></div>
 
-<script>
+<script type="module">
+import * as Core from "./calc-core.js";
 // Tiny assertion harness. No framework — just `suite()` and `test()` with
 // the matchers we care about (`equal`, `near`, `ok`).
 (function(){
@@ -95,9 +97,7 @@
   };
 })();
 
-// ───── Calculator functions copied inline for isolated testing ─────
-// These mirror the implementations in index.html. When the main file's
-// formulas change, update these stubs too (or extract to a shared module).
+// ───── Thin adapters around the same core module used by the application ─────
 
 const SQRT3 = Math.sqrt(3);
 const SQRT3_OVER_2 = SQRT3 / 2;
@@ -119,94 +119,53 @@ function parseFraction(s){
   return Number(s);
 }
 function parseThreadSpec(input){
-  let normalized = input.trim().toLowerCase().replace(/×/g, "x");
-  normalized = normalized.replace(/\s+(un[cef]{1,2}|un)\s*$/i, "");
-  normalized = normalized.replace(/\s+/g, "");
-  if (!normalized) return null;
-  const m1 = normalized.match(/^#?(\d{1,2})-(\d+(?:\.\d+)?)$/);
-  if (m1){
-    const n = Number(m1[1]); const tpi = Number(m1[2]);
-    const d = MACHINE_SCREW_DIAMETERS[n];
-    if (d && tpi > 0) return { system: "un", major: d, tpi, label: `#${n}-${tpi}` };
-  }
-  const m2 = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
-  if (m2) return { system: "metric", major: Number(m2[1]), pitch: Number(m2[2]), label: `M${m2[1]}x${m2[2]}` };
-  const m3 = normalized.match(/^m(\d+(?:\.\d+)?)$/i);
-  if (m3){
-    const M = Number(m3[1]); const p = METRIC_DEFAULT_PITCH[M];
-    if (p) return { system: "metric", major: M, pitch: p, label: `M${M}x${p}` };
-  }
-  const m4 = normalized.match(/^([0-9.]+\/[0-9.]+|[0-9]+(?:\.[0-9]+)?)[-x]([0-9]+(?:\.[0-9]+)?)$/);
-  if (m4){
-    const d = parseFraction(m4[1]); const tpi = Number(m4[2]);
-    if (d > 0 && tpi > 0) return { system: "un", major: d, tpi, label: `${m4[1]}-${m4[2]}` };
-  }
-  return null;
+  return Core.parseThreadSpec(input);
 }
 
 // Tap-drill heuristic: Major − ((pct / 76.98) × Pitch)
 function tapDrillUN(majorIn, tpi, pct){
-  const pitch = 1 / tpi;
-  return majorIn - ((pct / TAP_DRILL_PERCENT_FACTOR) * pitch);
+  return Core.tapDrillByPercent(majorIn, 1 / tpi, pct);
 }
 function tapDrillMetric(majorMm, pitchMm, pct){
-  return majorMm - ((pct / TAP_DRILL_PERCENT_FACTOR) * pitchMm);
+  return Core.tapDrillByPercent(majorMm, pitchMm, pct);
 }
 
 // MOW — external: M = E + 3W − (√3/2)P
-function mowSolveMExternal(E, W, P){ return E + 3 * W - SQRT3_OVER_2 * P; }
+function mowSolveMExternal(E, W, P){ return Core.mowSolveMExternal(E, W, P); }
 // MOW — external: E = M − 3W + (√3/2)P
-function mowSolveEExternal(M, W, P){ return M - 3 * W + SQRT3_OVER_2 * P; }
+function mowSolveEExternal(M, W, P){ return Core.mowSolveEExternal(M, W, P); }
 // MOW — internal: M = E − 3W + (√3/2)P
-function mowSolveMInternal(E, W, P){ return E - 3 * W + SQRT3_OVER_2 * P; }
-function mowSolveEInternal(M, W, P){ return M + 3 * W - SQRT3_OVER_2 * P; }
+function mowSolveMInternal(E, W, P){ return Core.mowSolveMInternal(E, W, P); }
+function mowSolveEInternal(M, W, P){ return Core.mowSolveEInternal(M, W, P); }
 
 // Speeds & Feeds — inch
 function rpmFromSfm(sfm, diaIn){ return (sfm * 12) / (Math.PI * diaIn); }
 function feedIPM(rpm, flutes, chipLoad){ return rpm * flutes * chipLoad; }
 // Chip-thinning factor (radial WOC < D/2)
 function chipThinningFactor(D, WOC){
-  if (!(WOC > 0) || WOC >= D/2) return 1;
-  return Math.sqrt(D / (4 * WOC * (D - WOC)));
+  return Core.radialChipThinningFactor(D, WOC);
 }
 
 // Triangle: solve from run + rise
 function triFromRunRise(run, rise){
-  const hyp = Math.hypot(run, rise);
-  const angleRun = Math.atan2(rise, run) * 180 / Math.PI;  // angle opposite rise
-  return { hyp, angle: angleRun };
+  const result = Core.solveRightTriangle("runRise", run, rise);
+  return { hyp: result.hypotenuse, angle: result.angle };
 }
 
 // Chamfer depth
 function chamferDepth(D1, D2, includedDeg){
-  return (D2 - D1) / (2 * Math.tan(includedDeg/2 * Math.PI / 180));
+  return Core.chamferDepth(D1, D2, includedDeg);
 }
 
 // Circle through 3 points
 function circleFrom3Points(p1, p2, p3){
-  const [x1,y1] = p1, [x2,y2] = p2, [x3,y3] = p3;
-  const D = 2 * (x1*(y2-y3) + x2*(y3-y1) + x3*(y1-y2));
-  if (Math.abs(D) < 1e-9) return null;
-  const a = x1*x1 + y1*y1;
-  const b = x2*x2 + y2*y2;
-  const c = x3*x3 + y3*y3;
-  const ux = (a*(y2-y3) + b*(y3-y1) + c*(y1-y2)) / D;
-  const uy = (a*(x3-x2) + b*(x1-x3) + c*(x2-x1)) / D;
-  const r = Math.hypot(x1 - ux, y1 - uy);
-  return { x: ux, y: uy, r, d: 2*r };
+  const result = Core.circleThrough3Points(p1, p2, p3);
+  return result && { x: result.x, y: result.y, r: result.radius, d: result.diameter };
 }
 
 // Bolt circle coordinates
 function boltCircle(dia, holes, startDeg, direction){
-  const r = dia / 2;
-  const step = 360 / holes;
-  const d = direction === "cw" ? -1 : 1;
-  const out = [];
-  for (let i = 0; i < holes; i++){
-    const a = (startDeg + d * i * step) * Math.PI / 180;
-    out.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
-  }
-  return out;
+  return Core.boltCircleCoordinates(dia, holes, startDeg, direction);
 }
 
 // ───── Suites ─────
@@ -375,6 +334,62 @@ test("Basic PD for 1/4-20", () => {
 test("Basic internal minor for M8x1.25", () => {
   const minor = 8 - BASIC_INTERNAL_MINOR_FACTOR * 1.25;
   near(minor, 6.647, 0.005);
+});
+
+suite("Formatting and flexible input");
+test("Zero-decimal formatter preserves integer trailing zeros", () => {
+  equal(Core.fmt(70, 0), "70");
+  equal(Core.fmt(350, 0), "350");
+  equal(Core.fmt(1200, 0), "1200");
+});
+test("Formatter trims only decimal trailing zeros", () => {
+  equal(Core.fmt(1.2300, 4), "1.23");
+});
+test("Mixed fractions and unit suffixes parse", () => {
+  near(Core.parseDimension("1 1/4", "in"), 1.25, 1e-12);
+  near(Core.parseDimension("25.4 mm", "in"), 1, 1e-12);
+  near(Core.parseDimension('0.5 in', "mm"), 12.7, 1e-12);
+});
+
+suite("Shared speeds-and-feeds engine");
+test("Inch and metric inputs produce equivalent physical results", () => {
+  const inch = Core.calculateSpeedsFeeds({ units: "in", diameter: 0.5, flutes: 4, sfm: 400, chipLoadIn: 0.003, widthOfCut: 0.05, depthOfCut: 0.1 });
+  const metric = Core.calculateSpeedsFeeds({ units: "mm", diameter: 12.7, flutes: 4, sfm: 400, chipLoadIn: 0.003, widthOfCut: 1.27, depthOfCut: 2.54 });
+  near(metric.rpm, inch.rpm, 1e-9);
+  near(metric.feed, inch.feed * 25.4, 1e-8);
+  near(metric.mrr, inch.mrr * Math.pow(25.4, 3), 1e-5);
+});
+test("Machine RPM and feed ceilings are applied", () => {
+  const r = Core.calculateSpeedsFeeds({ units: "in", diameter: 0.5, flutes: 4, sfm: 800, chipLoadIn: 0.003, maxRpm: 2000, maxFeed: 10 });
+  equal(r.rpm, 2000);
+  equal(r.feed, 10);
+  ok(r.limitedByRpm && r.limitedByFeed);
+});
+
+suite("Advanced shop math");
+test("Tapping feed follows lead", () => {
+  const r = Core.tappingFeed({ units: "in", rpm: 500, tpi: 20 });
+  near(r.feed, 25, 1e-12);
+});
+test("Internal thread-mill centerline compensation", () => {
+  const r = Core.threadMilling({ units: "in", majorDiameter: 0.5, cutterDiameter: 0.25, rpm: 3000, flutes: 3, chipLoad: 0.001 });
+  near(r.surfaceFeed, 9, 1e-12);
+  near(r.centerlineFeed, 4.5, 1e-12);
+});
+test("Sine-bar height and inverse agree", () => {
+  const height = Core.sineBarHeight({ barLength: 5, angleDegrees: 30 });
+  near(height, 2.5, 1e-12);
+  near(Core.sineBarAngle({ barLength: 5, stackHeight: height }), 30, 1e-12);
+});
+test("Ball-nose scallop and stepover are inverses", () => {
+  const height = Core.ballNoseScallopHeight({ radius: 0.25, stepover: 0.1 });
+  near(Core.ballNoseStepover({ radius: 0.25, scallopHeight: height }), 0.1, 1e-12);
+});
+test("Tolerance stack returns worst-case and RSS ranges", () => {
+  const r = Core.toleranceStack([{ nominal: 1, tolerance: 0.005 }, { nominal: 2, tolerance: 0.01 }]);
+  near(r.nominal, 3, 1e-12);
+  near(r.worstCaseTolerance, 0.015, 1e-12);
+  near(r.rssTolerance, Math.sqrt(0.000125), 1e-12);
 });
 
 reportTotals();

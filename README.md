@@ -1,6 +1,6 @@
 # Marcos's Calculator
 
-A responsive browser-based machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, right-triangle setup math, and speeds & feeds.
+A responsive, offline-capable machinist calculator for threads, inspection, bolt circles, machine-aware speeds and feeds, and advanced setup math.
 
 ## Overview
 
@@ -13,19 +13,23 @@ The app includes tools for:
 - Bolt circle coordinate generation with hole-to-hole chord distance and optional G-code output
 - Right-triangle and offset solving
 - Speeds & feeds calculation with material and tool-type presets
+- Chamfer depth and three-point circle solving
+- Tapping feed, thread milling, reamer allowance, sine bars, tapers, ball-nose scallops, and tolerance stacks
+- Reusable machine, tool, material, and job/setup profiles stored on the device
 
 ## Highlights
 
-- Single-file app with no build step
+- Static app with no build step or production dependencies
+- Shared, testable calculation core in `calc-core.js`
 - Installable as a PWA — works offline after first load
 - Responsive layout for desktop and mobile
 - Dark and light themes (auto-matches system preference on first visit)
 - Sticky top navigation on larger screens
-- Accordion-style sections on smaller screens with per-tool expand/collapse
+- One-tool mobile workflow with a compact calculator picker and collapsible result details
 - Focus mode or Multi-panel layout toggle on desktop — see one tool at a time or all of them side by side
 - Multi-panel scroll-spy — the active nav item follows whichever card is under your gaze
 - Live auto-calculate mode — recompute on every input change
-- Keyboard shortcuts: `1`–`7` switch tools; `Ctrl`/`Cmd`+`K` focuses the thread quick-spec input; Enter calculates
+- Keyboard shortcuts: `1`–`8` switch tools; `Ctrl`/`Cmd`+`K` focuses the thread quick-spec input; Enter calculates
 - Copy buttons for key outputs
 - Share button uses the Web Share API on mobile (native share sheet) and falls back to clipboard on desktop
 - Calculation history remembers the last five results per tool
@@ -33,13 +37,18 @@ The app includes tools for:
 - Nearest stock drill suggestions plus **ANSI B94.11M and ISO 2306 standard tap-drill tables** when the size is recognized
 - ASME B1.1 2A/2B/3A/3B tolerance envelope estimate for identified Unified threads
 - Radial chip-thinning compensation in Speeds & Feeds for light radial engagements
+- Active-machine RPM/feed ceilings with clear requested-versus-limited output
+- Explicit tap-drill method selection: standards table or selected percent thread
+- Decimal, simple-fraction, mixed-fraction, and unit-suffixed dimensional inputs where applicable
 - Measurement Over Wires supports external bolt threads and internal plug-gauge (between-wires) readings
-- G-code output for bolt-circle patterns (positions, G81 drill, or G83 peck), plus **CSV and DXF export**
+- Controller/work-offset-aware G-code output for bolt-circle patterns, required preflight acknowledgment, unit conversion, safe retracts, plus **CSV and DXF export**
+- Calculation provenance cards distinguish deterministic geometry from shop starting points and machine-use templates
+- Workspace JSON export/import for backup or transfer
 - PWA update toast with a reload button when a new deploy is detected
 - App shortcuts: long-press / right-click the installed icon to jump straight into Feeds, Bolt Circle, Thread, or Right Triangle
 - Global unit default — on first visit every card seeds to your locale's preferred system (en-US → inches, everywhere else → millimeters)
 - Print button on every result panel
-- In-page test harness at `tests.html` with ~35 assertions covering the core math
+- In-page test harness at `tests.html` with 45 assertions plus a dependency-free Node test suite and GitHub Actions quality gate
 
 ## Included Calculators
 
@@ -75,6 +84,7 @@ Notes:
 - Tap drill output is intended as a practical shop estimate
 - Basic pitch diameter values shown by the app do not include class-of-fit tolerances
 - Percent thread can be set to 60, 65, 70, 75, or 80 percent using the segmented control
+- The tap-drill method is explicit: choose the standards table when available or calculate from the selected thread percentage. Recognized sizes show both for comparison.
 
 ### Measurement Over Wires
 
@@ -98,7 +108,7 @@ Use this tool to:
 - Choose clockwise or counter-clockwise layout
 - Apply a center X/Y offset from the origin
 - Copy the full coordinate list for setup sheets or CNC notes
-- Optionally emit a generic Fanuc-style G-code block for one-click paste into a controller
+- Optionally emit a controller/work-offset-aware G-code template after preflight acknowledgment
 
 Results include:
 
@@ -106,13 +116,13 @@ Results include:
 - **Chord (hole-to-hole)** — straight-line distance between adjacent holes, useful for verifying a pattern with a caliper or setting up a dividing head
 - A visual SVG preview of the bolt pattern
 
-**G-code output** — tick **Also output G-code block** to reveal depth, retract, feed, and peck-increment fields. Three modes are available:
+**G-code output** — tick **Also output G-code block** to reveal controller, work offset, safe Z, depth, retract, feed, spindle, coolant, and peck fields. Three modes are available:
 
 - **Positions only** — `G0` rapid to each hole
 - **Drill cycle (G81)** — standard peck-free drilling canned cycle
 - **Peck drill (G83)** — pecking canned cycle with `Q` increment
 
-Program units can be set to `G20` (inches), `G21` (mm), or matched to the input units automatically. Output is intended as a generic template — review work offsets, depths, and feeds before running on a machine.
+Program units can be set to `G20` (inches), `G21` (mm), or matched to the input units automatically; coordinates and motion values are converted consistently. The app will not generate the block until units, work offset/zero, and motion/tool clearance have each been acknowledged. Output remains a template: simulate, single-block, and dry-run above the part before machine use.
 
 ### Right Triangle
 
@@ -133,7 +143,7 @@ Outputs include:
 
 ### Speeds & Feeds
 
-Use this tool to get starting-point spindle RPM, feed rate, and material removal rate for milling and drilling operations.
+Use this tool to get starting-point spindle RPM, feed rate, and material removal rate for milling, drilling, and reaming operations.
 
 Inputs:
 
@@ -144,6 +154,8 @@ Inputs:
 - Optional surface speed override (SFM or SMM)
 - Optional chip load per tooth override
 - Optional width of cut (WOC) and depth of cut (DOC) for material removal rate
+- Optional saved tool and material-library records
+- Active machine profile with maximum spindle RPM and feed rate
 
 Outputs:
 
@@ -152,6 +164,7 @@ Outputs:
 - Surface speed used (after any override)
 - Chip load per tooth used (auto-scaled by tool diameter)
 - Material removal rate (MRR) when WOC and DOC are both supplied
+- Requested values and applied machine ceilings whenever a result is limited
 - A formula snapshot and note lines describing which defaults or overrides were applied
 
 **Operation presets** — quick chips populate WOC and DOC for common cuts:
@@ -159,7 +172,7 @@ Outputs:
 - **Slotting** — full-width slot at 50% of diameter depth
 - **Profiling** — 30% radial engagement at full diameter depth
 - **Finishing** — 10% radial engagement at 50% of diameter depth
-- **Drilling (peck)** — full-diameter engagement and a reduced chip-load override
+- **Drilling (peck)** — full-diameter engagement and drilling-specific speed/chip factors
 
 Notes:
 
@@ -167,14 +180,35 @@ Notes:
 - Chip load is scaled by tool diameter against a 3/8 in reference (clamped between 0.25× and 1.5×) so small-diameter cutters get sensibly smaller per-tooth loads
 - Custom material requires explicit surface speed and chip load
 
+### Chamfer and Circle Geometry
+
+- **Chamfer / Countersink Depth** solves axial depth from the small diameter, large diameter, and included angle.
+- **Circle Through 3 Points** returns center, radius, and diameter and rejects collinear points.
+
+### Advanced Shop Math
+
+The Advanced picker includes:
+
+- Synchronized tapping feed from RPM and TPI/pitch
+- Internal thread-mill centerline feed compensation
+- Pre-ream hole size from allowance per side
+- Sine-bar stack height or inverse angle
+- Taper half-angle, included angle, and taper rate
+- Ball-nose scallop height or inverse stepover
+- Worst-case and RSS tolerance stacks with signed nominal contributions
+
+### Shop Workspace
+
+Open **Shop setup** to save machine profiles, reusable tools, custom materials, and current job setups. Machine profiles carry preferred units, maximum RPM/feed, controller, work offset, and safe Z. Job setups snapshot every calculator form, including tolerance-stack rows. Workspace data stays in browser storage and can be exported/imported as JSON.
+
 ## Desktop View Modes
 
 The header includes a **Multi-panel / Focus** toggle on larger screens:
 
-- **Focus mode** (default) — shows one tool at a time with smooth view transitions between tools. Best for phones, tablets, and narrow windows.
+- **Focus mode** (default) — shows one tool at a time with smooth view transitions between tools.
 - **Multi-panel mode** — shows every tool card at once in a 12-column grid, using the full width of wide monitors. Ideal for a shop workstation where you want threads, bolt circles, and feeds visible together.
 
-The choice is saved in `localStorage` and re-applied on every visit. On mobile widths the toggle is hidden automatically since all cards are already stacked vertically with per-card expand and collapse.
+The choice is saved in `localStorage` and re-applied on every visit. On mobile, the desktop tabs and view toggle are replaced with one compact calculator picker; only the selected tool is rendered.
 
 ## Auto-Calculate (Live) Mode
 
@@ -191,6 +225,7 @@ The preference is saved in `localStorage` and persists across reloads.
 - `5` — Speeds & Feeds
 - `6` — Chamfer / Countersink Depth
 - `7` — Circle Through 3 Points
+- `8` — Advanced Shop Math
 - `Ctrl` / `Cmd` + `K` — Jump to Thread tool and focus the quick-spec input
 - `Enter` — Calculate (from any input field)
 
@@ -222,16 +257,24 @@ Marcos's Calculator can be installed as a Progressive Web App on any device that
 
 After the first load, the app caches itself and works fully without a network connection. This is intentional — shop floors are often WiFi dead zones.
 
-The service worker uses a stale-while-revalidate strategy: cached content loads instantly, and the cache is refreshed in the background when a network connection is available.
+The service worker uses network-first navigation with an exact-page cache and offline app fallback. Static assets use stale-while-revalidate. The header reports connection state, and Shop setup reports the active core/offline-cache version.
 
 ## Project Structure
 
 ```text
 project-root/
+├── .github/workflows/quality.yml
+├── .nojekyll
+├── calc-core.js
+├── core.test.mjs
 ├── favicon.png
 ├── index.html
 ├── manifest.json
+├── package.json
+├── pages.test.mjs
+├── serve.mjs
 ├── sw.js
+├── tests.html
 └── README.md
 ```
 
@@ -240,8 +283,17 @@ project-root/
 - `favicon.png`
   - Logo asset used for the browser favicon, touch icon, social preview image, and visible header branding
 - `index.html`
-  - Current application
-  - Contains the HTML, CSS, and JavaScript in one file
+  - Application structure, styling, and browser integration
+- `calc-core.js`
+  - Shared pure calculation/parsing/formatting functions used by the app and tests
+- `core.test.mjs`
+  - Dependency-free Node test suite
+- `pages.test.mjs`
+  - GitHub Pages compatibility checks for relative assets, manifest scope, and service-worker precaching
+- `tests.html`
+  - In-browser calculation harness
+- `serve.mjs`
+  - Small local static server used by `npm run serve`
 - `manifest.json`
   - Web App Manifest for PWA installation (name, icons, theme color, display mode)
 - `sw.js`
@@ -251,15 +303,33 @@ project-root/
 
 ## Getting Started
 
-No installation is required.
+No production install or build is required. The app uses a JavaScript module, so serve the folder over HTTP instead of opening `index.html` with a `file://` URL.
 
-### Option 1. Open directly in a browser
+### Recommended local workflow
 
-Open `index.html` in any modern browser.
+With Node.js installed:
 
-Note: the service worker requires a proper HTTP origin to register. File-based URLs (`file://`) will skip PWA features. Use Option 2 if you want offline support during local development.
+```powershell
+npm run serve
+```
 
-### Option 2. Serve it locally
+Then open `http://127.0.0.1:4173/`.
+
+To reproduce the production GitHub Pages subpath locally:
+
+```powershell
+npm run serve:pages
+```
+
+Then open `http://127.0.0.1:4173/Machinist_calc/`.
+
+Run the automated checks with:
+
+```powershell
+npm test
+```
+
+### Alternative local server
 
 Example:
 
@@ -375,7 +445,7 @@ sudo apt install nginx
 2. Copy all project files into the default web root:
 
 ```bash
-sudo cp index.html manifest.json sw.js favicon.png /var/www/html/
+sudo cp index.html calc-core.js manifest.json sw.js favicon.png tests.html /var/www/html/
 ```
 
 3. Reload Nginx:
@@ -402,7 +472,7 @@ sudo apt install apache2
 2. Copy all project files into the default web root:
 
 ```bash
-sudo cp index.html manifest.json sw.js favicon.png /var/www/html/
+sudo cp index.html calc-core.js manifest.json sw.js favicon.png tests.html /var/www/html/
 ```
 
 3. Restart Apache:
@@ -435,25 +505,36 @@ Typical deployment flow:
 3. Connect the repository to the hosting provider
 4. Deploy the project
 
+### Current GitHub Pages deployment
+
+This repository is compatible with its current GitHub Pages configuration:
+
+- Source: `main` branch, repository root
+- Production URL: `https://ianarsenault-tn.github.io/Machinist_calc/`
+- Build step: none
+- HTTPS: enabled
+
+All application assets, module imports, manifest URLs, shortcuts, and service-worker cache entries are repository-relative, so they remain inside `/Machinist_calc/`. The root `.nojekyll` file makes GitHub Pages publish the static files without Jekyll processing. `npm test` includes an automated contract test for these requirements.
+
 ### Hosting Notes
 
 - Keep the main file named `index.html` so it loads at the root URL automatically
 - The service worker (`sw.js`) and manifest (`manifest.json`) must be in the same directory as `index.html`
 - No backend runtime is required for production hosting
-- Theme preference and calculation history are stored in the browser using `localStorage`
+- Theme, forms, histories, machine/tool/material libraries, and jobs are stored in the browser using `localStorage`
 - If you later split the project into multiple files, make sure relative paths remain correct
 
 ## Usage Tips
 
-- Use the top navigation, number keys `1`–`5`, or `Ctrl`/`Cmd`+`K` to jump between tools quickly
+- Use the top navigation, number keys `1`–`8`, or `Ctrl`/`Cmd`+`K` to jump between tools quickly
 - On a wide monitor, flip the view toggle to **Multi-panel** to see every calculator at once
 - Turn on **Live** mode to see results update in real time as you tune a value
-- On mobile, tap a tool header to expand or collapse that section
+- On mobile, choose one calculator from the compact picker; tap a populated result header to expand/collapse its details
 - Tap any chip button (including machine screw sizes and operation presets) to load values and calculate in one tap
 - Use the **Recent** panel to rerun a previous setup without re-entering values
 - Use the **Share** button to send a link for shift handoffs or setup documentation — on mobile this opens the native share sheet
 - Use the copy buttons to move values into setup sheets, notes, or programs
-- For the bolt circle, tick **Also output G-code block** to copy a ready-to-paste canned-cycle template
+- For a bolt-circle program, complete the three preflight acknowledgments, then still simulate and dry-run the generated template
 - Install the app to your home screen for instant one-tap access offline
 - Switch between dark and light mode depending on your work environment
 
@@ -463,16 +544,16 @@ The application is built with:
 
 - Semantic HTML forms with accessible tool headings and ARIA expand/collapse attributes
 - Responsive CSS with custom property theming and CSS `:has()` progressive enhancement
-- Vanilla JavaScript calculator logic
+- Vanilla JavaScript browser integration with a shared ES-module calculation core
 - Web Share API with clipboard fallback
 - View Transitions API for smooth tool-switch animations when supported
 - Clipboard copy support with fallback for older browsers
 - Progressive Web App manifest and service worker for install and offline use
 - URL hash encoding for shareable calculation links
-- `localStorage` for theme preference, view-mode preference, live-calc preference, form persistence, and calculation history — all writes are wrapped in `try`/`catch` for Safari private-mode safety
+- `localStorage` for preferences, forms, calculation history, and Shop workspace records — all writes are wrapped in `try`/`catch` for Safari private-mode safety
 - Favicon and social preview metadata
 
-No frameworks, package managers, or external dependencies are required.
+No frameworks, build tools, production packages, or external runtime services are required. Node/npm is used only for the local server and automated test command.
 
 ## Design Goals
 
@@ -492,7 +573,7 @@ This project aims to be:
 - Measurement over wires logic is currently aimed at 60 degree threads
 - Reverse thread lookup matches against a fixed table of common standard sizes; non-standard or obscure pitches may not be identified
 - Speeds & feeds defaults are conservative shop starting points and should always be sanity-checked against tool-maker data
-- Bolt-circle G-code output is a generic template — review work offsets, depths, and feeds before running on a real machine
+- Bolt-circle G-code is a controller-aware template, not a verified machine program; preflight, simulation, single-block, and a dry run remain mandatory
 - PWA install and offline features require the app to be served over HTTPS or `localhost`
 
 ## Customization
@@ -513,8 +594,8 @@ The main parts to edit are:
 
 - HTML structure for tool sections
 - CSS theme tokens and layout rules
-- JavaScript calculator logic and result formatting
-- `MACHINE_SCREW_DIAMETERS`, `UN_THREAD_TABLE`, and `METRIC_THREAD_TABLE` constants for thread lookup data
+- Browser integration in `index.html` and pure math/result formatting in `calc-core.js`
+- `MACHINE_SCREW_DIAMETERS` and coarse metric pitch defaults in `calc-core.js`, plus standard thread/drill tables in `index.html`
 - `SF_DEFAULTS`, `MATERIAL_LABELS`, and `TOOL_LABELS` constants for speeds & feeds defaults and labels
 
 ## Contributing
