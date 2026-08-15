@@ -4,16 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Marcos's Calculator</title>
-  <meta name="description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <meta name="description" content="Offline machinist calculator for threads, inspection, bolt circles, speeds and feeds, advanced shop math, and reusable setup profiles." />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="favicon.png" />
   <meta property="og:title" content="Marcos's Calculator" />
-  <meta property="og:description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <meta property="og:description" content="Offline machinist calculator for threads, inspection, bolt circles, speeds and feeds, and reusable setup profiles." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="favicon.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Marcos's Calculator" />
-  <meta name="twitter:description" content="Responsive machinist calculator for threads, tap drills, measurement over wires, bolt circle coordinates, and right-triangle setup math." />
+  <meta name="twitter:description" content="Offline machinist calculator for threads, inspection, bolt circles, speeds and feeds, and reusable setup profiles." />
   <meta name="twitter:image" content="favicon.png" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#081a33" />
@@ -135,6 +135,7 @@
     }
 
     *{ box-sizing: border-box; }
+    .sr-only{ position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
     html{
       scroll-behavior: smooth;
       scroll-padding-top: calc(var(--header-height) + var(--nav-height) + 20px);
@@ -496,6 +497,7 @@
     .tool-card[data-tool="feeds"]{ grid-column: span 12; }
     .tool-card[data-tool="chamfer"]{ grid-column: span 6; }
     .tool-card[data-tool="circle3"]{ grid-column: span 6; }
+    .tool-card[data-tool="advanced"]{ grid-column: span 12; }
 
     .tool-toggle{
       width: 100%;
@@ -565,6 +567,7 @@
     }
     .field-group,
     .result-details{ display: grid; gap: 14px; }
+    .result-detail-toggle{ display: none; }
     .field-grid{
       display: grid;
       gap: 14px;
@@ -871,7 +874,8 @@
       .tool-card[data-tool="triangle"],
       .tool-card[data-tool="feeds"],
       .tool-card[data-tool="chamfer"],
-      .tool-card[data-tool="circle3"]{ grid-column: span 12; }
+      .tool-card[data-tool="circle3"],
+      .tool-card[data-tool="advanced"]{ grid-column: span 12; }
     }
     @media (max-width: 860px){
       .header-wrap{ flex-direction: row; align-items: center; }
@@ -1242,6 +1246,109 @@
     @media (max-width: 520px){
       .result-actions .share-btn{ flex: 1; }
     }
+
+    /* ── Progressive disclosure, workspace, and compact mobile controls ── */
+    .progressive-disclosure{
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: color-mix(in srgb, var(--panel-muted) 74%, transparent);
+      overflow: clip;
+    }
+    .progressive-disclosure > summary{
+      min-height: 46px; padding: 11px 14px; cursor: pointer;
+      font-size: var(--fs-1); font-weight: 800; color: var(--accent-strong);
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      list-style: none;
+    }
+    .progressive-disclosure > summary::-webkit-details-marker{ display: none; }
+    .progressive-disclosure > summary::after{ content: "+"; font-size: 1.2em; color: var(--muted); }
+    .progressive-disclosure[open] > summary::after{ content: "−"; }
+    .progressive-disclosure[open] > summary{ border-bottom: 1px solid var(--border); }
+    .progressive-disclosure > .quick-pick-group,
+    .disclosure-content{ padding: 14px; }
+    .disclosure-content{ display: grid; gap: 14px; }
+    .disclosure-content.field-grid{ display: grid; }
+
+    .mobile-tool-picker{ display: none; width: 100%; min-height: 46px; }
+    .status-pill{
+      display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 7px 11px;
+      border: 1px solid var(--border-strong); border-radius: 999px;
+      color: var(--header-text-muted); background: rgba(255,255,255,0.06);
+      font-size: var(--fs-0); font-weight: 800;
+    }
+    .status-dot{ width: 8px; height: 8px; border-radius: 50%; background: #54d17a; box-shadow: 0 0 0 3px rgba(84,209,122,0.15); }
+    .status-pill.offline .status-dot{ background: #ffb44c; box-shadow: 0 0 0 3px rgba(255,180,76,0.16); }
+    .install-btn[hidden]{ display: none; }
+
+    dialog.workspace-dialog{
+      width: min(980px, calc(100vw - 28px)); max-height: min(88vh, 900px); padding: 0;
+      border: 1px solid var(--border-strong); border-radius: var(--radius);
+      background: var(--panel-strong); color: var(--text); box-shadow: 0 32px 90px rgba(0,0,0,0.35);
+    }
+    dialog.workspace-dialog::backdrop{ background: rgba(1, 8, 18, 0.68); backdrop-filter: blur(5px); }
+    .dialog-head{
+      position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 20px; border-bottom: 1px solid var(--border); background: var(--panel-strong);
+    }
+    .dialog-head h2{ margin: 0; font-family: var(--font-heading); }
+    .dialog-close{ min-width: 44px; min-height: 44px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: inherit; cursor: pointer; font: inherit; }
+    .dialog-body{ display: grid; gap: 18px; padding: 20px; }
+    .workspace-grid{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .workspace-card{ display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--panel-muted); }
+    .workspace-card h3{ margin: 0; font-size: var(--fs-2); }
+    .workspace-card.full{ grid-column: 1 / -1; }
+    .library-list{ display: grid; gap: 8px; max-height: 220px; overflow: auto; }
+    .library-item{ display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel-strong); }
+    .library-item-copy{ min-width: 0; }
+    .library-item-copy strong, .library-item-copy span{ display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .library-item-copy span{ color: var(--muted); font-size: var(--fs-0); }
+    .library-actions{ display: flex; gap: 6px; flex-shrink: 0; }
+    .mini-btn{ min-height: 36px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--accent-strong); font: inherit; font-size: var(--fs-0); font-weight: 800; cursor: pointer; }
+    .mini-btn.danger{ color: var(--warning); }
+
+    .provenance-card{ display: grid; gap: 6px; padding: 12px 14px; border-left: 4px solid var(--accent); background: var(--panel-muted); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+    .provenance-card strong{ font-size: var(--fs-1); }
+    .provenance-card span{ color: var(--muted); font-size: var(--fs-0); }
+    .safety-checklist{ display: grid; gap: 8px; padding: 12px; border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--border)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--warning) 8%, var(--panel-strong)); }
+    .safety-checklist label{ display: flex; align-items: flex-start; gap: 9px; font-size: var(--fs-0); color: var(--text); text-transform: none; letter-spacing: 0; }
+    .advanced-panel[hidden]{ display: none !important; }
+    .stack-row{ display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; }
+
+    @media (max-width: 620px){
+      .site-header{ position: sticky; }
+      .brand-lockup p{ display: none; }
+      .header-wrap{ gap: 8px; }
+      .toolbar{ gap: 6px; }
+      .toolbar .status-pill{ display: none; }
+      #workspaceLabel, #installLabel, .live-toggle-label{ display: none; }
+      .brand-mark{ width: 42px; height: 42px; }
+      .site-header{ padding-top: calc(env(safe-area-inset-top, 0px) + 7px); padding-bottom: 7px; }
+      .section-nav{ padding-top: 8px; padding-bottom: 8px; }
+      .section-nav-wrap{ overflow: visible; }
+      .mobile-tool-picker{ display: block; }
+      .section-nav-wrap .nav-link{ display: none; }
+      .tool-toggle{ padding-top: 14px; padding-bottom: 13px; }
+      .tool-title span{ display: none; }
+      .tool-pill{ padding: 6px 9px; }
+      .tool-form{ gap: 14px; padding-top: 14px; }
+      .workspace-grid{ grid-template-columns: 1fr; }
+      .workspace-card.full{ grid-column: auto; }
+      .stack-row{ grid-template-columns: 1fr 1fr; }
+      .stack-row .mini-btn{ grid-column: 1 / -1; }
+      .result-shell.has-result{
+        position: sticky; bottom: 8px; z-index: 4;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+      }
+      .result-shell.has-result .result-head{ cursor: pointer; }
+      .result-shell.has-result .result-stats,
+      .result-shell.has-result .result-details{ display: none; }
+      .result-shell.has-result.expanded .result-stats,
+      .result-shell.has-result.expanded .result-details{ display: grid; }
+      .result-shell.has-result .result-detail-toggle{
+        display: block; width: 100%; border: 0; background: transparent; color: var(--accent-strong);
+        font: inherit; font-size: 0.78rem; font-weight: 800; text-align: left; cursor: pointer; padding: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1252,11 +1359,14 @@
           <img class="brand-mark" src="favicon.png" alt="Marcos's Calculator logo" />
           <div class="brand-text">
             <h1>Marcos's Calculator</h1>
-            <p>Shop math for threads, bolt circles, and setup work.</p>
+            <p>Offline shop math, machine-aware feeds, inspection, and setup work.</p>
           </div>
         </div>
       </div>
       <div class="toolbar">
+        <span class="status-pill" id="networkStatus" title="Offline readiness"><span class="status-dot" aria-hidden="true"></span><span id="networkStatusText">Online</span></span>
+        <button class="toggle-btn install-btn" id="installAppBtn" type="button" hidden><span aria-hidden="true">↓</span> <span id="installLabel">Install</span></button>
+        <button class="toggle-btn" id="workspaceBtn" type="button" aria-label="Open shop workspace"><span aria-hidden="true">⚙</span> <span id="workspaceLabel">Shop setup</span></button>
         <button class="toggle-btn view-toggle-btn" id="viewModeToggle" type="button" aria-pressed="false" title="Switch between single-panel focus view and multi-panel grid"><span class="view-toggle-icon" aria-hidden="true">▦</span> <span id="viewModeLabel">Multi-panel</span></button>
         <label class="live-toggle" title="Recalculate automatically as you type">
           <input type="checkbox" id="liveCalcToggle" />
@@ -1270,6 +1380,17 @@
 
   <nav class="section-nav" id="sectionNav" aria-label="Calculator sections">
     <div class="section-nav-wrap">
+      <label class="sr-only" for="mobileToolPicker">Choose calculator</label>
+      <select class="mobile-tool-picker" id="mobileToolPicker" aria-label="Choose calculator">
+        <option value="thread">Thread &amp; Tap Drill</option>
+        <option value="mow">Measurement Over Wires</option>
+        <option value="bolt">Bolt Circle</option>
+        <option value="triangle">Right Triangle</option>
+        <option value="feeds">Speeds &amp; Feeds</option>
+        <option value="chamfer">Chamfer</option>
+        <option value="circle3">Circle Through 3 Points</option>
+        <option value="advanced">Advanced Shop Math</option>
+      </select>
       <a class="nav-link active" href="#tool-thread" data-tool-link="thread">Thread &amp; Tap Drill</a>
       <a class="nav-link" href="#tool-mow" data-tool-link="mow">Over Wires</a>
       <a class="nav-link" href="#tool-bolt" data-tool-link="bolt">Bolt Circle</a>
@@ -1277,6 +1398,7 @@
       <a class="nav-link" href="#tool-feeds" data-tool-link="feeds">Speeds &amp; Feeds</a>
       <a class="nav-link" href="#tool-chamfer" data-tool-link="chamfer">Chamfer</a>
       <a class="nav-link" href="#tool-circle3" data-tool-link="circle3">Circle 3&#8209;Pt</a>
+      <a class="nav-link" href="#tool-advanced" data-tool-link="advanced">Advanced</a>
     </div>
   </nav>
 
@@ -1300,7 +1422,9 @@
                 <div class="hint">If a quick spec is present, it is parsed automatically when you calculate.</div>
                 <div class="field-inline-note" id="threadQuickNote" aria-live="polite"></div>
               </div>
-              <div class="quick-pick-group span-2" aria-label="Common thread quick picks">
+              <details class="progressive-disclosure span-2">
+                <summary>Common thread sizes</summary>
+                <div class="quick-pick-group" aria-label="Common thread quick picks">
                 <div class="quick-pick-stack">
                   <span>Common inch sizes</span>
                   <div class="chip-row">
@@ -1334,8 +1458,12 @@
                     <button class="chip-btn" type="button" data-thread-pick="#10-32">#10-32</button>
                   </div>
                 </div>
-                <div class="hint">Tap a common size to load it and calculate immediately using your selected percent thread and fit reference.</div>
-              </div>
+                  <div class="hint">Tap a common size to load it and calculate immediately using your selected method and fit reference.</div>
+                </div>
+              </details>
+              <details class="progressive-disclosure span-2">
+                <summary>Calculation preferences</summary>
+                <div class="disclosure-content field-grid two">
               <div class="field">
                 <label for="threadSystem">Thread system</label>
                 <select id="threadSystem">
@@ -1354,16 +1482,29 @@
                 </div>
                 <input type="hidden" id="tapDrillPercent" value="70" />
               </div>
+              <div class="field">
+                <label for="threadDrillMethod">Tap-drill method</label>
+                <select id="threadDrillMethod">
+                  <option value="standard" selected>Standard table when available</option>
+                  <option value="percent">Calculate from selected percent</option>
+                </select>
+                <div class="hint">Both values are shown when a recognized standard size has a table recommendation.</div>
+              </div>
               <div class="field span-2">
                 <label for="threadClassRef">Fit / tolerance reference</label>
                 <select id="threadClassRef"></select>
               </div>
+                </div>
+              </details>
             </div>
 
+            <details class="progressive-disclosure">
+              <summary>Manual dimensions &amp; reference details</summary>
+              <div class="disclosure-content">
             <div class="field-grid two" id="threadUnifiedFields">
               <div class="field">
                 <label for="unMajorIn">Major diameter (in)</label>
-                <input id="unMajorIn" type="number" inputmode="decimal" step="0.0001" placeholder="0.250 for 1/4-20" />
+                <input id="unMajorIn" type="text" inputmode="decimal" placeholder="0.250 or 1/4" />
               </div>
               <div class="field">
                 <label for="unTPI">TPI</label>
@@ -1374,11 +1515,11 @@
             <div class="field-grid two" id="threadMetricFields" hidden>
               <div class="field">
                 <label for="mMajorMm">Major diameter (mm)</label>
-                <input id="mMajorMm" type="number" inputmode="decimal" step="0.001" placeholder="8 for M8x1.25" />
+                <input id="mMajorMm" type="text" inputmode="decimal" placeholder="8 for M8x1.25" />
               </div>
               <div class="field">
                 <label for="mPitchMm">Pitch (mm)</label>
-                <input id="mPitchMm" type="number" inputmode="decimal" step="0.001" placeholder="1.25" />
+                <input id="mPitchMm" type="text" inputmode="decimal" placeholder="1.25" />
               </div>
             </div>
 
@@ -1387,6 +1528,8 @@
               <p id="threadRefBody">Shows theoretical pitch and minor diameters before class-based tolerance is applied.</p>
               <p class="hint" id="threadRefHint">Use this when you want a fast shop estimate and will check final limits from your thread standard.</p>
             </div>
+              </div>
+            </details>
 
             <div class="action-row">
               <button class="action-btn primary" type="submit">Calculate</button>
@@ -1498,12 +1641,12 @@
             <div class="field-grid two">
               <div class="field">
                 <label id="mowPitchLabel" for="mowPitchInput">Pitch input</label>
-                <input id="mowPitchInput" type="number" inputmode="decimal" step="0.0001" />
+                <input id="mowPitchInput" type="text" inputmode="decimal" />
                 <div class="hint" id="mowPitchHint"></div>
               </div>
               <div class="field">
                 <label for="mowWire">Wire diameter (W)</label>
-                <input id="mowWire" type="number" inputmode="decimal" step="0.0001" placeholder="Wire size in selected units" />
+                <input id="mowWire" type="text" inputmode="decimal" placeholder="Wire size or fraction" />
                 <div class="hint">Theoretical best wire: W = P / sqrt(3).</div>
               </div>
             </div>
@@ -1511,11 +1654,11 @@
             <div class="field-grid two">
               <div class="field" id="mowFieldE">
                 <label for="mowE">Pitch diameter (E)</label>
-                <input id="mowE" type="number" inputmode="decimal" step="0.0001" placeholder="Enter E to compute M" />
+                <input id="mowE" type="text" inputmode="decimal" placeholder="Enter E to compute M" />
               </div>
               <div class="field" id="mowFieldM">
                 <label for="mowM">Measurement over wires (M)</label>
-                <input id="mowM" type="number" inputmode="decimal" step="0.0001" placeholder="Computed M appears here" />
+                <input id="mowM" type="text" inputmode="decimal" placeholder="Computed M appears here" />
               </div>
             </div>
 
@@ -1577,7 +1720,7 @@
               </div>
               <div class="field">
                 <label for="bcDia">Bolt circle diameter</label>
-                <input id="bcDia" type="number" inputmode="decimal" step="0.0001" placeholder="100" />
+                <input id="bcDia" type="text" inputmode="decimal" placeholder="100 or 4" />
               </div>
               <div class="field">
                 <label for="bcHoles">Number of holes</label>
@@ -1603,11 +1746,11 @@
             <div class="field-grid two">
               <div class="field">
                 <label for="bcCenterX">Center X offset</label>
-                <input id="bcCenterX" type="number" inputmode="decimal" step="0.0001" value="0" />
+                <input id="bcCenterX" type="text" inputmode="decimal" value="0" />
               </div>
               <div class="field">
                 <label for="bcCenterY">Center Y offset</label>
-                <input id="bcCenterY" type="number" inputmode="decimal" step="0.0001" value="0" />
+                <input id="bcCenterY" type="text" inputmode="decimal" value="0" />
               </div>
             </div>
             <div class="row-hint">Offsets shift all coordinates from the origin. Leave at 0 for machine-center output.</div>
@@ -1630,19 +1773,19 @@
                 </div>
                 <div class="field">
                   <label for="bcGcodeZ">Depth Z</label>
-                  <input id="bcGcodeZ" type="number" inputmode="decimal" step="0.001" value="-5" />
+                  <input id="bcGcodeZ" type="text" inputmode="decimal" value="-5" />
                 </div>
                 <div class="field">
                   <label for="bcGcodeR">Retract R</label>
-                  <input id="bcGcodeR" type="number" inputmode="decimal" step="0.001" value="2" />
+                  <input id="bcGcodeR" type="text" inputmode="decimal" value="2" />
                 </div>
                 <div class="field">
                   <label for="bcGcodeFeed">Feed F</label>
-                  <input id="bcGcodeFeed" type="number" inputmode="decimal" step="0.1" value="150" />
+                  <input id="bcGcodeFeed" type="text" inputmode="decimal" value="150" />
                 </div>
                 <div class="field">
                   <label for="bcGcodePeck">Peck Q</label>
-                  <input id="bcGcodePeck" type="number" inputmode="decimal" step="0.001" value="1" />
+                  <input id="bcGcodePeck" type="text" inputmode="decimal" value="1" />
                 </div>
                 <div class="field">
                   <label for="bcGcodeUnits">Program units</label>
@@ -1652,8 +1795,34 @@
                     <option value="g21">G21 (mm)</option>
                   </select>
                 </div>
+                <div class="field">
+                  <label for="bcController">Controller</label>
+                  <select id="bcController"><option value="generic">Generic ISO</option><option value="fanuc">Fanuc</option><option value="haas">Haas</option><option value="linuxcnc">LinuxCNC</option><option value="mach3">Mach3</option></select>
+                </div>
+                <div class="field">
+                  <label for="bcWorkOffset">Work offset</label>
+                  <select id="bcWorkOffset"><option>G54</option><option>G55</option><option>G56</option><option>G57</option><option>G58</option><option>G59</option></select>
+                </div>
+                <div class="field">
+                  <label for="bcSafeZ">Safe Z (input units)</label>
+                  <input id="bcSafeZ" type="text" inputmode="decimal" value="5" />
+                </div>
+                <div class="field">
+                  <label for="bcSpindle">Spindle RPM</label>
+                  <input id="bcSpindle" type="number" inputmode="numeric" min="1" step="1" value="1200" />
+                </div>
+                <div class="field">
+                  <label for="bcCoolant">Coolant</label>
+                  <select id="bcCoolant"><option value="off">Off</option><option value="flood">Flood (M8)</option></select>
+                </div>
+                <div class="safety-checklist" style="grid-column: 1 / -1">
+                  <strong>Required preflight acknowledgment</strong>
+                  <label><input id="bcCheckUnits" type="checkbox" data-no-live data-ephemeral />I verified G20/G21 and all converted dimensions.</label>
+                  <label><input id="bcCheckOffset" type="checkbox" data-no-live data-ephemeral />I verified the work offset, XY zero, and hole locations.</label>
+                  <label><input id="bcCheckMotion" type="checkbox" data-no-live data-ephemeral />I verified safe Z, retract, depth, feed, spindle, tool, and clearance.</label>
+                </div>
               </div>
-              <div class="row-hint" id="bcGcodeHint" hidden>Preview shows a generic Fanuc-style block. Review depths, feeds, and work-offsets before running on a machine.</div>
+              <div class="row-hint" id="bcGcodeHint" hidden>G-code stays locked until all three preflight checks are acknowledged. Always simulate, single-block, and dry-run above the part.</div>
             </div>
 
             <div class="action-row">
@@ -1740,15 +1909,15 @@
             <div class="field-grid two" id="rtFields">
               <div class="field" id="rtFieldRun">
                 <label for="rtRun">Run (X)</label>
-                <input id="rtRun" type="number" inputmode="decimal" step="0.0001" placeholder="Enter run" />
+                <input id="rtRun" type="text" inputmode="decimal" placeholder="Enter run or fraction" />
               </div>
               <div class="field" id="rtFieldRise">
                 <label for="rtRise">Rise (Y)</label>
-                <input id="rtRise" type="number" inputmode="decimal" step="0.0001" placeholder="Enter rise" />
+                <input id="rtRise" type="text" inputmode="decimal" placeholder="Enter rise or fraction" />
               </div>
               <div class="field" id="rtFieldHyp" hidden>
                 <label for="rtHyp">Hypotenuse</label>
-                <input id="rtHyp" type="number" inputmode="decimal" step="0.0001" placeholder="Enter hypotenuse" />
+                <input id="rtHyp" type="text" inputmode="decimal" placeholder="Enter hypotenuse or fraction" />
               </div>
               <div class="field" id="rtFieldAngle" hidden>
                 <label for="rtAngle">Angle (deg)</label>
@@ -1804,6 +1973,11 @@
         <div class="tool-body" id="tool-feeds-body">
           <form class="tool-form" id="feedsForm">
             <div class="field-grid three">
+              <div class="field"><label for="sfSavedTool">Saved tool</label><select id="sfSavedTool"><option value="">Manual tool values</option></select></div>
+              <div class="field"><label for="sfOperation">Operation</label><select id="sfOperation"><option value="milling">Milling</option><option value="drilling">Drilling</option><option value="reaming">Reaming</option></select></div>
+              <div class="provenance-card"><strong id="activeMachineName">No machine limit</strong><span id="activeMachineLimits">Open Shop setup to select a machine profile.</span></div>
+            </div>
+            <div class="field-grid three">
               <div class="field">
                 <label for="sfUnits">Units</label>
                 <select id="sfUnits">
@@ -1839,7 +2013,7 @@
             <div class="field-grid three">
               <div class="field">
                 <label for="sfDiameter">Tool diameter</label>
-                <input id="sfDiameter" type="number" inputmode="decimal" step="0.0001" placeholder="6" />
+                <input id="sfDiameter" type="text" inputmode="decimal" placeholder="6 or 3/8" />
               </div>
               <div class="field">
                 <label for="sfFlutes">Number of flutes</label>
@@ -1854,15 +2028,15 @@
             <div class="field-grid three">
               <div class="field">
                 <label for="sfChipLoad">Chip load per tooth</label>
-                <input id="sfChipLoad" type="number" inputmode="decimal" step="0.0001" placeholder="auto from material" />
+                <input id="sfChipLoad" type="text" inputmode="decimal" placeholder="auto from material" />
               </div>
               <div class="field">
                 <label for="sfWoc">Width of cut (optional)</label>
-                <input id="sfWoc" type="number" inputmode="decimal" step="0.001" placeholder="for MRR" />
+                <input id="sfWoc" type="text" inputmode="decimal" placeholder="for MRR" />
               </div>
               <div class="field">
                 <label for="sfDoc">Depth of cut (optional)</label>
-                <input id="sfDoc" type="number" inputmode="decimal" step="0.001" placeholder="for MRR" />
+                <input id="sfDoc" type="text" inputmode="decimal" placeholder="for MRR" />
               </div>
             </div>
             <div class="row-hint">Leave surface speed and chip load blank to use the material/tool-type defaults. Enter WOC and DOC to estimate material removal rate.</div>
@@ -1943,11 +2117,11 @@
             <div class="field-grid two">
               <div class="field">
                 <label for="chSmall">Hole diameter (D1)</label>
-                <input id="chSmall" type="number" inputmode="decimal" step="0.001" placeholder="Small/pilot diameter" />
+                <input id="chSmall" type="text" inputmode="decimal" placeholder="Small/pilot diameter" />
               </div>
               <div class="field">
                 <label for="chLarge">Top diameter (D2)</label>
-                <input id="chLarge" type="number" inputmode="decimal" step="0.001" placeholder="Head or chamfer OD" />
+                <input id="chLarge" type="text" inputmode="decimal" placeholder="Head or chamfer OD" />
               </div>
             </div>
             <div class="action-row">
@@ -1998,31 +2172,31 @@
             <div class="field-grid two">
               <div class="field">
                 <label for="c3x1">Point 1 X</label>
-                <input id="c3x1" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3x1" type="text" inputmode="decimal" />
               </div>
               <div class="field">
                 <label for="c3y1">Point 1 Y</label>
-                <input id="c3y1" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3y1" type="text" inputmode="decimal" />
               </div>
             </div>
             <div class="field-grid two">
               <div class="field">
                 <label for="c3x2">Point 2 X</label>
-                <input id="c3x2" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3x2" type="text" inputmode="decimal" />
               </div>
               <div class="field">
                 <label for="c3y2">Point 2 Y</label>
-                <input id="c3y2" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3y2" type="text" inputmode="decimal" />
               </div>
             </div>
             <div class="field-grid two">
               <div class="field">
                 <label for="c3x3">Point 3 X</label>
-                <input id="c3x3" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3x3" type="text" inputmode="decimal" />
               </div>
               <div class="field">
                 <label for="c3y3">Point 3 Y</label>
-                <input id="c3y3" type="number" inputmode="decimal" step="0.0001" />
+                <input id="c3y3" type="text" inputmode="decimal" />
               </div>
             </div>
             <div class="action-row">
@@ -2048,12 +2222,187 @@
           </form>
         </div>
       </section>
+
+      <section class="tool-card open" id="tool-advanced" data-tool="advanced">
+        <button class="tool-toggle" type="button" data-tool-toggle="advanced" aria-expanded="true" aria-controls="tool-advanced-body">
+          <div class="tool-title">
+            <h2>Advanced Shop Math</h2>
+            <span>Tapping, thread milling, reamer allowance, sine bars, tapers, scallops, and tolerance stacks.</span>
+          </div>
+          <span class="tool-pill">Advanced</span>
+          <span class="tool-chevron" aria-hidden="true">&#9662;</span>
+        </button>
+        <div class="tool-body" id="tool-advanced-body">
+          <form class="tool-form" id="advancedForm">
+            <div class="field-grid two">
+              <div class="field">
+                <label for="advancedMode">Calculator</label>
+                <select id="advancedMode">
+                  <option value="tapping">Tapping feed</option>
+                  <option value="threadMill">Thread milling</option>
+                  <option value="reamer">Reamer allowance</option>
+                  <option value="sine">Sine bar</option>
+                  <option value="taper">Taper geometry</option>
+                  <option value="scallop">Ball-nose scallop / stepover</option>
+                  <option value="stack">Tolerance stack</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="advancedUnits">Units</label>
+                <select id="advancedUnits">
+                  <option value="in">Inches</option>
+                  <option value="mm">Millimeters</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="advanced-panel field-grid three" data-advanced-panel="tapping">
+              <div class="field"><label for="advTapRpm">Spindle RPM</label><input id="advTapRpm" type="number" min="1" step="1" value="500" /></div>
+              <div class="field"><label for="advTapThread">TPI or pitch</label><input id="advTapThread" type="text" inputmode="decimal" value="20" /><div class="hint">TPI in inch mode; pitch in mm mode.</div></div>
+            </div>
+
+            <div class="advanced-panel field-grid three" data-advanced-panel="threadMill" hidden>
+              <div class="field"><label for="advTmMajor">Thread major diameter</label><input id="advTmMajor" type="text" inputmode="decimal" value="0.5" /></div>
+              <div class="field"><label for="advTmCutter">Cutter diameter</label><input id="advTmCutter" type="text" inputmode="decimal" value="0.25" /></div>
+              <div class="field"><label for="advTmRpm">RPM</label><input id="advTmRpm" type="number" min="1" step="1" value="3000" /></div>
+              <div class="field"><label for="advTmFlutes">Flutes</label><input id="advTmFlutes" type="number" min="1" step="1" value="3" /></div>
+              <div class="field"><label for="advTmChip">Chip load / tooth</label><input id="advTmChip" type="text" inputmode="decimal" value="0.001" /></div>
+            </div>
+
+            <div class="advanced-panel field-grid two" data-advanced-panel="reamer" hidden>
+              <div class="field"><label for="advReamTarget">Target diameter</label><input id="advReamTarget" type="text" inputmode="decimal" value="0.5" /></div>
+              <div class="field"><label for="advReamAllowance">Allowance per side</label><input id="advReamAllowance" type="text" inputmode="decimal" value="0.005" /></div>
+            </div>
+
+            <div class="advanced-panel field-grid three" data-advanced-panel="sine" hidden>
+              <div class="field"><label for="advSineMode">Solve for</label><select id="advSineMode"><option value="height">Stack height</option><option value="angle">Angle</option></select></div>
+              <div class="field"><label for="advSineLength">Bar length</label><input id="advSineLength" type="text" inputmode="decimal" value="5" /></div>
+              <div class="field"><label for="advSineValue">Angle or stack height</label><input id="advSineValue" type="text" inputmode="decimal" value="30" /></div>
+            </div>
+
+            <div class="advanced-panel field-grid three" data-advanced-panel="taper" hidden>
+              <div class="field"><label for="advTaperLarge">Large diameter</label><input id="advTaperLarge" type="text" inputmode="decimal" value="1" /></div>
+              <div class="field"><label for="advTaperSmall">Small diameter</label><input id="advTaperSmall" type="text" inputmode="decimal" value="0.75" /></div>
+              <div class="field"><label for="advTaperLength">Taper length</label><input id="advTaperLength" type="text" inputmode="decimal" value="2" /></div>
+            </div>
+
+            <div class="advanced-panel field-grid three" data-advanced-panel="scallop" hidden>
+              <div class="field"><label for="advScallopMode">Solve for</label><select id="advScallopMode"><option value="height">Scallop height</option><option value="stepover">Stepover</option></select></div>
+              <div class="field"><label for="advScallopRadius">Ball radius</label><input id="advScallopRadius" type="text" inputmode="decimal" value="0.25" /></div>
+              <div class="field"><label for="advScallopValue">Stepover or scallop height</label><input id="advScallopValue" type="text" inputmode="decimal" value="0.05" /></div>
+            </div>
+
+            <div class="advanced-panel" data-advanced-panel="stack" hidden>
+              <div class="hint">Enter signed nominal contributions and bilateral ± tolerances.</div>
+              <div id="stackRows">
+                <div class="stack-row" data-stack-row><div class="field"><label>Nominal</label><input data-stack-nominal aria-label="Stack nominal" type="text" inputmode="decimal" value="1" /></div><div class="field"><label>± tolerance</label><input data-stack-tolerance aria-label="Stack tolerance" type="text" inputmode="decimal" value="0.005" /></div><button class="mini-btn danger" type="button" data-stack-remove>Remove</button></div>
+                <div class="stack-row" data-stack-row><div class="field"><label>Nominal</label><input data-stack-nominal aria-label="Stack nominal" type="text" inputmode="decimal" value="2" /></div><div class="field"><label>± tolerance</label><input data-stack-tolerance aria-label="Stack tolerance" type="text" inputmode="decimal" value="0.01" /></div><button class="mini-btn danger" type="button" data-stack-remove>Remove</button></div>
+              </div>
+              <button class="mini-btn" id="addStackRow" type="button">+ Add dimension</button>
+            </div>
+
+            <div class="action-row"><button class="action-btn primary" type="submit">Calculate</button><button class="action-btn secondary" id="btnAdvancedClear" type="button">Reset</button></div>
+            <div class="warning" id="advancedWarn" aria-live="polite"></div>
+            <div class="result-shell">
+              <div class="result-head">
+                <div><div class="result-label">Primary answer</div><div class="result-primary" id="advancedPrimary">Choose a calculator and enter values.</div></div>
+                <div class="result-actions"><button class="copy-btn" id="advancedCopy" type="button" hidden>Copy result</button><button class="share-btn" id="advancedShare" type="button" data-share-tool="advanced" hidden>Share</button><button class="print-btn" type="button" data-print>&#128438; Print</button></div>
+              </div>
+              <div class="result-stats" id="advancedStats"></div>
+              <div class="result-details" id="advancedDetails"></div>
+            </div>
+            <div class="history-section" id="histSection-advanced" style="display:none"><div class="history-hdr"><button class="history-toggle-btn" type="button" id="histToggle-advanced"><span>Recent</span><span class="history-badge" id="histBadge-advanced">0</span><span class="history-toggle-chevron" aria-hidden="true">&#9662;</span></button><button class="hist-clear-btn" type="button" data-hist-clear="advanced">Clear</button></div><div class="history-list" id="histList-advanced" role="list"></div></div>
+          </form>
+        </div>
+      </section>
     </div>
   </main>
 
+  <dialog class="workspace-dialog" id="workspaceDialog" aria-labelledby="workspaceTitle">
+    <div class="dialog-head"><div><h2 id="workspaceTitle">Shop workspace</h2><div class="hint">Machine limits, reusable tools/materials, and saved job setups stay on this device.</div></div><button class="dialog-close" id="workspaceClose" type="button" aria-label="Close shop workspace">×</button></div>
+    <div class="dialog-body">
+      <div class="workspace-grid">
+        <section class="workspace-card">
+          <h3>Machine profiles</h3>
+          <form id="machineProfileForm" class="field-group">
+            <div class="field-grid two"><div class="field"><label for="machineName">Profile name</label><input id="machineName" required placeholder="Haas VF-2" /></div><div class="field"><label for="machineUnits">Preferred units</label><select id="machineUnits"><option value="in">Inches</option><option value="mm">Millimeters</option></select></div></div>
+            <div class="field-grid two"><div class="field"><label for="machineMaxRpm">Maximum RPM</label><input id="machineMaxRpm" type="number" min="1" step="1" value="10000" /></div><div class="field"><label for="machineMaxFeed">Maximum feed</label><input id="machineMaxFeed" type="number" min="0" step="0.1" value="500" /><div class="hint">IPM or mm/min in the selected units.</div></div></div>
+            <div class="field-grid three"><div class="field"><label for="machineController">Controller</label><select id="machineController"><option value="fanuc">Fanuc</option><option value="haas">Haas</option><option value="linuxcnc">LinuxCNC</option><option value="mach3">Mach3</option><option value="generic">Generic ISO</option></select></div><div class="field"><label for="machineWorkOffset">Work offset</label><select id="machineWorkOffset"><option>G54</option><option>G55</option><option>G56</option><option>G57</option><option>G58</option><option>G59</option></select></div><div class="field"><label for="machineSafeZ">Default safe Z</label><input id="machineSafeZ" type="text" inputmode="decimal" value="0.1" /></div></div>
+            <button class="action-btn primary" type="submit">Save machine</button>
+          </form>
+          <div class="library-list" id="machineProfileList"></div>
+        </section>
+
+        <section class="workspace-card">
+          <h3>Tool library</h3>
+          <form id="toolProfileForm" class="field-group">
+            <div class="field-grid two"><div class="field"><label for="toolProfileName">Tool name</label><input id="toolProfileName" required placeholder="1/2 carbide 4-flute" /></div><div class="field"><label for="toolProfileType">Tool type</label><select id="toolProfileType"><option value="hss">HSS</option><option value="carbide" selected>Carbide</option><option value="coated">Coated carbide</option></select></div></div>
+            <div class="field-grid two"><div class="field"><label for="toolProfileDiameter">Diameter</label><input id="toolProfileDiameter" type="text" inputmode="decimal" value="0.5" /></div><div class="field"><label for="toolProfileFlutes">Flutes</label><input id="toolProfileFlutes" type="number" min="1" step="1" value="4" /></div></div>
+            <div class="field-grid two"><div class="field"><label for="toolProfileSfm">Vendor surface speed</label><input id="toolProfileSfm" type="number" min="0" step="0.1" placeholder="Optional" /></div><div class="field"><label for="toolProfileChip">Vendor chip load</label><input id="toolProfileChip" type="text" inputmode="decimal" placeholder="Optional" /></div></div>
+            <button class="action-btn primary" type="submit">Save tool</button>
+          </form>
+          <div class="library-list" id="toolProfileList"></div>
+        </section>
+
+        <section class="workspace-card">
+          <h3>Material library</h3>
+          <form id="materialProfileForm" class="field-group">
+            <div class="field"><label for="materialProfileName">Material name</label><input id="materialProfileName" required placeholder="A36 plate" /></div>
+            <div class="field-grid two"><div class="field"><label for="materialProfileSfm">Surface speed (SFM)</label><input id="materialProfileSfm" type="number" min="1" step="0.1" value="300" /></div><div class="field"><label for="materialProfileChip">Chip load / tooth (in)</label><input id="materialProfileChip" type="text" inputmode="decimal" value="0.003" /></div></div>
+            <button class="action-btn primary" type="submit">Save material</button>
+          </form>
+          <div class="library-list" id="materialProfileList"></div>
+        </section>
+
+        <section class="workspace-card">
+          <h3>Current job</h3>
+          <div class="field-grid two"><div class="field"><label for="jobName">Job / setup name</label><input id="jobName" placeholder="Op 20 bolt pattern" /></div><div class="field"><label for="jobPartNumber">Part number</label><input id="jobPartNumber" placeholder="PN-1042" /></div></div>
+          <div class="field"><label for="jobNotes">Notes</label><textarea id="jobNotes" rows="3" placeholder="Datum, stock, setup, inspection notes"></textarea></div>
+          <button class="action-btn primary" id="saveJobSetup" type="button">Save current setup</button>
+          <div class="library-list" id="jobSetupList"></div>
+        </section>
+
+        <section class="workspace-card full">
+          <h3>App status and references</h3>
+          <div class="field-grid three"><div><div class="result-label">Core version</div><strong id="coreVersionLabel">—</strong></div><div><div class="result-label">Connection</div><strong id="dialogNetworkStatus">—</strong></div><div><div class="result-label">Offline cache</div><strong id="offlineCacheStatus">Checking…</strong></div></div>
+          <div class="provenance-card"><strong>Reference boundary</strong><span>Standard tables and built-in cutting values are practical references. Verify acceptance dimensions against the current published standard and cutting data against the tool manufacturer.</span></div>
+          <div class="action-row"><button class="action-btn secondary" id="exportWorkspace" type="button">Export workspace JSON</button><button class="action-btn secondary" id="importWorkspace" type="button">Import workspace JSON</button><input id="workspaceImportFile" type="file" accept="application/json" hidden /></div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
   <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
 
-  <script>
+  <script type="module">
+    import {
+      CORE_VERSION,
+      CALCULATION_SOURCES,
+      fmt,
+      parseFraction,
+      parseDimension,
+      parseThreadSpec,
+      tapDrillByPercent,
+      mowSolveMExternal,
+      mowSolveEExternal,
+      mowSolveMInternal,
+      mowSolveEInternal,
+      radialChipThinningFactor,
+      calculateSpeedsFeeds,
+      boltCircleCoordinates,
+      solveRightTriangle,
+      chamferDepth,
+      circleThrough3Points,
+      tappingFeed,
+      threadMilling,
+      reamerAllowance,
+      sineBarHeight,
+      sineBarAngle,
+      taperGeometry,
+      ballNoseScallopHeight,
+      ballNoseStepover,
+      toleranceStack
+    } from "./calc-core.js";
     (function initTheme(){
       const key = "marcos_calc_theme_mode";
       const btn = document.getElementById("themeToggle");
@@ -2081,10 +2430,8 @@
     })();
 
     const SQRT3 = Math.sqrt(3);
-    const SQRT3_OVER_2 = SQRT3 / 2;
     const BASIC_PITCH_DIAMETER_FACTOR = 0.6495190528;
     const BASIC_INTERNAL_MINOR_FACTOR = 1.0825317547;
-    const TAP_DRILL_PERCENT_FACTOR = 76.98;
     const toolStateKey = "marcos_calc_active_tool";
     const toolCards = Array.from(document.querySelectorAll(".tool-card"));
     const navLinks = Array.from(document.querySelectorAll("[data-tool-link]"));
@@ -2097,7 +2444,8 @@
       triangle: { shell: document.querySelector("#tool-triangle .result-shell"), primary: document.getElementById("rtPrimary"), stats: document.getElementById("rtStats"), details: document.getElementById("rtDetails"), copy: document.getElementById("rtCopy") },
       feeds: { shell: document.querySelector("#tool-feeds .result-shell"), primary: document.getElementById("sfPrimary"), stats: document.getElementById("sfStats"), details: document.getElementById("sfDetails"), copy: document.getElementById("sfCopy") },
       chamfer: { shell: document.querySelector("#tool-chamfer .result-shell"), primary: document.getElementById("chPrimary"), stats: document.getElementById("chStats"), details: document.getElementById("chDetails"), copy: document.getElementById("chCopy") },
-      circle3: { shell: document.querySelector("#tool-circle3 .result-shell"), primary: document.getElementById("c3Primary"), stats: document.getElementById("c3Stats"), details: document.getElementById("c3Details"), copy: document.getElementById("c3Copy") }
+      circle3: { shell: document.querySelector("#tool-circle3 .result-shell"), primary: document.getElementById("c3Primary"), stats: document.getElementById("c3Stats"), details: document.getElementById("c3Details"), copy: document.getElementById("c3Copy") },
+      advanced: { shell: document.querySelector("#tool-advanced .result-shell"), primary: document.getElementById("advancedPrimary"), stats: document.getElementById("advancedStats"), details: document.getElementById("advancedDetails"), copy: document.getElementById("advancedCopy") }
     };
     toolCards.forEach((card, index) => card.style.setProperty("--tool-index", index));
 
@@ -2118,12 +2466,7 @@
     }
     function num(value){
       const parsed = Number(value);
-      return Number.isFinite(parsed) ? parsed : NaN;
-    }
-    function fmt(value, places){
-      if (!Number.isFinite(value)) return "—";
-      const digits = Math.max(0, Math.min(12, places));
-      return Number(value).toFixed(digits).replace(/\.?0+$/, "");
+      return Number.isFinite(parsed) ? parsed : parseFraction(value);
     }
     function fmtDual(value, fromUnit, dp){
       if (!Number.isFinite(value)) return "—";
@@ -2154,6 +2497,11 @@
     function renderCodeCard(title, body){
       return `<div class="detail-card"><strong>${escapeHtml(title)}</strong><pre>${escapeHtml(body)}</pre></div>`;
     }
+    function renderProvenance(sourceKey){
+      const source = CALCULATION_SOURCES[sourceKey];
+      if (!source) return "";
+      return `<div class="provenance-card"><strong>${escapeHtml(source.title)} · ${escapeHtml(source.confidence)}</strong><span>${escapeHtml(source.source)}</span></div>`;
+    }
     function flashResult(shell){
       if (!shell) return;
       shell.classList.remove("fresh");
@@ -2163,6 +2511,7 @@
     }
     function setResult(toolName, config){
       const target = results[toolName];
+      if (!target) return;
       target.primary.textContent = config.primary;
       target.stats.innerHTML = renderStats(config.stats || []);
       target.details.innerHTML = config.detailsHtml || "";
@@ -2175,12 +2524,245 @@
       }
       const shareBtn = document.querySelector(`[data-share-tool="${toolName}"]`);
       if (shareBtn) shareBtn.hidden = !config.copyText;
+      target.shell.classList.toggle("has-result", Boolean(config.copyText));
+      target.shell.classList.remove("expanded");
+      const detailToggle = target.shell.querySelector(".result-detail-toggle");
+      if (detailToggle){ detailToggle.setAttribute("aria-expanded", "false"); detailToggle.textContent = "Show result details"; }
+      const printBtn = target.shell.querySelector("[data-print]");
+      if (printBtn) printBtn.hidden = !config.copyText;
       if (config.animate) flashResult(target.shell);
       if (config.saveHistory && config.primary && config.formState){
         histSave(toolName, { ts: Date.now(), primary: config.primary, formState: config.formState });
         histRender(toolName);
       }
     }
+    Object.values(results).forEach((target) => {
+      const head = target.shell?.querySelector(".result-head");
+      if (!head) return;
+      const detailsButton = document.createElement("button");
+      detailsButton.type = "button";
+      detailsButton.className = "result-detail-toggle";
+      detailsButton.textContent = "Show result details";
+      detailsButton.setAttribute("aria-expanded", "false");
+      head.after(detailsButton);
+      const toggleMobileResult = () => {
+        if (!window.matchMedia("(max-width: 620px)").matches || !target.shell.classList.contains("has-result")) return;
+        const expanded = target.shell.classList.toggle("expanded");
+        detailsButton.setAttribute("aria-expanded", String(expanded));
+        detailsButton.textContent = expanded ? "Hide result details" : "Show result details";
+      };
+      head.addEventListener("click", (event) => {
+        if (event.target.closest("button")) return;
+        toggleMobileResult();
+      });
+      detailsButton.addEventListener("click", toggleMobileResult);
+    });
+
+    // ── Local shop workspace: machines, tools, materials, and saved setups ──
+    const WORKSPACE_KEY = "marcos_shop_workspace_v3";
+    const emptyWorkspace = () => ({ machines: [], tools: [], materials: [], jobs: [], activeMachineId: null });
+    function makeId(prefix){
+      return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+    function loadWorkspace(){
+      try {
+        const parsed = JSON.parse(localStorage.getItem(WORKSPACE_KEY));
+        if (parsed && typeof parsed === "object"){
+          const hydrated = { ...emptyWorkspace(), ...parsed };
+          ["machines", "tools", "materials", "jobs"].forEach((key) => { if (!Array.isArray(hydrated[key])) hydrated[key] = []; });
+          return hydrated;
+        }
+      } catch {}
+      return emptyWorkspace();
+    }
+    let shopWorkspace = loadWorkspace();
+    function saveWorkspace(){
+      try { localStorage.setItem(WORKSPACE_KEY, JSON.stringify(shopWorkspace)); } catch {}
+      refreshWorkspaceUI();
+    }
+    function getActiveMachineProfile(){
+      return shopWorkspace.machines.find((item) => item.id === shopWorkspace.activeMachineId) || null;
+    }
+    function machineFeedLimit(machine, targetUnits){
+      if (!machine || !(machine.maxFeed > 0)) return Infinity;
+      if (machine.units === targetUnits) return machine.maxFeed;
+      return targetUnits === "in" ? machine.maxFeed / 25.4 : machine.maxFeed * 25.4;
+    }
+    function getWorkspaceMaterialDefaults(value){
+      if (!String(value).startsWith("user:")) return null;
+      const item = shopWorkspace.materials.find((candidate) => candidate.id === String(value).slice(5));
+      return item ? { sfm: item.sfm, chipIn: item.chipIn } : null;
+    }
+    function workspaceMaterialLabel(value){
+      if (!String(value).startsWith("user:")) return null;
+      return shopWorkspace.materials.find((candidate) => candidate.id === String(value).slice(5))?.name || "Saved material";
+    }
+    function machineLimitCopy(machine){
+      if (!machine) return "Open Shop setup to select a machine profile.";
+      return `${machine.maxRpm ? `${fmt(machine.maxRpm, 0)} RPM` : "No RPM cap"} · ${machine.maxFeed ? `${fmt(machine.maxFeed, 2)} ${machine.units === "in" ? "IPM" : "mm/min"}` : "No feed cap"} · ${machine.controller.toUpperCase()} ${machine.workOffset}`;
+    }
+    function refreshWorkspaceUI(){
+      const machineList = document.getElementById("machineProfileList");
+      const toolList = document.getElementById("toolProfileList");
+      const materialList = document.getElementById("materialProfileList");
+      const jobList = document.getElementById("jobSetupList");
+      if (!machineList) return;
+      const activeMachine = getActiveMachineProfile();
+      machineList.innerHTML = shopWorkspace.machines.length ? shopWorkspace.machines.map((item) => `<div class="library-item"><div class="library-item-copy"><strong>${escapeHtml(item.name)}${item.id === shopWorkspace.activeMachineId ? " · Active" : ""}</strong><span>${escapeHtml(machineLimitCopy(item))}</span></div><div class="library-actions"><button class="mini-btn" type="button" data-library="machine" data-action="activate" data-id="${escapeHtml(item.id)}">Use</button><button class="mini-btn danger" type="button" data-library="machine" data-action="delete" data-id="${escapeHtml(item.id)}">Delete</button></div></div>`).join("") : `<div class="hint">No machine profiles yet.</div>`;
+      toolList.innerHTML = shopWorkspace.tools.length ? shopWorkspace.tools.map((item) => `<div class="library-item"><div class="library-item-copy"><strong>${escapeHtml(item.name)}</strong><span>Ø ${escapeHtml(fmt(item.diameter, 4))} ${escapeHtml(item.units)} · ${escapeHtml(String(item.flutes))} flutes${item.sfm ? ` · ${escapeHtml(fmt(item.sfm, 0))} SFM` : ""}</span></div><div class="library-actions"><button class="mini-btn" type="button" data-library="tool" data-action="apply" data-id="${escapeHtml(item.id)}">Apply</button><button class="mini-btn danger" type="button" data-library="tool" data-action="delete" data-id="${escapeHtml(item.id)}">Delete</button></div></div>`).join("") : `<div class="hint">No saved tools yet.</div>`;
+      materialList.innerHTML = shopWorkspace.materials.length ? shopWorkspace.materials.map((item) => `<div class="library-item"><div class="library-item-copy"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(fmt(item.sfm, 0))} SFM · ${escapeHtml(fmt(item.chipIn, 5))} in/tooth</span></div><div class="library-actions"><button class="mini-btn" type="button" data-library="material" data-action="apply" data-id="${escapeHtml(item.id)}">Apply</button><button class="mini-btn danger" type="button" data-library="material" data-action="delete" data-id="${escapeHtml(item.id)}">Delete</button></div></div>`).join("") : `<div class="hint">No custom materials yet.</div>`;
+      jobList.innerHTML = shopWorkspace.jobs.length ? shopWorkspace.jobs.map((item) => `<div class="library-item"><div class="library-item-copy"><strong>${escapeHtml(item.name || "Untitled setup")}</strong><span>${escapeHtml(item.partNumber || "No part number")} · ${new Date(item.savedAt).toLocaleString()}</span></div><div class="library-actions"><button class="mini-btn" type="button" data-library="job" data-action="restore" data-id="${escapeHtml(item.id)}">Restore</button><button class="mini-btn danger" type="button" data-library="job" data-action="delete" data-id="${escapeHtml(item.id)}">Delete</button></div></div>`).join("") : `<div class="hint">No saved setups yet.</div>`;
+
+      const toolSelect = document.getElementById("sfSavedTool");
+      if (toolSelect){
+        const selected = toolSelect.value;
+        toolSelect.innerHTML = `<option value="">Manual tool values</option>${shopWorkspace.tools.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("")}`;
+        if ([...toolSelect.options].some((option) => option.value === selected)) toolSelect.value = selected;
+      }
+      const materialSelect = document.getElementById("sfMaterial");
+      if (materialSelect){
+        materialSelect.querySelectorAll("option[data-user-material]").forEach((option) => option.remove());
+        shopWorkspace.materials.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = `user:${item.id}`;
+          option.textContent = `${item.name} (saved)`;
+          option.dataset.userMaterial = "";
+          materialSelect.appendChild(option);
+        });
+      }
+      document.getElementById("activeMachineName").textContent = activeMachine ? activeMachine.name : "No machine limit";
+      document.getElementById("activeMachineLimits").textContent = machineLimitCopy(activeMachine);
+      document.getElementById("coreVersionLabel").textContent = CORE_VERSION;
+      document.getElementById("dialogNetworkStatus").textContent = navigator.onLine ? "Online" : "Offline";
+      applyActiveMachineToGcode(false);
+    }
+    function applyToolProfile(id){
+      const item = shopWorkspace.tools.find((candidate) => candidate.id === id);
+      if (!item) return;
+      const targetUnits = document.getElementById("sfUnits").value;
+      const diameter = item.units === targetUnits ? item.diameter : (targetUnits === "in" ? item.diameter / 25.4 : item.diameter * 25.4);
+      document.getElementById("sfSavedTool").value = item.id;
+      document.getElementById("sfTool").value = item.type;
+      document.getElementById("sfDiameter").value = fmt(diameter, targetUnits === "in" ? 4 : 3);
+      document.getElementById("sfFlutes").value = item.flutes;
+      document.getElementById("sfSpeed").value = item.sfm ? (targetUnits === "in" ? fmt(item.sfm, 1) : fmt(item.sfm * 0.3048, 1)) : "";
+      document.getElementById("sfChipLoad").value = item.chipIn ? (targetUnits === "in" ? fmt(item.chipIn, 5) : fmt(item.chipIn * 25.4, 4)) : "";
+      sfSyncUnitLabels();
+      showToast(`${item.name} applied to Speeds & Feeds.`);
+    }
+    refreshWorkspaceUI();
+
+    (function initWorkspaceDialog(){
+      const dialog = document.getElementById("workspaceDialog");
+      document.getElementById("workspaceBtn").addEventListener("click", () => { refreshWorkspaceUI(); dialog.showModal(); });
+      document.getElementById("workspaceClose").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+
+      document.getElementById("machineProfileForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const units = document.getElementById("machineUnits").value;
+        const safeZ = parseDimension(document.getElementById("machineSafeZ").value, units);
+        const machine = { id: makeId("machine"), name: document.getElementById("machineName").value.trim(), units, maxRpm: num(document.getElementById("machineMaxRpm").value), maxFeed: num(document.getElementById("machineMaxFeed").value), controller: document.getElementById("machineController").value, workOffset: document.getElementById("machineWorkOffset").value, safeZ: Number.isFinite(safeZ) ? safeZ : 0 };
+        if (!machine.name || !(machine.maxRpm > 0) || !(machine.maxFeed > 0)){ showToast("Enter a machine name and positive RPM/feed limits."); return; }
+        shopWorkspace.machines.push(machine);
+        shopWorkspace.activeMachineId = machine.id;
+        event.target.reset();
+        saveWorkspace();
+      });
+      document.getElementById("toolProfileForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const units = document.getElementById("machineUnits").value;
+        const tool = { id: makeId("tool"), name: document.getElementById("toolProfileName").value.trim(), units, type: document.getElementById("toolProfileType").value, diameter: parseDimension(document.getElementById("toolProfileDiameter").value, units), flutes: num(document.getElementById("toolProfileFlutes").value), sfm: num(document.getElementById("toolProfileSfm").value), chipIn: parseDimension(document.getElementById("toolProfileChip").value || "0", "in") };
+        if (!tool.name || !(tool.diameter > 0) || !(tool.flutes >= 1)){ showToast("Enter a tool name, diameter, and flute count."); return; }
+        if (!Number.isFinite(tool.sfm)) tool.sfm = 0;
+        if (!Number.isFinite(tool.chipIn)) tool.chipIn = 0;
+        shopWorkspace.tools.push(tool);
+        event.target.reset();
+        saveWorkspace();
+      });
+      document.getElementById("materialProfileForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const material = { id: makeId("material"), name: document.getElementById("materialProfileName").value.trim(), sfm: num(document.getElementById("materialProfileSfm").value), chipIn: parseDimension(document.getElementById("materialProfileChip").value, "in") };
+        if (!material.name || !(material.sfm > 0) || !(material.chipIn > 0)){ showToast("Enter a material name, positive SFM, and chip load."); return; }
+        shopWorkspace.materials.push(material);
+        event.target.reset();
+        saveWorkspace();
+      });
+      document.getElementById("saveJobSetup").addEventListener("click", () => {
+        const forms = {};
+        ["threadForm","mowForm","boltForm","triangleForm","feedsForm","chamferForm","circle3Form","advancedForm"].forEach((id) => {
+          const form = document.getElementById(id);
+          if (form) forms[id] = captureFormInputs(form);
+        });
+        shopWorkspace.jobs.unshift({ id: makeId("job"), name: document.getElementById("jobName").value.trim(), partNumber: document.getElementById("jobPartNumber").value.trim(), notes: document.getElementById("jobNotes").value.trim(), savedAt: Date.now(), activeTool: toolCards.find((card) => card.classList.contains("active-tool"))?.dataset.tool || "thread", forms });
+        shopWorkspace.jobs = shopWorkspace.jobs.slice(0, 25);
+        saveWorkspace();
+        showToast("Current setup saved.");
+      });
+      dialog.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-library][data-action]");
+        if (!button) return;
+        const { library, action, id } = button.dataset;
+        const key = library === "machine" ? "machines" : library === "tool" ? "tools" : library === "material" ? "materials" : "jobs";
+        if (action === "delete"){
+          shopWorkspace[key] = shopWorkspace[key].filter((item) => item.id !== id);
+          if (shopWorkspace.activeMachineId === id) shopWorkspace.activeMachineId = null;
+          saveWorkspace();
+          return;
+        }
+        if (library === "machine" && action === "activate"){
+          shopWorkspace.activeMachineId = id;
+          const machine = getActiveMachineProfile();
+          if (machine){
+            const previousBoltUnits = document.getElementById("bcUnits").value;
+            convertBoltUnitValues(previousBoltUnits, machine.units);
+            document.getElementById("sfUnits").value = machine.units;
+            document.getElementById("bcUnits").value = machine.units;
+            document.getElementById("bcUnits").dataset.previousUnit = machine.units;
+            document.getElementById("advancedUnits").value = machine.units;
+          }
+          saveWorkspace();
+        } else if (library === "tool" && action === "apply"){
+          applyToolProfile(id);
+          dialog.close();
+          openTool("feeds", { scroll: true });
+        } else if (library === "material" && action === "apply"){
+          document.getElementById("sfMaterial").value = `user:${id}`;
+          document.getElementById("sfMaterial").dispatchEvent(new Event("change", { bubbles: true }));
+          dialog.close();
+          openTool("feeds", { scroll: true });
+        } else if (library === "job" && action === "restore"){
+          const job = shopWorkspace.jobs.find((item) => item.id === id);
+          if (!job) return;
+          Object.entries(job.forms || {}).forEach(([formId, state]) => {
+            const form = document.getElementById(formId);
+            if (form) restoreFormInputs(form, state);
+          });
+          document.getElementById("jobName").value = job.name || "";
+          document.getElementById("jobPartNumber").value = job.partNumber || "";
+          document.getElementById("jobNotes").value = job.notes || "";
+          dialog.close();
+          openTool(job.activeTool || "thread", { scroll: true });
+          showToast("Saved setup restored.");
+        }
+      });
+      document.getElementById("sfSavedTool").addEventListener("change", (event) => { if (event.target.value) applyToolProfile(event.target.value); });
+      document.getElementById("exportWorkspace").addEventListener("click", () => triggerDownload(`marcos-workspace-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify({ version: CORE_VERSION, exportedAt: new Date().toISOString(), workspace: shopWorkspace }, null, 2), "application/json"));
+      document.getElementById("importWorkspace").addEventListener("click", () => document.getElementById("workspaceImportFile").click());
+      document.getElementById("workspaceImportFile").addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const payload = JSON.parse(await file.text());
+          const incoming = payload.workspace || payload;
+          if (!incoming || !Array.isArray(incoming.machines) || !Array.isArray(incoming.tools) || !Array.isArray(incoming.materials) || !Array.isArray(incoming.jobs)) throw new Error("Invalid workspace file");
+          shopWorkspace = { ...emptyWorkspace(), ...incoming };
+          saveWorkspace();
+          showToast("Workspace imported.");
+        } catch { showToast("Workspace import failed."); }
+        event.target.value = "";
+      });
+    })();
     async function writeClipboard(text){
       if (navigator.clipboard && navigator.clipboard.writeText){
         await navigator.clipboard.writeText(text);
@@ -2228,6 +2810,8 @@
     function setActiveNav(toolName){
       navLinks.forEach((link) => link.classList.toggle("active", link.dataset.toolLink === toolName));
       toolCards.forEach((card) => card.classList.toggle("active-tool", card.dataset.tool === toolName));
+      const picker = document.getElementById("mobileToolPicker");
+      if (picker && picker.value !== toolName) picker.value = toolName;
     }
     function isMobileLayout(){
       return window.matchMedia("(max-width: 820px)").matches;
@@ -2259,11 +2843,7 @@
         const isTarget = card.dataset.tool === toolName;
         const body = card.querySelector(".tool-body");
         const toggle = card.querySelector(".tool-toggle");
-        if (mobile || multiDesktop){
-          card.hidden = false;
-        } else {
-          card.hidden = !isTarget;
-        }
+        card.hidden = mobile ? !isTarget : (multiDesktop ? false : !isTarget);
         // In multi-panel desktop mode, all visible cards are open; in other modes only the active is open.
         const shouldBeOpen = multiDesktop ? true : isTarget;
         card.classList.toggle("open", shouldBeOpen);
@@ -2342,6 +2922,9 @@
         openTool(toolName, { scroll: true });
       });
     });
+    document.getElementById("mobileToolPicker")?.addEventListener("change", (event) => {
+      openTool(event.target.value, { scroll: true });
+    });
     // Initialize desktop view mode (focus vs multi-panel). Don't reapply yet — syncAccordionState will.
     setViewMode(getViewMode(), { reapply: false });
     const viewModeBtn = document.getElementById("viewModeToggle");
@@ -2417,12 +3000,6 @@
 
     const WIRE_SET_INCH = [0.010,0.012,0.014,0.016,0.018,0.020,0.022,0.024,0.025,0.026,0.028,0.030,0.032,0.035,0.040,0.045,0.050,0.055,0.060,0.063,0.070,0.080,0.090,0.100];
     const WIRE_SET_MM = [0.25,0.30,0.35,0.40,0.45,0.50,0.60,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,2.00];
-
-    // Machine screw number-to-major-diameter table (inches)
-    const MACHINE_SCREW_DIAMETERS = {
-      0: 0.0600, 1: 0.0730, 2: 0.0860, 3: 0.0990,  4: 0.1120,
-      5: 0.1250, 6: 0.1380, 8: 0.1640, 10: 0.1900, 12: 0.2160
-    };
 
     // Reverse thread lookup tables — [major_in, tpi, standard_name]
     const UN_THREAD_TABLE = [
@@ -2821,23 +3398,46 @@
     function captureFormInputs(form){
       const state = {};
       for (const el of form.elements){
-        if (!el.id) continue;
+        if (!el.id || el.hasAttribute("data-ephemeral")) continue;
         if (el.tagName === "INPUT" && el.type === "checkbox"){
           state[el.id] = el.checked ? "1" : "0";
         } else if (el.tagName === "INPUT" || el.tagName === "SELECT"){
           state[el.id] = el.value;
         }
       }
+      if (form.id === "advancedForm"){
+        state.__stackRows = JSON.stringify([...form.querySelectorAll("[data-stack-row]")].map((row) => ({
+          nominal: row.querySelector("[data-stack-nominal]")?.value || "0",
+          tolerance: row.querySelector("[data-stack-tolerance]")?.value || "0"
+        })));
+      }
       return state;
     }
     function restoreFormInputs(form, state){
       for (const el of form.elements){
-        if (!el.id || state[el.id] === undefined) continue;
+        if (!el.id || el.hasAttribute("data-ephemeral") || state[el.id] === undefined) continue;
         if (el.tagName === "INPUT" && el.type === "checkbox"){
           el.checked = state[el.id] === "1" || state[el.id] === true || state[el.id] === "true";
         } else if (el.tagName === "INPUT" || el.tagName === "SELECT"){
           el.value = state[el.id];
         }
+      }
+      if (form.id === "advancedForm" && state.__stackRows){
+        try {
+          const items = JSON.parse(state.__stackRows);
+          const container = form.querySelector("#stackRows");
+          if (container && Array.isArray(items) && items.length){
+            container.replaceChildren(...items.map((item) => {
+              const row = document.createElement("div");
+              row.className = "stack-row";
+              row.dataset.stackRow = "";
+              row.innerHTML = `<div class="field"><label>Nominal</label><input data-stack-nominal aria-label="Stack nominal" type="text" inputmode="decimal" /></div><div class="field"><label>± tolerance</label><input data-stack-tolerance aria-label="Stack tolerance" type="text" inputmode="decimal" /></div><button class="mini-btn danger" type="button" data-stack-remove>Remove</button>`;
+              row.querySelector("[data-stack-nominal]").value = String(item.nominal ?? "0");
+              row.querySelector("[data-stack-tolerance]").value = String(item.tolerance ?? "0");
+              return row;
+            }));
+          }
+        } catch {}
       }
     }
 
@@ -2885,71 +3485,6 @@
       }
       return closest;
     }
-    function parseFraction(value){
-      const trimmed = value.trim();
-      if (!trimmed) return NaN;
-      if (trimmed.includes("/")){
-        const [numerator, denominator] = trimmed.split("/");
-        const top = Number(numerator);
-        const bottom = Number(denominator);
-        if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom === 0) return NaN;
-        return top / bottom;
-      }
-      return Number(trimmed);
-    }
-    // Default coarse pitches for bare "M<size>" specs (ISO 261 coarse series).
-    const METRIC_DEFAULT_PITCH = {
-      1: 0.25, 1.2: 0.25, 1.4: 0.3, 1.6: 0.35, 1.8: 0.35, 2: 0.4, 2.5: 0.45,
-      3: 0.5, 3.5: 0.6, 4: 0.7, 5: 0.8, 6: 1.0, 7: 1.0, 8: 1.25, 10: 1.5,
-      12: 1.75, 14: 2.0, 16: 2.0, 18: 2.5, 20: 2.5, 22: 2.5, 24: 3.0, 27: 3.0,
-      30: 3.5, 33: 3.5, 36: 4.0, 39: 4.0, 42: 4.5, 45: 4.5, 48: 5.0, 52: 5.0,
-      56: 5.5, 60: 5.5, 64: 6.0
-    };
-    function parseThreadSpec(input){
-      // Strip designators like UNC/UNF/UNEF/UN (case-insensitive) and leading/trailing space.
-      let normalized = input.trim().toLowerCase().replace(/×/g, "x");
-      // Strip a trailing thread designator with optional leading space: "1/4-20 unc" → "1/4-20"
-      normalized = normalized.replace(/\s+(un[cef]{1,2}|un)\s*$/i, "");
-      normalized = normalized.replace(/\s+/g, "");
-      if (!normalized) return null;
-
-      // Machine screw format with optional #: #4-40, 4-40, #10-32, 10-32
-      const machineScrewMatch = normalized.match(/^#?(\d{1,2})-(\d+(?:\.\d+)?)$/);
-      if (machineScrewMatch){
-        const screwNum = Number(machineScrewMatch[1]);
-        const tpi = Number(machineScrewMatch[2]);
-        const major = MACHINE_SCREW_DIAMETERS[screwNum];
-        // Only treat as machine-screw when the number is a known gauge.
-        if (major && tpi > 0){
-          return { system: "un", major, tpi, label: `#${screwNum}-${tpi}` };
-        }
-      }
-      // Metric with pitch: M8x1.25, M8-1.25, m10x1.5
-      const metricMatch = normalized.match(/^m(\d+(?:\.\d+)?)[x-](\d+(?:\.\d+)?)$/i);
-      if (metricMatch){
-        return { system: "metric", major: Number(metricMatch[1]), pitch: Number(metricMatch[2]), label: `M${metricMatch[1]}x${metricMatch[2]}` };
-      }
-      // Metric without pitch: M10 → default coarse pitch from table
-      const metricBareMatch = normalized.match(/^m(\d+(?:\.\d+)?)$/i);
-      if (metricBareMatch){
-        const majorM = Number(metricBareMatch[1]);
-        const defaultPitch = METRIC_DEFAULT_PITCH[majorM];
-        if (defaultPitch){
-          return { system: "metric", major: majorM, pitch: defaultPitch, label: `M${majorM}x${defaultPitch}` };
-        }
-      }
-      // Unified fractional/decimal: 1/4-20, 0.25-20, 1-8, 1/2-13
-      const unifiedMatch = normalized.match(/^([0-9.]+\/[0-9.]+|[0-9]+(?:\.[0-9]+)?)[-x]([0-9]+(?:\.[0-9]+)?)$/);
-      if (unifiedMatch){
-        const major = parseFraction(unifiedMatch[1]);
-        const tpi = Number(unifiedMatch[2]);
-        if (major > 0 && tpi > 0){
-          return { system: "un", major, tpi, label: `${unifiedMatch[1]}-${unifiedMatch[2]}` };
-        }
-      }
-      return null;
-    }
-
     function lookupUnThread(majorIn, tpi){
       const TOL_D = 0.003, TOL_T = 0.5;
       const match = UN_THREAD_TABLE.find(([d, t]) => Math.abs(d - majorIn) < TOL_D && Math.abs(t - tpi) < TOL_T);
@@ -3130,6 +3665,7 @@
       showWarn(threadWarn, "");
       const percentValue = num(document.getElementById("tapDrillPercent").value);
       const percentDisplay = Number.isInteger(percentValue) ? fmt(percentValue, 0) : fmt(percentValue, 2);
+      const drillMethod = document.getElementById("threadDrillMethod").value;
       const quick = threadQuickSpec.value.trim();
       let system = threadSystem.value;
       let parsed = null;
@@ -3158,11 +3694,9 @@
         if (major < 0.01 || major > 6){ showWarn(threadWarn, "Major diameter should be between 0.01 in and 6 in."); return; }
         if (tpi < 4 || tpi > 80){ showWarn(threadWarn, "TPI should be between 4 and 80."); return; }
         const pitch = 1 / tpi;
-        const computedDrill = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
-        // Prefer an ANSI B94.11M standard tap-drill value if one exists and the
-        // user hasn't dialed in a custom percent that disagrees with the standard.
+        const computedDrill = tapDrillByPercent(major, pitch, percentValue);
         const stdTap = lookupTapDrillUN(major, tpi);
-        const usingStdTap = !!stdTap && Math.abs(percentValue - 75) <= 5; // honor user overrides outside ~70-80%
+        const usingStdTap = drillMethod === "standard" && !!stdTap;
         const drill = usingStdTap ? stdTap.size : computedDrill;
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
@@ -3192,6 +3726,7 @@
             { label: "Thread", value: stdName || label },
             { label: "Pitch", valueHtml: fmtDualHtml(pitch, "in", 6) },
             { label: "Major", valueHtml: fmtDualHtml(major, "in", 6) },
+            { label: "Method", value: usingStdTap ? "ANSI table" : `${percentDisplay}% thread` },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: `${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)` },
             { label: "Pitch dia basic", valueHtml: fmtDualHtml(basicPitchDiameter, "in", 6) },
@@ -3199,8 +3734,10 @@
           ],
           detailsHtml: renderDrillCard(drill, "un") + renderList([
             usingStdTap
-              ? `Tap drill from ANSI B94.11M standard table: ${stdTap.label} (${fmt(stdTap.size, 4)} in, ~${stdTap.percent}% thread).`
-              : `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+              ? `Selected result from ANSI B94.11M standard table: ${stdTap.label} (${fmt(stdTap.size, 4)} in, ~${stdTap.percent}% thread).`
+              : `Selected result calculated from ${percentDisplay}% thread: ${fmt(computedDrill, 6)} in.`,
+            ...(stdTap ? [`Comparison — ${percentDisplay}% calculation: ${fmt(computedDrill, 6)} in; ANSI table: ${stdTap.label} (${fmt(stdTap.size, 4)} in).`] : []),
+            ...(drillMethod === "standard" && !stdTap ? ["No table entry matched this size, so the selected result uses the percent-thread calculation."] : []),
             ...(stdName ? [`Standard thread identified: ${stdName}.`] : []),
             ...(fracStr ? [`Nearest fractional inch: ${fracStr}.`] : []),
             "Use a standard drill near the computed size for a practical shop selection.",
@@ -3227,7 +3764,8 @@
             fitReference.hint
           ]) + renderCodeCard("Formula snapshot", [
             `Pitch P = 1 / TPI = ${fmt(pitch, 6)} in`,
-            `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 6)} in`,
+            `Percent-thread drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(computedDrill, 6)} in`,
+            ...(usingStdTap ? [`Selected ANSI table drill = ${stdTap.label} (${fmt(stdTap.size, 4)} in)`] : []),
             `E_basic = Major - 0.649519 x P = ${fmt(basicPitchDiameter, 6)} in`,
             `D1_basic = Major - 1.082532 x P = ${fmt(basicInternalMinor, 6)} in`
           ].join("\n")),
@@ -3236,7 +3774,9 @@
             `Spec: ${label}`,
             `System: Unified`,
             `Fit reference: ${fitReference.title}`,
+            `Tap-drill method: ${usingStdTap ? "ANSI B94.11M standard table" : `${percentDisplay}% thread calculation`}`,
             `Tap drill: ${fmt(drill, 6)} in`,
+            ...(stdTap ? [`Percent-thread comparison: ${fmt(computedDrill, 6)} in`, `ANSI table comparison: ${stdTap.label} (${fmt(stdTap.size, 4)} in)`] : []),
             `Nearest stock drill: ${nearDrillIn.label} (${fmt(nearDrillIn.size, 4)} in)`,
             `Pitch: ${fmt(pitch, 6)} in`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 6)} in`,
@@ -3249,11 +3789,9 @@
         if (!(major > 0) || !(pitch > 0)){ showWarn(threadWarn, "Enter a positive metric major diameter and pitch."); return; }
         if (major < 0.5 || major > 150){ showWarn(threadWarn, "Metric major diameter should be between 0.5 mm and 150 mm."); return; }
         if (pitch < 0.1 || pitch > 6){ showWarn(threadWarn, "Metric pitch should be between 0.1 mm and 6 mm."); return; }
-        const computedDrillM = major - ((percentValue / TAP_DRILL_PERCENT_FACTOR) * pitch);
-        // Prefer ISO 2306 recommended tap-drill value when the user's percent is in
-        // the standard band; otherwise fall through to the percent-of-thread heuristic.
+        const computedDrillM = tapDrillByPercent(major, pitch, percentValue);
         const stdTapM = lookupTapDrillMetric(major, pitch);
-        const usingStdTapM = !!stdTapM && Math.abs(percentValue - 75) <= 5;
+        const usingStdTapM = drillMethod === "standard" && !!stdTapM;
         const drill = usingStdTapM ? stdTapM.size : computedDrillM;
         const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
         const basicInternalMinor = major - BASIC_INTERNAL_MINOR_FACTOR * pitch;
@@ -3278,6 +3816,7 @@
             { label: "Thread", value: stdNameM || label },
             { label: "Pitch", valueHtml: fmtDualHtml(pitch, "mm", 3) },
             { label: "Major", valueHtml: fmtDualHtml(major, "mm", 3) },
+            { label: "Method", value: usingStdTapM ? "ISO table" : `${percentDisplay}% thread` },
             { label: "Fit ref", value: fitReference.short },
             { label: "Nearest drill", value: nearDrillMm.label },
             { label: "Pitch dia basic", valueHtml: fmtDualHtml(basicPitchDiameter, "mm", 3) },
@@ -3285,8 +3824,10 @@
           ],
           detailsHtml: renderDrillCard(drill, "metric") + renderList([
             usingStdTapM
-              ? `Tap drill from ISO 2306 recommended table: ${stdTapM.label} (~${stdTapM.percent}% thread).`
-              : `Tap drill rule used: Major - ((${percentDisplay} / 76.98) x Pitch).`,
+              ? `Selected result from ISO 2306 recommended table: ${stdTapM.label} (~${stdTapM.percent}% thread).`
+              : `Selected result calculated from ${percentDisplay}% thread: ${fmt(computedDrillM, 3)} mm.`,
+            ...(stdTapM ? [`Comparison — ${percentDisplay}% calculation: ${fmt(computedDrillM, 3)} mm; ISO table: ${stdTapM.label}.`] : []),
+            ...(drillMethod === "standard" && !stdTapM ? ["No table entry matched this size, so the selected result uses the percent-thread calculation."] : []),
             ...(stdNameM ? [`Standard thread identified: ${stdNameM}.`] : []),
             "This is a practical tap-drill estimate for a 60 degree thread, not a tolerance-class lookup.",
             "Pitch diameter and internal minor diameter are both shown to avoid misreading the inside-thread size.",
@@ -3295,7 +3836,8 @@
             `${fitReference.title}: ${fitReference.body}`,
             fitReference.hint
           ]) + renderCodeCard("Formula snapshot", [
-            `Tap drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(drill, 3)} mm`,
+            `Percent-thread drill = Major - ((${percentDisplay} / 76.98) x P) = ${fmt(computedDrillM, 3)} mm`,
+            ...(usingStdTapM ? [`Selected ISO table drill = ${stdTapM.label}`] : []),
             `E_basic = Major - 0.649519 x P = ${fmt(basicPitchDiameter, 3)} mm`,
             `D1_basic = Major - 1.082532 x P = ${fmt(basicInternalMinor, 3)} mm`
           ].join("\n")),
@@ -3304,7 +3846,9 @@
             `Spec: ${label}`,
             `System: ISO Metric`,
             `Fit reference: ${fitReference.title}`,
+            `Tap-drill method: ${usingStdTapM ? "ISO 2306 recommended table" : `${percentDisplay}% thread calculation`}`,
             `Tap drill: ${fmt(drill, 3)} mm`,
+            ...(stdTapM ? [`Percent-thread comparison: ${fmt(computedDrillM, 3)} mm`, `ISO table comparison: ${stdTapM.label}`] : []),
             `Nearest stock drill: ${nearDrillMm.label}`,
             `Pitch: ${fmt(pitch, 3)} mm`,
             `Basic pitch diameter: ${fmt(basicPitchDiameter, 3)} mm`,
@@ -3398,7 +3942,7 @@
       const major = parsed.major;
       const wire = pitch / SQRT3;
       const basicPitchDiameter = major - BASIC_PITCH_DIAMETER_FACTOR * pitch;
-      const measurement = basicPitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+      const measurement = mowSolveMExternal(basicPitchDiameter, wire, pitch);
       const dp = isMetric ? 3 : 6;
       mowUnits.value = units;
       mowMode.value = "solveM";
@@ -3465,8 +4009,8 @@
         const pitchDiameter = num(mowE.value);
         if (!(pitchDiameter > 0)) { showWarn(mowWarn, "Enter a positive pitch diameter E to compute M."); return; }
         const measurement = isInternal
-          ? pitchDiameter - 3 * wire + (SQRT3_OVER_2 * pitch)
-          : pitchDiameter + 3 * wire - (SQRT3_OVER_2 * pitch);
+          ? mowSolveMInternal(pitchDiameter, wire, pitch)
+          : mowSolveMExternal(pitchDiameter, wire, pitch);
         mowM.value = measurement.toFixed(6);
         const formulaLine = isInternal
           ? `M = E - 3W + (sqrt(3)/2)P  (internal)`
@@ -3496,8 +4040,8 @@
         const measurement = num(mowM.value);
         if (!(measurement > 0)) { showWarn(mowWarn, "Enter a positive measurement M to compute E."); return; }
         const pitchDiameter = isInternal
-          ? measurement + 3 * wire - (SQRT3_OVER_2 * pitch)
-          : measurement - 3 * wire + (SQRT3_OVER_2 * pitch);
+          ? mowSolveEInternal(measurement, wire, pitch)
+          : mowSolveEExternal(measurement, wire, pitch);
         mowE.value = pitchDiameter.toFixed(6);
         const formulaLine = isInternal
           ? `E = M + 3W - (sqrt(3)/2)P  (internal)`
@@ -3556,14 +4100,43 @@
     const bcStartAngle = document.getElementById("bcStartAngle");
     const bcClockwise = document.getElementById("bcClockwise");
     const bcWarn = document.getElementById("bcWarn");
+    const bcUnitsEl = document.getElementById("bcUnits");
+    function convertBoltUnitValues(fromUnits, toUnits){
+      if (!fromUnits || !toUnits || fromUnits === toUnits) return;
+      const factor = toUnits === "in" ? 1 / 25.4 : 25.4;
+      ["bcDia", "bcCenterX", "bcCenterY", "bcGcodeZ", "bcGcodeR", "bcGcodeFeed", "bcGcodePeck", "bcSafeZ"].forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input || !String(input.value).trim()) return;
+        const value = parseDimension(input.value, fromUnits);
+        if (Number.isFinite(value)) input.value = fmt(value * factor, toUnits === "in" ? 4 : 3);
+      });
+      clearGcodePreflight();
+    }
     // Show/hide G-code field group when the toggle changes
     const bcGcodeCheck = document.getElementById("bcGcode");
     const bcGcodeFieldsEl = document.getElementById("bcGcodeFields");
     const bcGcodeHintEl = document.getElementById("bcGcodeHint");
     const bcGcodeModeEl = document.getElementById("bcGcodeMode");
     const bcGcodePeckField = document.getElementById("bcGcodePeck") && document.getElementById("bcGcodePeck").closest(".field");
+    const gcodePreflightIds = ["bcCheckUnits", "bcCheckOffset", "bcCheckMotion"];
+    function clearGcodePreflight(){
+      gcodePreflightIds.forEach((id) => { const input = document.getElementById(id); if (input) input.checked = false; });
+    }
+    function applyActiveMachineToGcode(force = false){
+      const machine = getActiveMachineProfile();
+      if (!machine) return;
+      const inputUnits = document.getElementById("bcUnits")?.value || machine.units;
+      const safeZ = machine.units === inputUnits ? machine.safeZ : inputUnits === "in" ? machine.safeZ / 25.4 : machine.safeZ * 25.4;
+      const controller = document.getElementById("bcController");
+      const workOffset = document.getElementById("bcWorkOffset");
+      const safeZInput = document.getElementById("bcSafeZ");
+      if (controller && (force || !controller.dataset.userEdited)) controller.value = machine.controller;
+      if (workOffset && (force || !workOffset.dataset.userEdited)) workOffset.value = machine.workOffset;
+      if (safeZInput && (force || !safeZInput.dataset.userEdited)) safeZInput.value = fmt(safeZ, inputUnits === "in" ? 4 : 3);
+    }
     function syncGcodeVisibility(){
       const on = bcGcodeCheck && bcGcodeCheck.checked;
+      if (on) applyActiveMachineToGcode(false);
       if (bcGcodeFieldsEl) bcGcodeFieldsEl.hidden = !on;
       if (bcGcodeHintEl) bcGcodeHintEl.hidden = !on;
       if (bcGcodePeckField){
@@ -3576,38 +4149,75 @@
     }
     if (bcGcodeCheck) bcGcodeCheck.addEventListener("change", syncGcodeVisibility);
     if (bcGcodeModeEl) bcGcodeModeEl.addEventListener("change", syncGcodeVisibility);
+    bcUnitsEl.dataset.previousUnit = bcUnitsEl.value;
+    bcUnitsEl.addEventListener("change", () => {
+      const previous = bcUnitsEl.dataset.previousUnit || (bcUnitsEl.value === "in" ? "mm" : "in");
+      convertBoltUnitValues(previous, bcUnitsEl.value);
+      bcUnitsEl.dataset.previousUnit = bcUnitsEl.value;
+      applyActiveMachineToGcode(false);
+    });
+    if (bcGcodeFieldsEl){
+      bcGcodeFieldsEl.addEventListener("input", (event) => {
+        if (event.target.closest(".safety-checklist")) return;
+        event.target.dataset.userEdited = "true";
+        clearGcodePreflight();
+      });
+    }
     syncGcodeVisibility();
 
     function buildBoltGcode(holes, coords, inputUnits){
       const mode = bcGcodeModeEl ? bcGcodeModeEl.value : "positions";
-      const z = num(document.getElementById("bcGcodeZ").value);
-      const r = num(document.getElementById("bcGcodeR").value);
-      const feed = num(document.getElementById("bcGcodeFeed").value);
-      const peck = num(document.getElementById("bcGcodePeck").value);
+      const zInput = parseDimension(document.getElementById("bcGcodeZ").value, inputUnits);
+      const rInput = parseDimension(document.getElementById("bcGcodeR").value, inputUnits);
+      const feedInput = num(document.getElementById("bcGcodeFeed").value);
+      const peckInput = parseDimension(document.getElementById("bcGcodePeck").value, inputUnits);
+      const safeZInput = parseDimension(document.getElementById("bcSafeZ").value, inputUnits);
+      const spindle = num(document.getElementById("bcSpindle").value);
+      const controller = document.getElementById("bcController").value;
+      const workOffset = document.getElementById("bcWorkOffset").value;
+      const coolant = document.getElementById("bcCoolant").value;
       const unitSel = document.getElementById("bcGcodeUnits").value;
       const unitHeader = unitSel === "auto" ? (inputUnits === "in" ? "G20" : "G21") : unitSel.toUpperCase();
-      const dp = inputUnits === "in" ? 4 : 3;
+      const outputUnits = unitHeader === "G20" ? "in" : "mm";
+      const conversion = inputUnits === outputUnits ? 1 : outputUnits === "in" ? 1 / 25.4 : 25.4;
+      const z = zInput * conversion;
+      const r = rInput * conversion;
+      const feed = feedInput * conversion;
+      const peck = peckInput * conversion;
+      const safeZ = safeZInput * conversion;
+      const outputCoords = coords.map((coord) => ({ ...coord, x: coord.x * conversion, y: coord.y * conversion }));
+      const dp = outputUnits === "in" ? 4 : 3;
       const out = [];
-      out.push(`(Bolt circle: ${holes} hole${holes === 1 ? "" : "s"})`);
-      out.push(`${unitHeader} G90 G17 (absolute, XY plane)`);
+      out.push("%");
+      out.push(`(Bolt circle: ${holes} hole${holes === 1 ? "" : "s"}; ${controller.toUpperCase()} profile)`);
+      out.push("(SIMULATE, SINGLE-BLOCK, AND DRY-RUN ABOVE THE PART)");
+      out.push(`${unitHeader} G90 G17 G40 G49 G80`);
+      out.push(workOffset);
+      out.push(`G0 Z${fmt(safeZ, dp)}`);
       if (mode === "positions"){
-        coords.forEach((c, i) => {
+        outputCoords.forEach((c, i) => {
           out.push(`(Hole ${i + 1})`);
           out.push(`G0 X${fmt(c.x, dp)} Y${fmt(c.y, dp)}`);
         });
       } else {
         const cycleCmd = mode === "peck" ? "G83" : "G81";
-        const first = coords[0];
+        const first = outputCoords[0];
+        out.push(`S${fmt(spindle, 0)} M3`);
+        if (coolant === "flood") out.push("M8");
         out.push(`G0 X${fmt(first.x, dp)} Y${fmt(first.y, dp)}`);
         out.push(`G0 Z${fmt(r, dp)}`);
         const peckPart = mode === "peck" && Number.isFinite(peck) ? ` Q${fmt(peck, dp)}` : "";
-        out.push(`${cycleCmd} X${fmt(first.x, dp)} Y${fmt(first.y, dp)} Z${fmt(z, dp)} R${fmt(r, dp)}${peckPart} F${fmt(feed, 2)}`);
-        for (let i = 1; i < coords.length; i += 1){
-          out.push(`X${fmt(coords[i].x, dp)} Y${fmt(coords[i].y, dp)}`);
+        out.push(`${cycleCmd} G98 X${fmt(first.x, dp)} Y${fmt(first.y, dp)} Z${fmt(z, dp)} R${fmt(r, dp)}${peckPart} F${fmt(feed, 2)}`);
+        for (let i = 1; i < outputCoords.length; i += 1){
+          out.push(`X${fmt(outputCoords[i].x, dp)} Y${fmt(outputCoords[i].y, dp)}`);
         }
         out.push("G80");
+        out.push(`G0 Z${fmt(safeZ, dp)}`);
+        if (coolant === "flood") out.push("M9");
+        out.push("M5");
       }
       out.push("M30");
+      out.push("%");
       return out.join("\n");
     }
 
@@ -3683,24 +4293,33 @@
       if (!Number.isFinite(startAngle)) { showWarn(bcWarn, "Start angle must be a valid number."); return; }
       const radius = diameter / 2;
       const step = 360 / holes;
-      const direction = bcClockwise.value === "cw" ? -1 : 1;
       const directionLabel = bcClockwise.value.toUpperCase();
       const hasOffset = centerX !== 0 || centerY !== 0;
       const chord = diameter * Math.sin(Math.PI / holes);
       const lines = ["Index, Angle (deg), X, Y"];
-      const coords = [];
-      for (let index = 0; index < holes; index += 1){
-        const angleDeg = startAngle + direction * (index * step);
-        const angleRad = degToRad(angleDeg);
-        const x = centerX + radius * Math.cos(angleRad);
-        const y = centerY + radius * Math.sin(angleRad);
-        coords.push({ x, y, angleDeg });
-        lines.push(`${index + 1}, ${fmt(angleDeg, 4)}, ${fmt(x, 6)}, ${fmt(y, 6)}`);
-      }
+      const coords = boltCircleCoordinates(diameter, holes, startAngle, bcClockwise.value, centerX, centerY);
+      coords.forEach((coord, index) => lines.push(`${index + 1}, ${fmt(coord.angleDeg, 4)}, ${fmt(coord.x, 6)}, ${fmt(coord.y, 6)}`));
       const centerNote = hasOffset ? `Center offset: (${fmt(centerX, 6)}, ${fmt(centerY, 6)}) ${units}` : "Centered at origin (0, 0)";
       const boltFormState = captureFormInputs(boltForm);
 
       const wantGcode = bcGcodeCheck && bcGcodeCheck.checked;
+      if (wantGcode && !gcodePreflightIds.every((id) => document.getElementById(id)?.checked)){
+        showWarn(bcWarn, "Acknowledge all three G-code preflight checks before generating a program.");
+        return;
+      }
+      if (wantGcode){
+        const z = parseDimension(document.getElementById("bcGcodeZ").value, inputUnits);
+        const retract = parseDimension(document.getElementById("bcGcodeR").value, inputUnits);
+        const safeZ = parseDimension(document.getElementById("bcSafeZ").value, inputUnits);
+        const feed = num(document.getElementById("bcGcodeFeed").value);
+        const spindle = num(document.getElementById("bcSpindle").value);
+        const peck = parseDimension(document.getElementById("bcGcodePeck").value, inputUnits);
+        const mode = bcGcodeModeEl.value;
+        if (![z, retract, safeZ].every(Number.isFinite)){ showWarn(bcWarn, "Enter valid G-code depth, retract, and safe-Z values."); return; }
+        if (safeZ < retract){ showWarn(bcWarn, "Safe Z must be at or above the retract plane."); return; }
+        if (mode !== "positions" && (!(z < retract) || !(feed > 0) || !(spindle > 0))){ showWarn(bcWarn, "For a drill cycle, depth must be below retract and feed/spindle must be positive."); return; }
+        if (mode === "peck" && !(peck > 0)){ showWarn(bcWarn, "Peck Q must be positive for a G83 cycle."); return; }
+      }
       const gcodeText = wantGcode ? buildBoltGcode(holes, coords, inputUnits) : "";
       const detailsExtras = wantGcode ? renderCodeCard("G-code", gcodeText) : "";
       const copyExtras = wantGcode ? ["", "— G-code —", gcodeText] : [];
@@ -3719,7 +4338,7 @@
         animate: true,
         saveHistory: true,
         formState: boltFormState,
-        primary: `${holes} coordinates ready in ${units}`,
+        primary: `${holes} coordinates ready · ${units}`,
         stats: [
           { label: "BCD", valueHtml: fmtDualHtml(diameter, units, 6) },
           { label: "Radius", valueHtml: fmtDualHtml(radius, units, 6) },
@@ -3734,8 +4353,8 @@
           `Chord (hole-to-hole): ${fmt(chord, 6)} ${units} — straight-line distance between adjacent holes.`,
           "Angles are measured from the +X axis; use 90 degrees to start on +Y.",
           "Use the copy button to grab the full coordinate block for setup notes or a CAM worksheet.",
-          ...(wantGcode ? ["G-code is a generic template — review work-offsets, depths, and feeds before running."] : [])
-        ]) + renderCodeCard("Coordinate list", lines.join("\n")) + detailsExtras,
+          ...(wantGcode ? ["Preflight was acknowledged for this generated snapshot. Re-verify after every edit, transfer, or controller change."] : [])
+        ]) + renderCodeCard("Coordinate list", lines.join("\n")) + detailsExtras + (wantGcode ? renderProvenance("gcode") : renderProvenance("geometry")),
         copyText: [`Marcos's Calculator - Bolt Circle`, `Units: ${units}`, `BCD: ${fmt(diameter, 6)} ${units}`, `Radius: ${fmt(radius, 6)} ${units}`, `Holes: ${holes}`, `Chord (hole-to-hole): ${fmt(chord, 6)} ${units}`, `Start angle: ${fmt(startAngle, 4)} deg`, `Direction: ${directionLabel}`, centerNote, "", ...lines, ...copyExtras].join("\n")
       });
     });
@@ -3980,6 +4599,7 @@
     const sfUnits = document.getElementById("sfUnits");
     const sfTool = document.getElementById("sfTool");
     const sfMaterial = document.getElementById("sfMaterial");
+    const sfOperation = document.getElementById("sfOperation");
     const sfDiameter = document.getElementById("sfDiameter");
     const sfFlutes = document.getElementById("sfFlutes");
     const sfSpeed = document.getElementById("sfSpeed");
@@ -4005,42 +4625,53 @@
     function getSfDefaults(){
       const mat = sfMaterial.value;
       const tool = sfTool.value;
-      if (mat === "custom" || !SF_DEFAULTS[mat]) return null;
-      return SF_DEFAULTS[mat][tool] || null;
+      const base = getWorkspaceMaterialDefaults(mat) || SF_DEFAULTS[mat]?.[tool] || null;
+      if (!base) return null;
+      const operationFactors = sfOperation.value === "drilling"
+        ? { speed: 0.75, chip: 0.60 }
+        : sfOperation.value === "reaming"
+          ? { speed: 0.50, chip: 0.35 }
+          : { speed: 1, chip: 1 };
+      return { sfm: base.sfm * operationFactors.speed, chipIn: base.chipIn * operationFactors.chip };
     }
+    function getMaterialLabel(value){ return workspaceMaterialLabel(value) || MATERIAL_LABELS[value] || value; }
     sfUnits.addEventListener("change", sfSyncUnitLabels);
     sfMaterial.addEventListener("change", sfSyncUnitLabels);
     sfTool.addEventListener("change", sfSyncUnitLabels);
+    sfOperation.addEventListener("change", sfSyncUnitLabels);
     sfSyncUnitLabels();
 
     // Operation presets tweak WOC/DOC expectations
     document.querySelectorAll("[data-feed-preset]").forEach(btn => {
       btn.addEventListener("click", () => {
         const preset = btn.dataset.feedPreset;
-        const dia = num(sfDiameter.value);
         const isIn = sfUnits.value === "in";
+        const dia = parseDimension(sfDiameter.value, isIn ? "in" : "mm");
         const defaultDia = dia > 0 ? dia : (isIn ? 0.375 : 6);
         switch (preset){
           case "slot":
+            sfOperation.value = "milling";
             sfWoc.value = fmt(defaultDia, isIn ? 4 : 3);
             sfDoc.value = fmt(defaultDia * 0.5, isIn ? 4 : 3);
             break;
           case "profile":
+            sfOperation.value = "milling";
             sfWoc.value = fmt(defaultDia * 0.30, isIn ? 4 : 3);
             sfDoc.value = fmt(defaultDia * 1.0, isIn ? 4 : 3);
             break;
           case "finish":
+            sfOperation.value = "milling";
             sfWoc.value = fmt(defaultDia * 0.10, isIn ? 4 : 3);
             sfDoc.value = fmt(defaultDia * 0.5, isIn ? 4 : 3);
             break;
           case "drill":
+            sfOperation.value = "drilling";
             sfWoc.value = fmt(defaultDia, isIn ? 4 : 3);
             sfDoc.value = "";
-            // Drilling typically uses ~60% of milling chip load as feed/rev per flute
             if (!sfChipLoad.value){
               const d = getSfDefaults();
               if (d){
-                const chip = (isIn ? d.chipIn : d.chipIn * 25.4) * 0.6;
+                const chip = isIn ? d.chipIn : d.chipIn * 25.4;
                 sfChipLoad.value = isIn ? chip.toFixed(4) : chip.toFixed(3);
               }
             }
@@ -4056,7 +4687,8 @@
       const isIn = sfUnits.value === "in";
       const tool = sfTool.value;
       const material = sfMaterial.value;
-      const dia = num(sfDiameter.value);
+      const operation = sfOperation.value;
+      const dia = parseDimension(sfDiameter.value, isIn ? "in" : "mm");
       const flutes = num(sfFlutes.value);
       if (!(dia > 0)){ showWarn(sfWarn, "Tool diameter must be positive."); return; }
       if (!(flutes >= 1 && Number.isInteger(flutes))){ showWarn(sfWarn, "Flutes must be an integer of 1 or more."); return; }
@@ -4070,7 +4702,7 @@
 
       const defaults = getSfDefaults();
       let surfaceSpeedUserIn = num(sfSpeed.value);
-      let chipLoadUser = num(sfChipLoad.value);
+      let chipLoadUser = parseDimension(sfChipLoad.value, isIn ? "in" : "mm");
       let sfm; // always carry SFM internally, convert for display
       let chipIn; // chip load per tooth in inches
       let sourceNotes = [];
@@ -4079,7 +4711,7 @@
         sourceNotes.push("Surface speed: user override.");
       } else if (defaults){
         sfm = defaults.sfm;
-        sourceNotes.push(`Surface speed: ${MATERIAL_LABELS[material]} + ${TOOL_LABELS[tool]} default.`);
+        sourceNotes.push(`Surface speed: ${getMaterialLabel(material)} + ${TOOL_LABELS[tool]} ${operation} starting point.`);
       } else {
         showWarn(sfWarn, "Enter a surface speed (custom material has no default).");
         return;
@@ -4089,57 +4721,41 @@
         sourceNotes.push("Chip load: user override.");
       } else if (defaults){
         chipIn = defaults.chipIn;
-        sourceNotes.push(`Chip load: ${MATERIAL_LABELS[material]} + ${TOOL_LABELS[tool]} default.`);
+        sourceNotes.push(`Chip load: ${getMaterialLabel(material)} + ${TOOL_LABELS[tool]} ${operation} starting point.`);
       } else {
         showWarn(sfWarn, "Enter a chip load per tooth (custom material has no default).");
         return;
       }
-      // Scale chip load by diameter: small endmills need much smaller chipload
-      // Common rule: actual chip load ≈ default × (D / baseline), baseline ~3/8 in
       const dInches = isIn ? dia : dia / 25.4;
-      const chipScale = Math.max(0.25, Math.min(1.5, dInches / 0.375));
-      const chipInBase = chipIn * chipScale;
-      const scaleNote = `Chip load scaled ×${fmt(chipScale, 2)} for tool diameter ${fmt(dInches, 3)} in vs. 0.375 in reference.`;
-
-      // Radial chip-thinning compensation for WOC < D/2.
-      // Effective chipload = programmed chipload × (D / (2 × √(WOC × (D − WOC))))
-      // which equals fz × √(D / (4·WOC·(D−WOC))). Only applies when WOC is given
-      // and less than 50% of the cutter diameter (a light radial engagement).
-      const wocVal = num(sfWoc.value);
-      const docVal = num(sfDoc.value);
-      let thinningFactor = 1;
-      let thinningNote = null;
-      if (wocVal > 0 && wocVal < dia / 2){
-        const ratio = dia / (4 * wocVal * (dia - wocVal));
-        thinningFactor = Math.sqrt(ratio);
-        // Clamp to sane range (extremely light cuts can blow up the factor).
-        thinningFactor = Math.max(1, Math.min(thinningFactor, 2.5));
-        const wocPct = (wocVal / dia) * 100;
-        thinningNote = `Chip-thinning compensation applied: WOC is ${fmt(wocPct, 1)}% of D, boosting programmed chip load by ×${fmt(thinningFactor, 2)} so the actual chip matches book value.`;
-      }
-      const chipInAdj = chipInBase * thinningFactor;
-
-      // RPM
-      const rpm = isIn
-        ? (sfm * 12) / (Math.PI * dia)
-        : (sfm * 0.3048 * 1000) / (Math.PI * dia);
-      // Feed rate — uses the compensated chipload so the actual chip matches target
-      const feedIPM = rpm * flutes * chipInAdj;
-      const feed = isIn ? feedIPM : feedIPM * 25.4;
+      const wocVal = parseDimension(sfWoc.value, isIn ? "in" : "mm");
+      const docVal = parseDimension(sfDoc.value, isIn ? "in" : "mm");
+      const activeMachine = getActiveMachineProfile();
+      const machineMaxFeed = machineFeedLimit(activeMachine, isIn ? "in" : "mm");
+      const calculated = calculateSpeedsFeeds({
+        units: isIn ? "in" : "mm",
+        diameter: dia,
+        flutes,
+        sfm,
+        chipLoadIn: chipIn,
+        widthOfCut: wocVal,
+        depthOfCut: docVal,
+        maxRpm: activeMachine?.maxRpm || Infinity,
+        maxFeed: machineMaxFeed
+      });
+      const { rpm, feed, chipScale, thinningFactor, programmedChipIn: chipInAdj, mrr: mrrValue, requestedRpm, requestedFeed, limitedByRpm, limitedByFeed } = calculated;
+      const scaleNote = `Chip load scaled ×${fmt(chipScale, 2)} for tool diameter ${fmt(dInches, 3)} in vs. the 0.375 in reference.`;
+      const thinningNote = thinningFactor > 1
+        ? `Radial chip-thinning compensation applied: WOC is ${fmt((wocVal / dia) * 100, 1)}% of D, increasing programmed chip load by ×${fmt(thinningFactor, 2)}.`
+        : null;
       const feedLabel = isIn ? "IPM" : "mm/min";
 
-      // Optional MRR
       let mrrLine = null;
-      let mrrValue = null;
-      if (wocVal > 0 && docVal > 0){
-        // MRR = WOC × DOC × feed (consistent units)
-        const mrr = wocVal * docVal * feed;
-        mrrValue = mrr;
+      if (mrrValue !== null){
         const mrrLabel = isIn ? "in³/min" : "mm³/min";
-        mrrLine = `Material removal rate: ${fmt(mrr, isIn ? 4 : 2)} ${mrrLabel} (WOC ${fmt(wocVal, isIn ? 4 : 3)} × DOC ${fmt(docVal, isIn ? 4 : 3)} × feed).`;
+        mrrLine = `Material removal rate: ${fmt(mrrValue, isIn ? 4 : 2)} ${mrrLabel} (WOC × DOC × limited feed).`;
       }
 
-      const matLabel = MATERIAL_LABELS[material] || material;
+      const matLabel = getMaterialLabel(material);
       const toolLbl = TOOL_LABELS[tool] || tool;
       const unitSpeed = isIn ? "SFM" : "SMM";
       const surfaceDisplay = isIn ? fmt(sfm, 0) : fmt(sfm * 0.3048, 1);
@@ -4158,8 +4774,11 @@
       if (mrrValue !== null){
         stats.push({ label: "MRR", value: `${fmt(mrrValue, isIn ? 4 : 2)} ${isIn ? "in³/min" : "mm³/min"}` });
       }
+      if (limitedByRpm) stats.push({ label: "Requested RPM", value: fmt(requestedRpm, 0) });
+      if (limitedByFeed) stats.push({ label: `Requested feed (${feedLabel})`, value: fmt(requestedFeed, isIn ? 1 : 0) });
+      if (activeMachine) stats.push({ label: "Machine profile", value: activeMachine.name });
       const detailsItems = [
-        `Material: ${matLabel}. Tool: ${toolLbl}.`,
+        `Material: ${matLabel}. Tool: ${toolLbl}. Operation: ${operation}.`,
         ...sourceNotes,
         scaleNote,
         ...(thinningNote ? [thinningNote] : []),
@@ -4167,17 +4786,20 @@
           ? `RPM = (SFM × 12) ÷ (π × D) = (${fmt(sfm, 0)} × 12) ÷ (π × ${fmt(dia, 4)}) = ${fmt(rpm, 0)}`
           : `RPM = (SMM × 1000) ÷ (π × D) = (${fmt(sfm * 0.3048, 1)} × 1000) ÷ (π × ${fmt(dia, 3)}) = ${fmt(rpm, 0)}`,
         `Feed = RPM × flutes × chip load = ${fmt(rpm, 0)} × ${flutes} × ${chipDisplay} = ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
+        ...(limitedByRpm ? [`Machine RPM limit applied: requested ${fmt(requestedRpm, 0)}, capped at ${fmt(rpm, 0)}.`] : []),
+        ...(limitedByFeed ? [`Machine feed limit applied: requested ${fmt(requestedFeed, isIn ? 1 : 0)} ${feedLabel}, capped at ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}.`] : []),
         ...(mrrLine ? [mrrLine] : []),
         "Start conservative; ramp up once you see stable chips and good surface finish. These numbers are shop starting points, not guarantees."
       ];
       const copyText = [
         `Marcos's Calculator - Speeds & Feeds`,
         `Material: ${matLabel}`,
-        `Tool: ${toolLbl}, ${diaDisplay}, ${flutes} flutes`,
+        `Tool: ${toolLbl}, ${diaDisplay}, ${flutes} flutes (${operation})`,
         `Surface speed: ${surfaceDisplay} ${unitSpeed}`,
         `Chip load per tooth: ${chipDisplay} ${isIn ? "in" : "mm"}`,
         `Spindle RPM: ${fmt(rpm, 0)}`,
         `Feed rate: ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
+        ...(activeMachine ? [`Machine: ${activeMachine.name}${limitedByRpm || limitedByFeed ? " (limits applied)" : ""}`] : []),
         ...(mrrValue !== null ? [`MRR: ${fmt(mrrValue, isIn ? 4 : 2)} ${isIn ? "in³/min" : "mm³/min"}`] : [])
       ].join("\n");
 
@@ -4187,7 +4809,7 @@
         formState,
         primary: `${fmt(rpm, 0)} RPM  •  ${fmt(feed, isIn ? 1 : 0)} ${feedLabel}`,
         stats,
-        detailsHtml: renderList(detailsItems),
+        detailsHtml: renderList(detailsItems) + renderProvenance("feeds"),
         copyText
       });
     });
@@ -4195,7 +4817,7 @@
     document.getElementById("btnSfClear").addEventListener("click", () => {
       const saved = captureFormInputs(feedsForm);
       feedsForm.reset();
-      sfUnits.value = "mm";
+      sfUnits.value = getActiveMachineProfile()?.units || "mm";
       sfTool.value = "carbide";
       sfMaterial.value = "mildSteel";
       sfFlutes.value = "2";
@@ -4242,8 +4864,7 @@
         if (!(d1 >= 0)) { showWarn(chWarn, "Hole diameter (D1) must be zero or positive."); return; }
         if (!(d2 > 0)) { showWarn(chWarn, "Top diameter (D2) must be positive."); return; }
         if (d2 <= d1){ showWarn(chWarn, "Top diameter (D2) must be larger than hole diameter (D1)."); return; }
-        const halfAngleRad = degToRad(angleDeg / 2);
-        const depth = (d2 - d1) / (2 * Math.tan(halfAngleRad));
+        const depth = chamferDepth(d1, d2, angleDeg);
         const widthChamfer = (d2 - d1) / 2; // radial face width
         const dp = chUnits.value === "in" ? 4 : 3;
         const formState = captureFormInputs(form);
@@ -4321,17 +4942,12 @@
         }
         const [[x1, y1], [x2, y2], [x3, y3]] = pts;
         const D = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2));
-        if (Math.abs(D) < 1e-9){
+        const solvedCircle = circleThrough3Points(pts[0], pts[1], pts[2]);
+        if (!solvedCircle){
           showWarn(c3Warn, "The three points look collinear — no unique circle passes through them.");
           return;
         }
-        const a = x1 * x1 + y1 * y1;
-        const b = x2 * x2 + y2 * y2;
-        const c = x3 * x3 + y3 * y3;
-        const ux = (a * (y2 - y3) + b * (y3 - y1) + c * (y1 - y2)) / D;
-        const uy = (a * (x3 - x2) + b * (x1 - x3) + c * (x2 - x1)) / D;
-        const r = Math.hypot(x1 - ux, y1 - uy);
-        const dia = 2 * r;
+        const { x: ux, y: uy, radius: r, diameter: dia } = solvedCircle;
         const dp = c3Units.value === "in" ? 4 : 3;
         const formState = captureFormInputs(form);
         setResult("circle3", {
@@ -4381,6 +4997,175 @@
       }
     })();
 
+    // ── Advanced shop math ──
+    (function initAdvancedMath(){
+      const form = document.getElementById("advancedForm");
+      if (!form) return;
+      const mode = document.getElementById("advancedMode");
+      const unitsEl = document.getElementById("advancedUnits");
+      const warn = document.getElementById("advancedWarn");
+      const stackRows = document.getElementById("stackRows");
+      const readDim = (id) => parseDimension(document.getElementById(id).value, unitsEl.value);
+      const dp = () => unitsEl.value === "in" ? 5 : 3;
+      const units = () => unitLabel(unitsEl.value);
+      const syncPanels = () => {
+        document.querySelectorAll("[data-advanced-panel]").forEach((panel) => {
+          panel.hidden = panel.dataset.advancedPanel !== mode.value;
+        });
+      };
+      mode.addEventListener("change", syncPanels);
+      syncPanels();
+
+      function addStackRow(nominal = "0", tolerance = "0.001"){
+        const row = document.createElement("div");
+        row.className = "stack-row";
+        row.dataset.stackRow = "";
+        row.innerHTML = `<div class="field"><label>Nominal</label><input data-stack-nominal aria-label="Stack nominal" type="text" inputmode="decimal" value="${escapeHtml(nominal)}" /></div><div class="field"><label>± tolerance</label><input data-stack-tolerance aria-label="Stack tolerance" type="text" inputmode="decimal" value="${escapeHtml(tolerance)}" /></div><button class="mini-btn danger" type="button" data-stack-remove>Remove</button>`;
+        stackRows.appendChild(row);
+      }
+      document.getElementById("addStackRow").addEventListener("click", () => addStackRow());
+      stackRows.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-stack-remove]");
+        if (!button) return;
+        if (stackRows.querySelectorAll("[data-stack-row]").length <= 1){ showToast("Keep at least one stack dimension."); return; }
+        button.closest("[data-stack-row]").remove();
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        showWarn(warn, "");
+        const selected = mode.value;
+        const u = units();
+        const places = dp();
+        let primary = "";
+        let stats = [];
+        let details = [];
+        let formula = "";
+        try {
+          if (selected === "tapping"){
+            const requestedRpm = num(document.getElementById("advTapRpm").value);
+            const machine = getActiveMachineProfile();
+            const thread = parseDimension(document.getElementById("advTapThread").value, unitsEl.value);
+            if (!(requestedRpm > 0) || !(thread > 0)) throw new Error("Enter a positive RPM and TPI/pitch.");
+            const lead = unitsEl.value === "in" ? 1 / thread : thread;
+            const rpm = Math.min(requestedRpm, machine?.maxRpm || Infinity, machineFeedLimit(machine, unitsEl.value) / lead);
+            const result = unitsEl.value === "in" ? tappingFeed({ units: "in", rpm, tpi: thread }) : tappingFeed({ units: "mm", rpm, pitch: thread });
+            primary = `Tap feed = ${fmt(result.feed, unitsEl.value === "in" ? 3 : 1)} ${unitsEl.value === "in" ? "IPM" : "mm/min"}`;
+            stats = [{ label: "RPM", value: fmt(rpm, 0) }, { label: unitsEl.value === "in" ? "TPI" : "Pitch", value: `${fmt(thread, 4)}${unitsEl.value === "mm" ? " mm" : ""}` }, { label: "Lead / rev", value: `${fmt(result.lead, places)} ${u}` }];
+            if (rpm < requestedRpm) stats.push({ label: "Requested RPM", value: fmt(requestedRpm, 0) });
+            details = ["Feed is synchronized to spindle speed and thread lead.", ...(rpm < requestedRpm ? [`${machine.name} RPM/feed envelope applied: ${fmt(requestedRpm, 0)} RPM requested, ${fmt(rpm, 0)} RPM used.`] : []), "Use the machine or control maker's rigid-tapping requirements before running the cycle."];
+            formula = `Feed = RPM × lead = ${fmt(rpm, 0)} × ${fmt(result.lead, places)} = ${fmt(result.feed, places)}`;
+          } else if (selected === "threadMill"){
+            const majorDiameter = readDim("advTmMajor");
+            const cutterDiameter = readDim("advTmCutter");
+            const requestedRpm = num(document.getElementById("advTmRpm").value);
+            const machine = getActiveMachineProfile();
+            const rpm = Math.min(requestedRpm, machine?.maxRpm || Infinity);
+            const flutes = num(document.getElementById("advTmFlutes").value);
+            const chipLoad = readDim("advTmChip");
+            if (![majorDiameter, cutterDiameter, rpm, flutes, chipLoad].every((value) => value > 0)) throw new Error("All thread-milling values must be positive.");
+            const result = threadMilling({ units: unitsEl.value, majorDiameter, cutterDiameter, rpm, flutes, chipLoad });
+            const programFeed = Math.min(result.centerlineFeed, machineFeedLimit(machine, unitsEl.value));
+            const feedLimited = programFeed < result.centerlineFeed;
+            primary = `Program ${fmt(programFeed, places)} ${unitsEl.value === "in" ? "IPM" : "mm/min"}`;
+            stats = [{ label: "Tool-path diameter", value: `${fmt(result.pathDiameter, places)} ${u}` }, { label: "Surface feed", value: fmt(result.surfaceFeed, places) }, { label: "Centerline feed", value: fmt(result.centerlineFeed, places) }];
+            if (rpm < requestedRpm) stats.push({ label: "RPM limit", value: `${fmt(requestedRpm, 0)} → ${fmt(rpm, 0)} (${machine.name})` });
+            if (feedLimited) stats.push({ label: "Feed limit", value: `${fmt(result.centerlineFeed, places)} → ${fmt(programFeed, places)} (${machine.name})` });
+            details = ["For an internal thread, centerline feed is reduced by the tool-path-to-finished-diameter ratio.", ...(rpm < requestedRpm ? [`${machine.name} RPM ceiling was applied.`] : []), ...(feedLimited ? [`${machine.name} feed ceiling was applied.`] : []), "Confirm climb/conventional direction, cutter compensation, and controller arc behavior."];
+            formula = `Centerline feed = RPM × flutes × chip load × (path Ø / thread Ø)`;
+          } else if (selected === "reamer"){
+            const targetDiameter = readDim("advReamTarget");
+            const allowancePerSide = readDim("advReamAllowance");
+            if (!(targetDiameter > 0) || !(allowancePerSide >= 0)) throw new Error("Enter a positive target and a non-negative allowance.");
+            const result = reamerAllowance({ targetDiameter, allowancePerSide });
+            if (!(result.preReamDiameter > 0)) throw new Error("Allowance is larger than the target diameter.");
+            primary = `Pre-ream hole = ${fmt(result.preReamDiameter, places)} ${u}`;
+            stats = [{ label: "Target", value: `${fmt(targetDiameter, places)} ${u}` }, { label: "Allowance / side", value: `${fmt(allowancePerSide, places)} ${u}` }, { label: "Total stock", value: `${fmt(result.totalAllowance, places)} ${u}` }];
+            details = ["Allowance depends on material, hole quality, reamer geometry, and diameter.", "Use this subtraction as a setup aid, then verify against the reamer manufacturer's recommendation."];
+            formula = `Pre-ream Ø = target Ø − 2 × allowance/side`;
+          } else if (selected === "sine"){
+            const solveFor = document.getElementById("advSineMode").value;
+            const barLength = readDim("advSineLength");
+            if (!(barLength > 0)) throw new Error("Bar length must be positive.");
+            if (solveFor === "height"){
+              const angle = num(document.getElementById("advSineValue").value);
+              if (!(angle >= 0 && angle < 90)) throw new Error("Angle must be from 0 up to, but not including, 90 degrees.");
+              const height = sineBarHeight({ barLength, angleDegrees: angle });
+              primary = `Stack height = ${fmt(height, places)} ${u}`;
+              stats = [{ label: "Bar length", value: `${fmt(barLength, places)} ${u}` }, { label: "Angle", value: `${fmt(angle, 4)}°` }];
+              formula = `Height = length × sin(angle)`;
+            } else {
+              const height = readDim("advSineValue");
+              const angle = sineBarAngle({ barLength, stackHeight: height });
+              if (!Number.isFinite(angle)) throw new Error("Stack height must be no greater than the bar length.");
+              primary = `Angle = ${fmt(angle, 5)}°`;
+              stats = [{ label: "Bar length", value: `${fmt(barLength, places)} ${u}` }, { label: "Stack height", value: `${fmt(height, places)} ${u}` }];
+              formula = `Angle = asin(height / length)`;
+            }
+            details = ["Use certified blocks and account for the actual roll-center distance of the sine bar."];
+          } else if (selected === "taper"){
+            const largeDiameter = readDim("advTaperLarge");
+            const smallDiameter = readDim("advTaperSmall");
+            const length = readDim("advTaperLength");
+            if (!(largeDiameter > smallDiameter && smallDiameter >= 0 && length > 0)) throw new Error("Large diameter must exceed the small diameter and length must be positive.");
+            const result = taperGeometry({ largeDiameter, smallDiameter, length, units: unitsEl.value });
+            primary = `Compound angle = ${fmt(result.halfAngle, 5)}°`;
+            stats = [{ label: "Included angle", value: `${fmt(result.includedAngle, 5)}°` }, { label: unitsEl.value === "in" ? "Taper / foot" : "Taper / 304.8 mm", value: `${fmt(result.taperPerFoot, places)} ${u}` }, { label: "Diameter change", value: `${fmt(result.diameterChange, places)} ${u}` }];
+            details = ["The compound setting is the half-angle from the spindle axis."];
+            formula = `Half-angle = atan(((D − d) / 2) / length)`;
+          } else if (selected === "scallop"){
+            const solveFor = document.getElementById("advScallopMode").value;
+            const radius = readDim("advScallopRadius");
+            const value = readDim("advScallopValue");
+            if (!(radius > 0) || !(value >= 0)) throw new Error("Radius must be positive and the other value non-negative.");
+            if (solveFor === "height"){
+              const height = ballNoseScallopHeight({ radius, stepover: value });
+              if (!Number.isFinite(height)) throw new Error("Stepover cannot exceed the ball diameter.");
+              primary = `Scallop height = ${fmt(height, places)} ${u}`;
+              stats = [{ label: "Ball diameter", value: `${fmt(radius * 2, places)} ${u}` }, { label: "Stepover", value: `${fmt(value, places)} ${u}` }];
+              formula = `h = R − √(R² − stepover²/4)`;
+            } else {
+              const stepover = ballNoseStepover({ radius, scallopHeight: value });
+              if (!Number.isFinite(stepover)) throw new Error("Scallop height is outside the ball geometry.");
+              primary = `Stepover = ${fmt(stepover, places)} ${u}`;
+              stats = [{ label: "Ball diameter", value: `${fmt(radius * 2, places)} ${u}` }, { label: "Target scallop", value: `${fmt(value, places)} ${u}` }];
+              formula = `Stepover = 2 × √(2Rh − h²)`;
+            }
+            details = ["This is ideal ball-nose cusp geometry and does not include tool deflection, runout, or surface orientation effects."];
+          } else if (selected === "stack"){
+            const items = [...stackRows.querySelectorAll("[data-stack-row]")].map((row) => ({ nominal: parseDimension(row.querySelector("[data-stack-nominal]").value, unitsEl.value), tolerance: parseDimension(row.querySelector("[data-stack-tolerance]").value, unitsEl.value) }));
+            if (!items.length || items.some((item) => !Number.isFinite(item.nominal) || !(item.tolerance >= 0))) throw new Error("Every stack row needs a valid nominal and non-negative tolerance.");
+            const result = toleranceStack(items);
+            primary = `Worst case ${fmt(result.worstCaseMin, places)} to ${fmt(result.worstCaseMax, places)} ${u}`;
+            stats = [{ label: "Nominal", value: `${fmt(result.nominal, places)} ${u}` }, { label: "Worst-case ±", value: `${fmt(result.worstCaseTolerance, places)} ${u}` }, { label: "RSS ±", value: `${fmt(result.rssTolerance, places)} ${u}` }, { label: "RSS range", value: `${fmt(result.rssMin, places)} to ${fmt(result.rssMax, places)} ${u}` }];
+            details = ["Worst case assumes every component lands at the adverse limit.", "RSS is statistical and is only appropriate when independent process distributions justify it."];
+            formula = `Worst-case tolerance = Σ|tᵢ|\nRSS tolerance = √Σ(tᵢ²)`;
+          }
+        } catch (error) {
+          showWarn(warn, error.message || "Check the entered values.");
+          return;
+        }
+        const title = mode.options[mode.selectedIndex].text;
+        const copyText = [`Marcos's Calculator - ${title}`, primary, ...stats.map((item) => `${item.label}: ${item.value}`), ...details].join("\n");
+        setResult("advanced", {
+          animate: true,
+          saveHistory: true,
+          formState: captureFormInputs(form),
+          primary,
+          stats,
+          detailsHtml: renderList(details) + renderCodeCard("Formula snapshot", formula) + renderProvenance("advanced"),
+          copyText
+        });
+      });
+
+      document.getElementById("btnAdvancedClear").addEventListener("click", () => {
+        form.reset();
+        syncPanels();
+        showWarn(warn, "");
+        setResult("advanced", { primary: "Choose a calculator and enter values.", stats: [], detailsHtml: "", copyText: "" });
+      });
+    })();
+
     // ── History clear (event delegation) ──
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-hist-clear]");
@@ -4393,7 +5178,7 @@
 
     // ── Input persistence ──
     (function initPersistence(){
-      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form"];
+      const FORMS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form", "advancedForm"];
 
       // ── Global unit preference ──
       // On first-ever load we seed every unit-bearing select to match the user's
@@ -4420,7 +5205,7 @@
         const seedMap = {
           mowUnits: "mowForm", bcUnits: "boltForm",
           rtUnits: "triangleForm", sfUnits: "feedsForm",
-          chUnits: "chamferForm", c3Units: "circle3Form"
+          chUnits: "chamferForm", c3Units: "circle3Form", advancedUnits: "advancedForm"
         };
         // threadSystem: "un" for in, "metric" for mm.
         let threadSystemPersisted = false;
@@ -4437,7 +5222,11 @@
           if (el && (el.value === "" || el.value !== unit)){
             // Only set if the option exists on the select.
             const hasOption = Array.from(el.options).some(o => o.value === unit);
-            if (hasOption) el.value = unit;
+            if (hasOption){
+              if (selectId === "bcUnits") convertBoltUnitValues(el.value, unit);
+              el.value = unit;
+              if (selectId === "bcUnits") el.dataset.previousUnit = unit;
+            }
           }
         });
       }
@@ -4483,6 +5272,7 @@
       updateTriangleDiagram();
       sfSyncUnitLabels();
       syncGcodeVisibility();
+      document.getElementById("bcUnits").dataset.previousUnit = document.getElementById("bcUnits").value;
     })();
 
     // ── History system ──
@@ -4512,7 +5302,7 @@
     }
 
     // History toggle buttons
-    ["thread","mow","bolt","triangle","feeds","chamfer","circle3"].forEach(tool => {
+    ["thread","mow","bolt","triangle","feeds","chamfer","circle3","advanced"].forEach(tool => {
       const toggleBtn = document.getElementById("histToggle-" + tool);
       const sectionEl = document.getElementById("histSection-" + tool);
       if (toggleBtn && sectionEl){
@@ -4538,11 +5328,12 @@
       if (tool === "mow"){ syncModeButtons(); updateMowHints(); }
       if (tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
       if (tool === "feeds"){ sfSyncUnitLabels(); }
+      if (tool === "advanced"){ document.getElementById("advancedMode")?.dispatchEvent(new Event("change")); }
       requestFormSubmit(form);
     });
 
     // Initialise history panels on load
-    ["thread","mow","bolt","triangle","feeds","chamfer","circle3"].forEach(histRender);
+    ["thread","mow","bolt","triangle","feeds","chamfer","circle3","advanced"].forEach(histRender);
 
     // ── Share URL ──
     function buildShareUrl(toolName, formState){
@@ -4559,7 +5350,7 @@
       try {
         const params = new URLSearchParams(hash);
         const tool = params.get("tool");
-        if (!["thread","mow","bolt","triangle","feeds","chamfer","circle3"].includes(tool)) return null;
+        if (!["thread","mow","bolt","triangle","feeds","chamfer","circle3","advanced"].includes(tool)) return null;
         const formState = {};
         for (const [k, v] of params.entries()){ if (k !== "tool") formState[k] = v; }
         return { tool, formState };
@@ -4574,7 +5365,8 @@
       triangle: "Right Triangle",
       feeds: "Speeds & Feeds",
       chamfer: "Chamfer & Countersink Depth",
-      circle3: "Circle Through 3 Points"
+      circle3: "Circle Through 3 Points",
+      advanced: "Advanced Shop Math"
     };
     document.querySelectorAll("[data-share-tool]").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -4654,6 +5446,9 @@
       ]),
       copyText: ""
     });
+    setResult("chamfer", { primary: "Depth will appear here.", stats: [], detailsHtml: "", copyText: "" });
+    setResult("circle3", { primary: "Center and diameter will appear here.", stats: [], detailsHtml: "", copyText: "" });
+    setResult("advanced", { primary: "Choose a calculator and enter values.", stats: [], detailsHtml: "", copyText: "" });
 
     // Parse hash on load — runs after defaults so result isn't overwritten
     (function initShareUrl(){
@@ -4667,15 +5462,16 @@
       if (shared.tool === "mow"){ syncModeButtons(); updateMowHints(); }
       if (shared.tool === "triangle"){ updateTriangleFields(); updateTriangleDiagram(); }
       if (shared.tool === "feeds"){ sfSyncUnitLabels(); }
+      if (shared.tool === "advanced"){ document.getElementById("advancedMode")?.dispatchEvent(new Event("change")); }
       requestFormSubmit(form);
     })();
 
     // ── Keyboard shortcuts ──
-    // 1–7: switch tools (thread/mow/bolt/triangle/feeds/chamfer/circle3). Ctrl/Cmd+K: focus quick thread spec.
+    // 1–8: switch tools. Ctrl/Cmd+K: focus quick thread spec.
     // ── Auto-calculate live mode ──
     (function initLiveCalc(){
       const LIVE_KEY = "marcos_live_calc";
-      const LIVE_FORM_IDS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form"];
+      const LIVE_FORM_IDS = ["threadForm", "mowForm", "boltForm", "triangleForm", "feedsForm", "chamferForm", "circle3Form", "advancedForm"];
       let liveController = null;
       let liveDebounce = null;
 
@@ -4735,7 +5531,7 @@
     })();
 
     (function initKeyboardShortcuts(){
-      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle", "5": "feeds", "6": "chamfer", "7": "circle3" };
+      const TOOL_KEYS = { "1": "thread", "2": "mow", "3": "bolt", "4": "triangle", "5": "feeds", "6": "chamfer", "7": "circle3", "8": "advanced" };
       document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) return;
         const target = event.target;
@@ -4763,6 +5559,42 @@
       });
     })();
 
+    // ── Installability and connection state ──
+    (function initAppStatus(){
+      const status = document.getElementById("networkStatus");
+      const statusText = document.getElementById("networkStatusText");
+      const dialogStatus = document.getElementById("dialogNetworkStatus");
+      const installButton = document.getElementById("installAppBtn");
+      let installPrompt = null;
+      function updateConnection(){
+        const online = navigator.onLine;
+        status?.classList.toggle("offline", !online);
+        if (statusText) statusText.textContent = online ? "Online" : "Offline ready";
+        if (dialogStatus) dialogStatus.textContent = online ? "Online" : "Offline";
+        status?.setAttribute("title", online ? "Connected; calculator also works offline after caching." : "Offline; calculations and saved shop data remain available.");
+      }
+      window.addEventListener("online", updateConnection);
+      window.addEventListener("offline", updateConnection);
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        installPrompt = event;
+        installButton.hidden = false;
+      });
+      window.addEventListener("appinstalled", () => {
+        installPrompt = null;
+        installButton.hidden = true;
+        showToast("Marcos's Calculator installed.");
+      });
+      installButton.addEventListener("click", async () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+        installPrompt = null;
+        installButton.hidden = true;
+      });
+      updateConnection();
+    })();
+
     // ── PWA service worker with update toast ──
     if ("serviceWorker" in navigator){
       function showUpdateToast(waitingWorker){
@@ -4787,7 +5619,18 @@
           toast.remove();
         });
       }
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        if (event.data?.type === "APP_VERSION"){
+          const cacheStatus = document.getElementById("offlineCacheStatus");
+          if (cacheStatus) cacheStatus.textContent = `Ready · v${event.data.version}`;
+        }
+      });
       navigator.serviceWorker.register("./sw.js").then((registration) => {
+        const activeWorker = registration.active || registration.waiting;
+        if (activeWorker) activeWorker.postMessage({ type: "GET_VERSION" });
+        navigator.serviceWorker.ready.then((readyRegistration) => {
+          (readyRegistration.active || navigator.serviceWorker.controller)?.postMessage({ type: "GET_VERSION" });
+        });
         // Case 1: a waiting worker already exists on load.
         if (registration.waiting && navigator.serviceWorker.controller){
           showUpdateToast(registration.waiting);
@@ -4802,7 +5645,10 @@
             }
           });
         });
-      }).catch(() => {});
+      }).catch(() => {
+        const cacheStatus = document.getElementById("offlineCacheStatus");
+        if (cacheStatus) cacheStatus.textContent = "Unavailable";
+      });
       // Reload once the new SW takes control.
       let reloading = false;
       navigator.serviceWorker.addEventListener("controllerchange", () => {

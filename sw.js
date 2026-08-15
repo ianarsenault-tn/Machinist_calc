@@ -1,5 +1,6 @@
-const CACHE = "marcos-calc-v2";
-const PRECACHE = ["./index.html", "./favicon.png", "./manifest.json"];
+const APP_VERSION = "3.0.0";
+const CACHE = `marcos-calc-v${APP_VERSION}`;
+const PRECACHE = ["./", "./index.html", "./calc-core.js", "./favicon.png", "./manifest.json", "./tests.html"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -23,10 +24,32 @@ self.addEventListener("message", (e) => {
   if (e.data && e.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
+  if (e.data && e.data.type === "GET_VERSION" && e.source) {
+    e.source.postMessage({ type: "APP_VERSION", version: APP_VERSION });
+  }
 });
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request)
+        .then((response) => {
+          if (response.ok) {
+            const pathname = new URL(e.request.url).pathname;
+            const requestCopy = response.clone();
+            const fallbackCopy = response.clone();
+            caches.open(CACHE).then((cache) => {
+              cache.put(e.request, requestCopy);
+              if (pathname.endsWith("/") || pathname.endsWith("/index.html")) cache.put("./index.html", fallbackCopy);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(e.request).then((cached) => cached || caches.match("./index.html")))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then((cached) => {
       const network = fetch(e.request)

@@ -1,0 +1,12 @@
+{
+  "name": "marcos-machinist-calculator",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test core.test.mjs pages.test.mjs",
+    "check": "node --check calc-core.js && node --check sw.js && node --check serve.mjs && node --test core.test.mjs pages.test.mjs",
+    "serve": "node serve.mjs",
+    "serve:pages": "node serve.mjs --base=/Machinist_calc/"
+  }
+}
